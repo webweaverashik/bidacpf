@@ -21,17 +21,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('users', function (Blueprint $table) {
-            $table->id()->comment('Unique auto-incrementing ID');
-            $table->string('username', 100)->comment('Login username');
-            $table->string('email', 255)->comment('Email address used for logging in or alerts');
-            $table->string('password', 255)->comment('Securely hashed user password');
-            $table->enum('status', ['active', 'inactive'])->comment('User activation status');
-            $table->string('language_preference', 2)->default('en')->comment('Preferred UI language (en/bn)');
-            $table->string('remember_token', 100)->nullable()->comment('Token for remember-me sessions (Laravel)');
-            $table->timestamps();
-        });
-
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
