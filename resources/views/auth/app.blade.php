@@ -24,62 +24,35 @@
         <!--end::Page bg image-->
         <!--begin::Authentication - Layout -->
         <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-            <!--begin::Aside--> <!-- 1st div: Left sidebar (show second on mobile) -->
-            <div class="d-flex flex-lg-row-fluid mb-0 pb-0">
-                <!--begin::Content-->
-                <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100">
-                    <!--begin::Image--><a href="{{ route('home') }}">
-                        <img class="theme-light-show mx-auto mw-100 w-100px w-lg-300px mb-10 mb-lg-20"
-                            src="{{ asset('assets/img/icon.png') }}" alt="" />
-                        <img class="theme-dark-show mx-auto mw-100 w-100px w-lg-300px mb-10 mb-lg-20"
-                            src="{{ asset('assets/img/icon.png') }}" alt="" />
+
+            <div class="d-flex flex-column flex-lg-row-fluid min-h-200px min-h-lg-100">
+                <div class="d-flex flex-column flex-center p-10 w-100 h-100">
+                    <a href="{{ route('home') }}">
+                        <img class="theme-light-show mx-auto mw-100 w-125px w-lg-300px mb-6 mb-lg-20"
+                            src="{{ asset('assets/img/icon.png') }}" alt="BIDA CPF Logo" />
+                        <img class="theme-dark-show mx-auto mw-100 w-125px w-lg-300px mb-6 mb-lg-20"
+                            src="{{ asset('assets/img/icon.png') }}" alt="BIDA CPF Logo" />
                     </a>
-                    <!--end::Image-->
-                    <!--begin::Title-->
-                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">Unique Coaching Management System (UCMS)
-                    </h1>
-                    <!--end::Title-->
-                    <!--begin::Text-->
-                    <div class="text-gray-600 fs-base text-center fw-semibold ">UCMS (Unique Coaching Management System)
-                        is an all-in-one solution to effortlessly manage<br> student data, attendance, exams, results,
-                        payments, and more for coaching centers.<br> Designed for institutes like Unique Coaching, it
-                        streamlines operations and boosts<br> academic efficiency with powerful features and real-time
-                        insights.
+                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-0 mb-lg-13">BIDA CPF Management System</h1>
+                    <div class="text-gray-600 fs-base text-center fw-semibold d-none d-lg-block">
+                        A secure and centralized platform for managing Contributory Provident Fund (CPF) operations at
+                        BIDA.<br>
+                        The system automates CPF contributions, advance management, interest distribution, and ledger
+                        maintenance while<br>
+                        ensuring transparency, accuracy, and audit compliance. Empowering efficient CPF administration
+                        through digital transformation.
                     </div>
-                    <!--end::Text-->
                 </div>
-                <!--end::Content-->
             </div>
-            <!--begin::Aside-->
-            <!--begin::Body--> <!-- 2nd div: Right content (show first on mobile) -->
-            <div class="d-flex flex-column-fluid flex-lg-row-auto justify-content-center justify-content-lg-end p-12">
-                <!--begin::Wrapper-->
-                <div class="bg-body d-flex flex-column flex-center rounded-4 w-md-600px p-10 pt-0">
-                    <!--begin::Content-->
-                    <div class="d-flex flex-center flex-column align-items-stretch h-lg-0 w-350px w-md-400px">
-                        <!--begin::Wrapper-->
-                        <div class="d-flex flex-center flex-column flex-column-fluid pb-10">
+            <div class="d-flex flex-column flex-lg-row-auto justify-content-center p-6 p-md-12">
+                <div class="bg-body d-flex flex-column rounded-4 w-md-600px p-10 m-auto">
+                    <div class="d-flex flex-column align-items-stretch w-350px w-md-400px m-auto">
+                        <div class="py-5 py-lg-10">
                             @yield('content')
                         </div>
-                        <!--end::Wrapper-->
-
-                        <!--begin::Footer-->
-                        {{-- <div class="mb-9">
-                            <!--begin::Google link-->
-                            <a href="https://prms.infinityfreeapp.com/uploads/prms-app.apk"
-                                class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-                                <img alt="Logo"
-                                    src="{{ asset('assets/media/svg/brand-logos/google-play-store.svg') }}"
-                                    class="h-15px me-3" />পিআরএমএস অ্যাপটি ডাউনলোড করুন</a>
-                            <!--end::Google link-->
-                        </div> --}}
-                        <!--end::Footer-->
                     </div>
-                    <!--end::Content-->
                 </div>
-                <!--end::Wrapper-->
             </div>
-            <!--end::Body-->
         </div>
         <!--end::Authentication - Layout-->
     </div>

@@ -1,27 +1,17 @@
 <?php
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, SoftDeletes, LogsActivity, Notifiable;
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
 
     protected $fillable = [
         'name',
@@ -44,6 +34,19 @@ class User extends Authenticatable
             'password'  => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activity Log Options
+    |--------------------------------------------------------------------------
+    */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'designation', 'mobile_number', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /*
@@ -89,5 +92,4 @@ class User extends Authenticatable
             ->latestOfMany()
             ->select('login_activities.*');
     }
-
 }

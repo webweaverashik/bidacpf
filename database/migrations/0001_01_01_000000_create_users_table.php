@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('designation')->nullable();
             $table->string('email')->unique();
             $table->string('mobile_number', 11);
+            $table->timestamp('email_verified_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('photo_url')->nullable();
             $table->string('password');

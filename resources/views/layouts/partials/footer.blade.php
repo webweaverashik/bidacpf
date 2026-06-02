@@ -10,7 +10,7 @@
         <!--end::Copyright-->
         <!--begin::Menu-->
         <ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
-            <li class="menu-item"><a href="#" target="_blank" class="menu-link px-2">UCMS v3.2.1</a></li>
+            <li class="menu-item"><a href="#" target="_blank" class="menu-link px-2">BIDA CPF v1.0.0</a></li>
         </ul>
         <!--end::Menu-->
     </div>

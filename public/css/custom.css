@@ -1,0 +1,42 @@
+/* Global Design Start */
+#toastr-container>div {
+      opacity: 0.95 !important;
+}
+
+table.ucms-table {
+      border: 1px dashed #F1F1F4 !important;
+      border-collapse: collapse !important;
+}
+
+table.ucms-table th,
+table.ucms-table td {
+      border: 1px dashed #F1F1F4 !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+}
+
+/* Metronic Dark Mode */
+html[data-bs-theme="dark"] table.ucms-table {
+      border: 1px dashed #2B2B40 !important;
+      background-color: #1E1E2D;
+}
+
+html[data-bs-theme="dark"] table.ucms-table th,
+html[data-bs-theme="dark"] table.ucms-table td {
+      border: 1px dashed #2B2B40 !important;
+      color: #E1E1EF;
+      background-color: transparent;
+}
+
+/* Optional: header emphasis */
+html[data-bs-theme="dark"] table.ucms-table th {
+      color: #FFFFFF;
+      background-color: #1B1B29;
+}
+
+/* Optional: hover effect (Metronic-like) */
+html[data-bs-theme="dark"] table.ucms-table tbody tr:hover {
+      background-color: #2A2A3C;
+}
+
+/* Global Design End */

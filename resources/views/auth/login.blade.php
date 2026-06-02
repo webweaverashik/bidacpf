@@ -7,18 +7,18 @@
     <form class="form w-100" id="kt_sign_in_form" action="{{ route('login') }}" method="POST" novalidate>
         @csrf
         <!--begin::Heading-->
-        <div class="text-center mb-11">
+        <div class="text-center mb-11 mt-10 mt-md-0">
             <!--begin::Title-->
             <h1 class="text-gray-900 fw-bolder mb-3">Sign In</h1>
             <!--end::Title-->
             <!--begin::Subtitle-->
-            <div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div>
+            {{-- <div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div> --}}
             <!--end::Subtitle=-->
         </div>
         <!--begin::Heading-->
 
         <!--begin::Login options-->
-        <div class="row g-3 mb-9">
+        {{-- <div class="row g-3 mb-9">
             <!--begin::Col-->
             <div class="col-md-6">
                 <!--begin::Google link=-->
@@ -41,12 +41,12 @@
                 <!--end::Google link=-->
             </div>
             <!--end::Col-->
-        </div>
+        </div> --}}
         <!--end::Login options-->
         <!--begin::Separator-->
-        <div class="separator separator-content my-14">
+        {{-- <div class="separator separator-content my-14">
             <span class="w-125px text-gray-500 fw-semibold fs-7">Or with email</span>
-        </div>
+        </div> --}}
         <!--end::Separator-->
 
         <!--begin::Input group=-->

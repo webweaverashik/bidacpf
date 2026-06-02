@@ -9,6 +9,19 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class CpfAdvance extends Model
 {
-    /** @use HasFactory<\Database\Factories\CpfAdvanceFactory> */
     use HasFactory, SoftDeletes, LogsActivity;
+
+    protected $fillable = [
+        'user_id',
+        'amount',
+        'reason',
+        'status',
+    ];
+
+    protected static $logAttributes = ['user_id', 'amount', 'reason', 'status'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

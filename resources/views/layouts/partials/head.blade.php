@@ -1,15 +1,15 @@
 <head>
-    <title>@yield('title', 'Dashboard') - UCMS</title>
+    <title>@yield('title', 'Dashboard') - BIDA CPF</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8" />
-    <meta name="description" content="Unique Coaching Management System (UCMS) is an all-in-one solution for academic coaching centers, streamlining student admissions, attendance tracking, tuition and notes payment management, teacher scheduling, and sheet distribution. Designed for efficiency, UCMS ensures seamless operations with role-based access for Super Admins, Branch Managers, Accountants, Teachers, Guardians, and Students." />
-    <meta name="keywords" content="coaching management system, academic management software, student management system, tuition management system, coaching center software, attendance tracking, payment management, teacher scheduling, notes distribution, sheet distribution system, role-based access, education ERP, UCMS, coaching automation, student fee management, guardian portal, online coaching management, school management system" />
+    <meta name="description" content="BIDA CPF Management System is an all-in-one solution for managing Contributory Provident Fund (CPF) operations at BIDA, streamlining contributions, advance management, interest distribution, and ledger maintenance." />
+    <meta name="keywords" content="cpf management system, bida cpf, contributory provident fund, cpf operations, cpf administration, digital cpf management" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="Unique Coaching Management System (UCMS) - Complete Coaching Center Management Solution">
+    <meta property="og:title" content="BIDA CPF Management System - Complete CPF Management Solution">
     <meta property="og:url" content="https://ashikur-rahman.com" />
-    <meta property="og:site_name" content="UCMS by Ashikur Rahman" />
+    <meta property="og:site_name" content="BIDA CPF Management System" />
     <link rel="canonical" href="https://ashikur-rahman.com" />
     <link rel="shortcut icon" href="{{ asset('assets/img/favicon.ico') }}" />
     <!--begin::Fonts(mandatory for all pages)-->
