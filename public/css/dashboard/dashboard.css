@@ -1,0 +1,528 @@
+/**
+ * Dashboard Styles
+ * Common styles for admin, manager, and accountant dashboards
+ */
+
+/* Card Styles */
+.dashboard-card {
+    transition: all 0.3s ease;
+    border: 0;
+    border-radius: 0.75rem;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Stat Icon */
+.stat-icon {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    flex-shrink: 0;
+}
+
+.stat-icon-lg {
+    width: 65px;
+    height: 65px;
+}
+
+/* Stat Values */
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.stat-value-lg {
+    font-size: 2rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #7e8299;
+    font-weight: 500;
+}
+
+/* Loading Skeleton Animation */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Scrollable Tables */
+.table-scrollable {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.table-scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.table-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.table-scrollable::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.table-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Approval Badge Animation */
+.approval-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Branch Tabs */
+.branch-tab {
+    transition: all 0.2s ease;
+}
+
+.branch-tab.active {
+    background-color: var(--bs-primary) !important;
+    color: #fff !important;
+}
+
+.branch-tab:hover:not(.active) {
+    background-color: var(--bs-gray-200) !important;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    min-height: 300px;
+}
+
+.chart-container-sm {
+    min-height: 200px;
+}
+
+.chart-container-lg {
+    min-height: 400px;
+}
+
+/* Pie Chart Container - Made Broader */
+#costPieChart {
+    min-height: 380px;
+    width: 100%;
+}
+
+#costPieChart .apexcharts-canvas {
+    margin: 0 auto;
+}
+
+/* Date Picker Styling */
+#collectionDatePicker,
+#attendanceDatePicker {
+    border-color: #e4e6ef;
+    font-size: 0.875rem;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+#collectionDatePicker:focus,
+#attendanceDatePicker:focus {
+    border-color: #009ef7;
+    box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+}
+
+/* Date Navigation Buttons */
+#prevDateBtn,
+#nextDateBtn,
+#prevAttDateBtn,
+#nextAttDateBtn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#nextDateBtn.disabled,
+#nextDateBtn:disabled,
+#nextAttDateBtn.disabled,
+#nextAttDateBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Flatpickr Customization */
+.flatpickr-calendar {
+    font-family: inherit;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: #009ef7;
+    border-color: #009ef7;
+}
+
+.flatpickr-day:hover {
+    background: #f1f1f4;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    font-weight: 600;
+}
+
+/* Ensure chart takes full width */
+.apexcharts-canvas {
+    width: 100% !important;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+    margin-bottom: 1rem;
+}
+
+.empty-state-text {
+    color: #7e8299;
+    font-size: 0.9rem;
+}
+
+/* Quick Action Buttons */
+.quick-action-btn {
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Period Tabs */
+.period-tab {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.period-tab:hover:not(.active) {
+    background-color: var(--bs-gray-100);
+}
+
+.period-tab.active {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+
+/* Transaction Item */
+.transaction-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--bs-gray-200);
+    transition: background-color 0.2s ease;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-item:hover {
+    background-color: var(--bs-gray-50);
+}
+
+/* Attendance Stats Cards */
+.attendance-stat-card {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.attendance-stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.attendance-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.attendance-stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+/* Colored Stat Cards */
+.colored-stat-card {
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.colored-stat-card .card-body {
+    position: relative;
+}
+
+.colored-stat-card .stat-bg-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.25;
+}
+
+/* Due Student List */
+.due-student-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--bs-gray-100);
+}
+
+.due-student-item:last-child {
+    border-bottom: none;
+}
+
+.due-student-rank {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bs-gray-100);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.75rem;
+}
+
+.due-student-rank.top-3 {
+    background-color: var(--bs-danger);
+    color: #fff;
+}
+
+/* User Collection Item */
+.user-collection-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.user-collection-avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 600;
+    margin-right: 0.75rem;
+}
+
+/* Cost Type Bar */
+.cost-type-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--bs-gray-200);
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.cost-type-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Table Styling Enhancements */
+.table thead tr th {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.table.table-row-bordered tbody tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+/* Badge Circle Style */
+.badge-circle {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    padding: 0;
+}
+
+/* Card Header Toolbar Buttons */
+.card-toolbar .nav-pills .nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+/* Dashboard Tables - Row Hover Effect */
+.table-hover-effect tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table-hover-effect tbody tr:hover {
+    background-color: rgba(0, 158, 247, 0.05);
+}
+
+/* Symbol Styling */
+.symbol.symbol-40px .symbol-label {
+    width: 40px;
+    height: 40px;
+}
+
+.symbol.symbol-45px .symbol-label {
+    width: 45px;
+    height: 45px;
+}
+
+/* ApexCharts Legend Fix */
+.apexcharts-legend {
+    padding: 10px 0 !important;
+}
+
+.apexcharts-legend-series {
+    margin: 5px 10px !important;
+}
+
+/* Attendance Batch Tabs */
+#attendanceBatchTabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+#attendanceBatchTabs .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 0.375rem;
+    color: #7e8299;
+    background-color: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+#attendanceBatchTabs .nav-link:hover {
+    color: #009ef7;
+    background-color: #f1faff;
+}
+
+#attendanceBatchTabs .nav-link.active {
+    color: #009ef7;
+    background-color: #f1faff;
+    border-color: #009ef7;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+    }
+
+    .chart-container {
+        min-height: 250px;
+    }
+
+    .table-scrollable {
+        max-height: 300px;
+    }
+
+    #costPieChart {
+        min-height: 300px;
+    }
+
+    #attendanceBatchTabs .nav-link {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-value {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .dashboard-card .card-body {
+        padding: 1rem;
+    }
+
+    .card-toolbar .nav-pills .nav-link {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .dashboard-card {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .chart-container {
+        page-break-inside: avoid;
+    }
+
+    .table-scrollable {
+        max-height: none;
+        overflow: visible;
+    }
+}

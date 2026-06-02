@@ -77,7 +77,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="all_students_link"
-                                            href="{{ route('students.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">All
                                                 Students</span></a>
                                         <!--end:Menu link-->
@@ -89,7 +89,7 @@
                                 <!--begin:Guardians Menu item-->
                                 @can('guardians.view')
                                     <div class="menu-item">
-                                        <a class="menu-link" id="guardians_link" href="{{ route('guardians.index') }}"><span
+                                        <a class="menu-link" id="guardians_link" href="#"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Guardians</span></a>
                                     </div>
@@ -99,7 +99,7 @@
                                 <!--begin:Siblings Menu item-->
                                 @can('siblings.view')
                                     <div class="menu-item">
-                                        <a class="menu-link" id="siblings_link" href="{{ route('siblings.index') }}"><span
+                                        <a class="menu-link" id="siblings_link" href="#"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Siblings</span></a>
                                     </div>
@@ -109,7 +109,7 @@
                                 <!--begin:Alumni Menu item-->
                                 @can('students.view')
                                     <div class="menu-item">
-                                        <a class="menu-link" id="alumni_link" href="{{ route('students.alumni.index') }}"><span
+                                        <a class="menu-link" id="alumni_link" href="#"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Alumni Students</span></a>
                                     </div>
@@ -143,7 +143,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="new_admission_link"
-                                            href="{{ route('students.create') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">New
                                                 Admission</span></a>
                                         <!--end:Menu link-->
@@ -154,8 +154,7 @@
                                 @can('students.view')
                                     <div class="menu-item">
                                         <a class="menu-link" id="pending_approval_link"
-                                            href="{{ route('students.pending.index') }}">
-                                            <span class="menu-bullet">
+                                            href="#"><span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
 
@@ -175,7 +174,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="promote_students_link"
-                                            href="{{ route('students.promote.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Promote
                                                 Students</span></a>
                                         <!--end:Menu link-->
@@ -187,7 +186,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="transfer_students_link"
-                                            href="{{ route('students.transfer.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Transfer
                                                 Students</span></a>
                                         <!--end:Menu link-->
@@ -221,7 +220,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="class_link"
-                                            href="{{ route('classnames.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Class</span></a>
                                         <!--end:Menu link-->
@@ -234,7 +233,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="batches_link" href="{{ route('batches.index') }}"><span
+                                        <a class="menu-link" id="batches_link" href="#"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Batches</span>
                                         </a>
@@ -247,7 +246,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="institutions_link"
-                                            href="{{ route('institutions.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Institutions</span></a>
                                         <!--end:Menu link-->
@@ -260,7 +259,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="attendance_link"
-                                            href="{{ route('attendances.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Attendance</span>
                                         </a>
@@ -294,7 +293,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="all_sheets_link" href="{{ route('sheets.index') }}"><span
+                                        <a class="menu-link" id="all_sheets_link" href="#"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">All
                                                 Sheets</span>
@@ -308,8 +307,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="sheet_payments_link"
-                                            href="{{ route('sheet-payments.index') }}">
-                                            <span class="menu-bullet">
+                                            href="#"><span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
                                             </span>
@@ -342,7 +340,7 @@
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
                                     <a class="menu-link" id="all_distributions_link"
-                                        href="{{ route('notes.distribution.index') }}"><span class="menu-bullet"><span
+                                        href="#"><span class="menu-bullet"><span
                                                 class="bullet bullet-dot"></span></span><span class="menu-title">All
                                             Distributions</span>
                                     </a>
@@ -354,7 +352,7 @@
                                 <!--begin:Menu item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link--><a class="menu-link" id="single_distribution_link"
-                                        href="{{ route('notes.single.create') }}"><span class="menu-bullet"><span
+                                        href="#"><span class="menu-bullet"><span
                                                 class="bullet bullet-dot"></span></span><span class="menu-title">Single
                                             Distribution</span></a>
                                     <!--end:Menu link-->
@@ -365,7 +363,7 @@
                                 <!--begin:Menu item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link--><a class="menu-link" id="bulk_distribution_link"
-                                        href="{{ route('notes.bulk.create') }}"><span class="menu-bullet"><span
+                                        href="#"><span class="menu-bullet"><span
                                                 class="bullet bullet-dot"></span></span><span class="menu-title">Bulk
                                             Distribution</span></a>
                                     <!--end:Menu link-->
@@ -397,7 +395,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" href="{{ route('invoices.index') }}" id="invoices_link">
+                                        <a class="menu-link" href="#" id="invoices_link">
                                             <span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Invoices</span>
                                         </a>
@@ -410,8 +408,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" href="{{ route('transactions.index') }}"
-                                            id="transactions_link">
+                                        <a class="menu-link" href="#" id="transactions_link">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -449,7 +446,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" href="{{ route('teachers.index') }}" id="teachers_link"><span
+                                        <a class="menu-link" href="#" id="teachers_link"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Teachers</span>
                                         </a>
@@ -500,7 +497,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="finance_report_link"
-                                            href="{{ route('reports.finance.index') }}">
+                                            href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -517,7 +514,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="annual_due_link"
-                                            href="{{ route('reports.annual-due.index') }}">
+                                            href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -534,7 +531,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="cost_records_link"
-                                            href="{{ route('reports.cost-records.index') }}">
+                                            href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -549,7 +546,7 @@
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
                                     <a class="menu-link" id="attendance_report_link"
-                                        href="{{ route('reports.attendance.index') }}">
+                                        href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -599,7 +596,7 @@
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
                                     <a class="menu-link" id="settlements_link"
-                                        href="{{ route('settlements.index') }}">
+                                        href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -614,7 +611,7 @@
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
                                     <a class="menu-link" id="settlements_logs_link"
-                                        href="{{ route('settlements.logs') }}">
+                                        href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -651,7 +648,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="single_sms_link"
-                                            href="{{ route('sms.single.index') }}"><span class="menu-bullet"><span
+                                            href="#"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Send
                                                 SMS</span>
                                         </a>
@@ -665,7 +662,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="sms_campaign_link"
-                                            href="{{ route('send-campaign.index') }}">
+                                            href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -682,7 +679,7 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="sms_template_link"
-                                            href="{{ route('sms.templates.index') }}">
+                                            href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -698,7 +695,7 @@
                                 @can('sms.logs.view')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_logs_link" href="{{ route('sms.logs.index') }}">
+                                        <a class="menu-link" id="sms_logs_link" href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -717,10 +714,9 @@
                     <!--end:SMS Menu-->
 
                     <!--begin:Settings Menu-->
-                    @canany(['users.manage', 'settings.manage', 'branches.manage'])
                         <div class="menu-item">
                             <!--begin:Menu link-->
-                            <a class="menu-link" href="{{ route('users.index') }}" id="settings_link">
+                            <a class="menu-link" href="#" id="settings_link">
                                 <span class="menu-icon">
                                     <i class="ki-outline ki-setting-2 fs-2"></i>
                                 </span>
@@ -728,7 +724,6 @@
                             </a>
                             <!--end:Menu link-->
                         </div>
-                    @endcanany
                 </div>
                 <!--end::Menu-->
             </div>
@@ -743,7 +738,7 @@
         <a href="{{ route('logout') }}"
             onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
             class="btn btn-flex flex-center btn-custom btn-danger overflow-hidden text-nowrap px-0 h-40px w-100"
-            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click" title="Logout">
+            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click" title="Click to logout">
             <span class="btn-label">
                 Logout
             </span>

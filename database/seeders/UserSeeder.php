@@ -21,35 +21,26 @@ class UserSeeder extends Seeder
 
         // Super Admin
         $superAdmin = User::create([
-            'name'          => 'Ashfaq',
-            'email'         => 'admin@cpf.bida.gov.bd',
+            'name'          => 'Ashik',
+            'email'         => 'webweaverashik@gmail.com',
             'mobile_number' => '01812778899',
             'password'      => Hash::make('password123'),
         ]);
-        $superAdmin->assignRole('Super Admin');
+        $superAdmin->assignRole('Admin');
 
         // CPF Officer
         $cpfOfficer = User::create([
-            'name'          => 'Ashikur',
-            'email'         => 'cpf.officer@cpf.bida.gov.bd',
+            'name'          => 'Rahman',
+            'email'         => 'ashik.ane.doict@gmail.com',
             'mobile_number' => '01920869809',
             'password'      => Hash::make('password123'),
         ]);
         $cpfOfficer->assignRole('CPF Officer');
 
-        // Accounts Officer
-        $accountsOfficer = User::create([
-            'name'          => 'Milon',
-            'email'         => 'accounts.officer@cpf.bida.gov.bd',
-            'mobile_number' => '01973033299',
-            'password'      => Hash::make('password123'),
-        ]);
-        $accountsOfficer->assignRole('Accounts Officer');
-
         // Auditor
         $auditor = User::create([
             'name'          => 'Ramjan',
-            'email'         => 'auditor@cpf.bida.gov.bd',
+            'email'         => 'ashikgsc170@gmail.com',
             'mobile_number' => '01723663310',
             'password'      => Hash::make('password123'),
         ]);

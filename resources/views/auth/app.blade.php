@@ -14,11 +14,11 @@
         <!--begin::Page bg image-->
         <style>
             body {
-                background-image: url('assets/media/auth/bg10.jpeg');
+                background-image: url('{{ asset('assets/media/auth/bg10.jpeg') }}');
             }
 
             [data-bs-theme="dark"] body {
-                background-image: url('assets/media/auth/bg10-dark.jpeg');
+                background-image: url('{{ asset('assets/media/auth/bg10-dark.jpeg') }}');
             }
         </style>
         <!--end::Page bg image-->

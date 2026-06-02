@@ -54,19 +54,14 @@ class User extends Authenticatable
     | Role Helper Methods
     |--------------------------------------------------------------------------
     */
-    public function isSuperAdmin(): bool
+    public function isAdmin(): bool
     {
-        return $this->hasRole('Super Admin');
+        return $this->hasRole('Admin');
     }
 
     public function isCpfOfficer(): bool
     {
         return $this->hasRole('CPF Officer');
-    }
-
-    public function isAccountsOfficer(): bool
-    {
-        return $this->hasRole('Accounts Officer');
     }
 
     public function isAuditor(): bool

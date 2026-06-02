@@ -64,8 +64,8 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-        $superAdmin = Role::firstOrCreate([
-            'name'       => 'Super Admin',
+        $admin = Role::firstOrCreate([
+            'name'       => 'Admin',
             'guard_name' => 'web',
         ]);
 
@@ -74,21 +74,14 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
-        $accountsOfficer = Role::firstOrCreate([
-            'name'       => 'Accounts Officer',
-            'guard_name' => 'web',
-        ]);
-
         $auditor = Role::firstOrCreate([
             'name'       => 'Auditor',
             'guard_name' => 'web',
         ]);
 
-        $superAdmin->syncPermissions(Permission::all());
+        $admin->syncPermissions(Permission::all());
 
         $cpfOfficer->syncPermissions(['employee.view', 'employee.create', 'employee.update', 'salary.view', 'contribution.view', 'contribution.create', 'contribution.post', 'ledger.view', 'advance.view', 'advance.create', 'advance.recovery', 'interest.view', 'report.view', 'report.export']);
-
-        $accountsOfficer->syncPermissions(['employee.view', 'salary.view', 'contribution.view', 'ledger.view', 'advance.view', 'advance.approve', 'interest.view', 'interest.distribute', 'report.view', 'report.export']);
 
         $auditor->syncPermissions(['employee.view', 'salary.view', 'ledger.view', 'advance.view', 'interest.view', 'report.view']);
     }

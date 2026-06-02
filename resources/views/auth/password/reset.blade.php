@@ -32,8 +32,8 @@
                         autocomplete="off" />
                     <span class="btn btn-sm btn-icon position-absolute translate-middle top-50 end-0 me-n2"
                         data-kt-password-meter-control="visibility">
-                        <i class="ki-duotone ki-eye-slash fs-2"></i>
-                        <i class="ki-duotone ki-eye fs-2 d-none"></i>
+                        <i class="ki-outline ki-eye-slash fs-2"></i>
+                        <i class="ki-outline ki-eye fs-2 d-none"></i>
                     </span>
                 </div>
                 <!--end::Input wrapper-->
