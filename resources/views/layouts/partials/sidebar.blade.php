@@ -56,149 +56,59 @@
                     </div>
                     <!--end:Dashboard Menu item-->
 
-                    {{-- ----------------- Student & Admission Modules ----------------- --}}
-                    <!--begin:Student Info Menu item-->
-                    @canany(['students.view', 'guardians.view', 'siblings.view'])
+                    <!--begin:Employee Info Menu item-->
+                    @canany(['employee.view', 'employee.create', 'salary.view'])
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="student_info_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-icon">
                                     {{-- <i class="ki-outline ki-address-book fs-2"></i> --}}
-                                    <i class="las la-graduation-cap fs-1"></i>
+                                    <i class="las la-user-friends fs-1"></i>
                                 </span>
-                                <span class="menu-title">Student Info</span>
+                                <span class="menu-title">Employee Info</span>
                                 <span class="menu-arrow"></span>
                             </span>
                             <!--end:Menu link-->
 
                             <!--begin:Menu sub-->
                             <div class="menu-sub menu-sub-accordion">
-                                @can('students.view')
+                                @can('employee.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="all_students_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">All
-                                                Students</span></a>
+                                        <!--begin:Menu link--><a class="menu-link" id="all_students_link" href="#"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">All
+                                                Employees</span></a>
                                         <!--end:Menu link-->
                                     </div>
                                     <!--end:Menu item-->
                                 @endcan
 
 
-                                <!--begin:Guardians Menu item-->
-                                @can('guardians.view')
+                                <!--begin:Employee Create Menu item-->
+                                @can('employee.create')
                                     <div class="menu-item">
-                                        <a class="menu-link" id="guardians_link" href="#"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Guardians</span></a>
+                                        <a class="menu-link" id="guardians_link" href="#"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Add New</span></a>
                                     </div>
                                 @endcan
-                                <!--end:Guardians Menu item-->
+                                <!--end:Employee Create Menu item-->
 
-                                <!--begin:Siblings Menu item-->
-                                @can('siblings.view')
+                                <!--begin:Salary History Menu item-->
+                                @can('salary.view')
                                     <div class="menu-item">
-                                        <a class="menu-link" id="siblings_link" href="#"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Siblings</span></a>
+                                        <a class="menu-link" id="guardians_link" href="#"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Salary History</span></a>
                                     </div>
                                 @endcan
-                                <!--end:Siblings Menu item-->
-
-                                <!--begin:Alumni Menu item-->
-                                @can('students.view')
-                                    <div class="menu-item">
-                                        <a class="menu-link" id="alumni_link" href="#"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Alumni Students</span></a>
-                                    </div>
-                                @endcan
-                                <!--end:Alumni Menu item-->
-
+                                <!--end:Salary History Menu item-->
                             </div>
                             <!--end:Menu sub-->
                         </div>
                     @endcanany
-                    <!--end: Student Info Menu item-->
-
-
-                    <!--begin:Admission Menu item-->
-                    @canany(['students.create', 'students.approve', 'students.promote', 'students.transfer'])
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="admission_menu">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    {{-- <i class="fa-solid fa-building-columns fs-2"></i> --}}
-                                    <i class="ki-outline ki-bank fs-2"></i>
-                                </span>
-                                <span class="menu-title">Admission</span>
-                                <span class="menu-arrow"></span>
-                            </span>
-                            <!--end:Menu link-->
-
-                            <!--begin:Menu sub-->
-                            <div class="menu-sub menu-sub-accordion">
-                                @can('students.create')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="new_admission_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">New
-                                                Admission</span></a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-
-                                @can('students.view')
-                                    <div class="menu-item">
-                                        <a class="menu-link" id="pending_approval_link"
-                                            href="#"><span class="menu-bullet">
-                                                <span class="bullet bullet-dot"></span>
-                                            </span>
-
-                                            <span class="menu-title">Pending Approval</span>
-
-                                            <span class="menu-badge">
-                                                <span class="badge badge-info">
-                                                    {{ \App\Models\Student\Student::pending()->forUserBranch()->count() }}
-                                                </span>
-                                            </span>
-                                        </a>
-                                    </div>
-                                @endcan
-
-
-                                @can('students.promote')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="promote_students_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Promote
-                                                Students</span></a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-
-                                @can('students.transfer')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="transfer_students_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Transfer
-                                                Students</span></a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-                            </div>
-                            <!--end:Menu sub-->
-                        </div>
-                    @endcanany
-                    <!--end: Admission Menu item-->
-
+                    <!--end: Employee Info Menu item-->
 
                     <!--begin:Academic Menu item-->
                     @canany(['institutions.view', 'classes.view', 'batches.manage', 'students.attendance.manage'])
@@ -219,9 +129,8 @@
                                 @can('classes.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="class_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span
+                                        <!--begin:Menu link--><a class="menu-link" id="class_link" href="#"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Class</span></a>
                                         <!--end:Menu link-->
                                     </div>
@@ -258,9 +167,8 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="attendance_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span
+                                        <a class="menu-link" id="attendance_link" href="#"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Attendance</span>
                                         </a>
                                         <!--end:Menu link-->
@@ -273,212 +181,56 @@
                     @endcanany
                     <!--end: Academic Menu item-->
 
-
-                    <!--begin:Notes & Sheets Menu item-->
-                    @canany(['sheets.view', 'notes.manage'])
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="sheets_menu">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    <i class="ki-outline ki-note-2 fs-2"></i>
-                                </span>
-                                <span class="menu-title">Sheets</span>
-                                <span class="menu-arrow"></span>
+                    <!--begin:Teachers Modules-->
+                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="teachers_menu">
+                        <!--begin:Menu link-->
+                        <span class="menu-link">
+                            <span class="menu-icon">
+                                <i class="fa-solid fa-person-chalkboard fs-3"></i>
                             </span>
-                            <!--end:Menu link-->
+                            <span class="menu-title">Teachers</span>
+                            <span class="menu-arrow"></span>
+                        </span>
+                        <!--end:Menu link-->
 
-                            <!--begin:Menu sub-->
-                            <div class="menu-sub menu-sub-accordion">
-                                @can('sheets.view')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" id="all_sheets_link" href="#"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">All
-                                                Sheets</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-
-
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" id="sheet_payments_link"
-                                            href="#"><span class="menu-bullet">
-                                                <span class="bullet bullet-dot">
-                                                </span>
-                                            </span>
-                                            <span class="menu-title">Sheet Payments</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-                            </div>
-                            <!--end:Menu sub-->
-                        </div>
-                    @endcanany
-
-                    @can('notes.distribute')
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="notes_menu">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    <i class="ki-outline ki-notepad-bookmark fs-2"></i>
-                                </span>
-                                <span class="menu-title">Notes</span>
-                                <span class="menu-arrow"></span>
-                            </span>
-                            <!--end:Menu link-->
-
-                            <!--begin:Menu sub-->
-                            <div class="menu-sub menu-sub-accordion">
+                        <!--begin:Menu sub-->
+                        <div class="menu-sub menu-sub-accordion">
+                            @cannot('teachers.view')
                                 <!--begin:Menu item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="all_distributions_link"
-                                        href="#"><span class="menu-bullet"><span
-                                                class="bullet bullet-dot"></span></span><span class="menu-title">All
-                                            Distributions</span>
+                                    <a class="menu-link" href="#" id="teachers_link"><span
+                                            class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                            class="menu-title">Teachers</span>
                                     </a>
                                     <!--end:Menu link-->
                                 </div>
                                 <!--end:Menu item-->
+                            @endcannot
 
-
+                            @cannot('teachers.salary.manage')
                                 <!--begin:Menu item-->
                                 <div class="menu-item">
-                                    <!--begin:Menu link--><a class="menu-link" id="single_distribution_link"
-                                        href="#"><span class="menu-bullet"><span
-                                                class="bullet bullet-dot"></span></span><span class="menu-title">Single
-                                            Distribution</span></a>
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" href="#" id="salary_tracking_link">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Salary Tracking</span>
+                                    </a>
                                     <!--end:Menu link-->
                                 </div>
                                 <!--end:Menu item-->
-
-
-                                <!--begin:Menu item-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link--><a class="menu-link" id="bulk_distribution_link"
-                                        href="#"><span class="menu-bullet"><span
-                                                class="bullet bullet-dot"></span></span><span class="menu-title">Bulk
-                                            Distribution</span></a>
-                                    <!--end:Menu link-->
-                                </div>
-                                <!--end:Menu item-->
-                            </div>
-                            <!--end:Menu sub-->
+                            @endcannot
                         </div>
-                    @endcan
-                    <!--end: Notes & Sheets Menu item-->
-
-
-                    <!--begin:Invoices & Transactions-->
-                    @canany(['invoices.view', 'transactions.view'])
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="payments_menu">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    <i class="ki-outline ki-dollar fs-2"></i>
-                                </span>
-                                <span class="menu-title">Payments</span>
-                                <span class="menu-arrow"></span>
-                            </span>
-                            <!--end:Menu link-->
-
-                            <!--begin:Menu sub-->
-                            <div class="menu-sub menu-sub-accordion">
-                                @can('invoices.view')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" href="#" id="invoices_link">
-                                            <span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Invoices</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-
-                                @can('transactions.view')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" href="#" id="transactions_link">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot">
-                                                </span>
-                                            </span>
-                                            <span class="menu-title">Transactions</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-                            </div>
-                            <!--end:Menu sub-->
-                        </div>
-                    @endcanany
-                    <!--end:Invoices & Transactions-->
-
-
-                    <!--begin:Teachers Modules-->
-                    @canany(['teachers.view', 'teachers.create', 'teachers.edit', 'teachers.delete',
-                        'teachers.salary.manage'])
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="teachers_menu">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    <i class="fa-solid fa-person-chalkboard fs-3"></i>
-                                </span>
-                                <span class="menu-title">Teachers</span>
-                                <span class="menu-arrow"></span>
-                            </span>
-                            <!--end:Menu link-->
-
-                            <!--begin:Menu sub-->
-                            <div class="menu-sub menu-sub-accordion">
-                                @can('teachers.view')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" href="#" id="teachers_link"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Teachers</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-
-                                @can('teachers.salary.manage')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" href="#" id="salary_tracking_link">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot">
-                                                </span>
-                                            </span>
-                                            <span class="menu-title">Salary Tracking</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-                            </div>
-                            <!--end:Menu sub-->
-                        </div>
-                    @endcanany
+                        <!--end:Menu sub-->
+                    </div>
                     <!--end: Teachers Modules-->
 
 
                     <!--begin:Reports Menu-->
-                    @can('reports.view')
+                    @can('report.view')
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="reports_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -493,11 +245,9 @@
                             <!--begin:Menu sub-->
                             <div class="menu-sub menu-sub-accordion">
                                 <!--begin:Finance Report item-->
-                                @if (!auth()->user()->isAccountant())
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="finance_report_link"
-                                            href="#">
+                                        <a class="menu-link" id="finance_report_link" href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -506,32 +256,27 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
-                                @endif
                                 <!--end:Finance Report item-->
 
                                 <!--begin:Annual Due item-->
-                                @if (auth()->user()->isAdmin())
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" id="annual_due_link"
-                                            href="#">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot">
-                                                </span>
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="annual_due_link" href="#">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
                                             </span>
-                                            <span class="menu-title">Annual Due</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                @endif
+                                        </span>
+                                        <span class="menu-title">Annual Due</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
                                 <!--end:Annual Due item-->
 
                                 <!--begin:Cost Records item-->
                                 @can('cost-records.view')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="cost_records_link"
-                                            href="#">
+                                        <a class="menu-link" id="cost_records_link" href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -545,8 +290,7 @@
 
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="attendance_report_link"
-                                        href="#">
+                                    <a class="menu-link" id="attendance_report_link" href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -558,7 +302,7 @@
 
                                 @if (auth()->user()->isAdmin())
                                     <!--begin:Activity Logs item-->
-                                    {{-- <div class="menu-item">
+                                    <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="activity_logs_link" href="#">
                                             <span class="menu-bullet">
@@ -568,7 +312,7 @@
                                             <span class="menu-title">Activity</span>
                                         </a>
                                         <!--end:Menu link-->
-                                    </div> --}}
+                                    </div>
                                     <!--end:Activity Logs item-->
                                 @endif
                             </div>
@@ -595,8 +339,7 @@
                                 <!--begin:Settlement Index-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="settlements_link"
-                                        href="#">
+                                    <a class="menu-link" id="settlements_link" href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -610,8 +353,7 @@
                                 <!--begin:Settlment Logs item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="settlements_logs_link"
-                                        href="#">
+                                    <a class="menu-link" id="settlements_logs_link" href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -647,9 +389,9 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="single_sms_link"
-                                            href="#"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Send
+                                        <a class="menu-link" id="single_sms_link" href="#"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Send
                                                 SMS</span>
                                         </a>
                                         <!--end:Menu link-->
@@ -661,8 +403,7 @@
                                 @can('sms.campaign.view')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_campaign_link"
-                                            href="#">
+                                        <a class="menu-link" id="sms_campaign_link" href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -678,8 +419,7 @@
                                 @can('sms.templates.manage')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_template_link"
-                                            href="#">
+                                        <a class="menu-link" id="sms_template_link" href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -714,16 +454,16 @@
                     <!--end:SMS Menu-->
 
                     <!--begin:Settings Menu-->
-                        <div class="menu-item">
-                            <!--begin:Menu link-->
-                            <a class="menu-link" href="#" id="settings_link">
-                                <span class="menu-icon">
-                                    <i class="ki-outline ki-setting-2 fs-2"></i>
-                                </span>
-                                <span class="menu-title">Settings</span>
-                            </a>
-                            <!--end:Menu link-->
-                        </div>
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
+                        <a class="menu-link" href="#" id="settings_link">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-setting-2 fs-2"></i>
+                            </span>
+                            <span class="menu-title">Settings</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
                 </div>
                 <!--end::Menu-->
             </div>

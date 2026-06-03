@@ -4,13 +4,13 @@
         <!--begin::Copyright-->
         <div class="text-gray-900 order-2 order-md-1">
             <span class="text-muted fw-semibold me-1">{{ date('Y') }} &copy;</span>
-            <a href="https://facebook.com/webweaverashik" target="_blank" class="text-gray-800 text-hover-primary">Ashikur
+            <a href="https://facebook.com/webweaverashik" target="_blank" class="text-muted text-hover-primary">Ashikur
                 Rahman</a>
         </div>
         <!--end::Copyright-->
         <!--begin::Menu-->
         <ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
-            <li class="menu-item"><a href="#" target="_blank" class="menu-link px-2">BIDA CPF v1.0.0</a></li>
+            <li class="menu-item text-muted">BIDA CPF v1.0.0</li>
         </ul>
         <!--end::Menu-->
     </div>

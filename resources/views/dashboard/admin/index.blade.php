@@ -30,5 +30,5 @@
 @endsection
 
 @push('page-js')
-    <script src="{{ asset('js/dashboard/admin.js') }}"></script>
+    {{-- <script src="{{ asset('js/dashboard/admin.js') }}"></script> --}}
 @endpush
