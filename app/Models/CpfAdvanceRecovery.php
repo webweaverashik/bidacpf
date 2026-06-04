@@ -2,6 +2,8 @@
 namespace App\Models;
 
 use App\Traits\HasCreatedBy;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /*
 Business Flow
@@ -25,8 +27,8 @@ Outstanding Amount Reduced
 
 class CpfAdvanceRecovery extends BaseModel
 {
-    use HasCreatedBy;
-    
+    use HasCreatedBy, LogsActivity;
+
     protected $fillable = ['cpf_advance_id', 'recovery_date', 'amount', 'remarks', 'created_by'];
 
     protected function casts(): array
@@ -34,6 +36,18 @@ class CpfAdvanceRecovery extends BaseModel
         return [
             'recovery_date' => 'date',
         ];
+    }
+
+    /*
+     Activity Log Options
+    */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['cpf_advance_id', 'recovery_date', 'amount', 'remarks'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('cpf_advance_recovery');
     }
 
     /**

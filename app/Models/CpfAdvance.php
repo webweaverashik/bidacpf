@@ -4,10 +4,12 @@ namespace App\Models;
 use App\Enums\AdvanceStatus;
 use App\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class CpfAdvance extends BaseModel
 {
-    use SoftDeletes, HasCreatedBy;
+    use SoftDeletes, HasCreatedBy, LogsActivity;
 
     protected $fillable = ['advance_no', 'employee_id', 'application_date', 'approval_date', 'approved_amount', 'interest_rate', 'installment_count', 'outstanding_amount', 'status', 'remarks', 'created_by', 'approved_by'];
 
@@ -18,6 +20,18 @@ class CpfAdvance extends BaseModel
             'approval_date'    => 'date',
             'status'           => AdvanceStatus::class,
         ];
+    }
+
+    /*
+     Activity Log Options
+    */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['advance_no', 'employee_id', 'application_date', 'approval_date', 'approved_amount', 'interest_rate', 'installment_count', 'outstanding_amount', 'status', 'approved_by', 'remarks'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('cpf_advance');
     }
 
     /**

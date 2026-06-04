@@ -1,9 +1,23 @@
 <?php
 namespace App\Models;
 
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
 class Setting extends BaseModel
 {
+    use LogsActivity;
+
     protected $fillable = ['key', 'value', 'description'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['key', 'value', 'description'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('setting');
+    }
 
     /**
      * Get setting value.

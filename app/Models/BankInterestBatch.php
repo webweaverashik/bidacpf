@@ -3,10 +3,12 @@ namespace App\Models;
 
 use App\Enums\BatchStatus;
 use App\Traits\HasCreatedBy;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BankInterestBatch extends BaseModel
 {
-    use HasCreatedBy;
+    use HasCreatedBy, LogsActivity;
 
     protected $fillable = ['distribution_date', 'fiscal_year', 'total_interest_amount', 'total_eligible_balance', 'status', 'remarks', 'created_by', 'submitted_by', 'submitted_at'];
 
@@ -17,6 +19,18 @@ class BankInterestBatch extends BaseModel
             'submitted_at'      => 'datetime',
             'status'            => BatchStatus::class,
         ];
+    }
+
+    /*
+     Activity Log Options
+    */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['distribution_date', 'fiscal_year', 'total_interest_amount', 'total_eligible_balance', 'status', 'submitted_by', 'submitted_at', 'remarks'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('bank_interest_batch');
     }
 
     /**

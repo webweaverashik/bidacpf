@@ -11,7 +11,7 @@ class PayScale2015Seeder extends Seeder
     {
         DB::transaction(function () {
             // Fix 1: correct directory (seed-data) and filename (kebab-case)
-            $path = database_path('seed-data/pay-scale-2015.json');
+            $path = database_path('seeders/data/pay_scale_2015.json');
 
             $data = json_decode(file_get_contents($path), true);
 

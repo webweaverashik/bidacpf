@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('bank_interest_distributions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bank_interest_batch_id')->constrained();
-            $table->foreignId('employee_id')->constrained();
+            $table->foreignId('bank_interest_batch_id')->constrained('bank_interest_batches', 'id', 'bid_batch_fk');
+            $table->foreignId('employee_id')->constrained('employees', 'id', 'bid_employee_fk');
             $table->unsignedBigInteger('eligible_balance');
             $table->unsignedBigInteger('interest_amount');
             $table->json('calculation_snapshot')->nullable(); // Store the details of the interest calculation for reference
@@ -31,7 +31,7 @@ return new class extends Migration
             */
 
             $table->timestamps();
-            $table->unique(['bank_interest_batch_id', 'employee_id']);
+            $table->unique(['bank_interest_batch_id', 'employee_id'], 'bid_employee_unique');
         });
     }
 

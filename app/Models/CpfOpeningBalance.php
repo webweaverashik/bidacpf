@@ -2,6 +2,8 @@
 namespace App\Models;
 
 use App\Traits\HasCreatedBy;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /*
 An auditor can later trace:
@@ -17,8 +19,8 @@ Imported Legacy Data
 
 class CpfOpeningBalance extends BaseModel
 {
-    use HasCreatedBy;
-    
+    use HasCreatedBy, LogsActivity;
+
     protected $fillable = ['employee_id', 'effective_date', 'self_contribution', 'government_contribution', 'interest_amount', 'outstanding_advance', 'net_balance', 'remarks', 'created_by'];
 
     protected function casts(): array
@@ -26,6 +28,18 @@ class CpfOpeningBalance extends BaseModel
         return [
             'effective_date' => 'date',
         ];
+    }
+
+    /*
+     Activity Log Options
+    */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['employee_id', 'effective_date', 'self_contribution', 'government_contribution', 'interest_amount', 'outstanding_advance', 'net_balance', 'remarks'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('cpf_opening_balance');
     }
 
     /**
