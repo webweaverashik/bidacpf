@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('effective_date');
 
             $table->unsignedBigInteger('self_contribution');
+            $table->unsignedBigInteger('government_contribution');
             $table->unsignedBigInteger('interest_amount');
             $table->unsignedBigInteger('outstanding_advance')->default(0);
             $table->unsignedBigInteger('net_balance');

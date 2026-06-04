@@ -28,11 +28,11 @@ class BankInterestBatch extends BaseModel
     }
 
     /**
-     * Posted by.
+     * Submitted by.
      */
-    public function poster()
+    public function submitter()
     {
-        return $this->belongsTo(User::class, 'posted_by');
+        return $this->belongsTo(User::class, 'submitted_by');
     }
 
     /**

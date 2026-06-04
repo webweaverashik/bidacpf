@@ -33,7 +33,6 @@ return new class extends Migration {
             $table->softDeletes();
 
             $table->index('status');
-            $table->index('grade');
         });
     }
 

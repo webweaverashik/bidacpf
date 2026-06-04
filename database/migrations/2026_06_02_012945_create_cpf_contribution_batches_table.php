@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->date('contribution_month'); //Contribution Month, Example: 2026-07-01 = July 2026 Contribution
             $table->string('fiscal_year', 9);
-            $table->date('submitted_at');
             $table->enum('status', ['draft', 'submitted', 'reversed'])->default('draft');
+            $table->foreignId('submitted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('submitted_at')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
 

@@ -10,7 +10,8 @@ class PayScale2015Seeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            $path = database_path('seeders/data/pay_scale_2015.json');
+            // Fix 1: correct directory (seed-data) and filename (kebab-case)
+            $path = database_path('seed-data/pay-scale-2015.json');
 
             $data = json_decode(file_get_contents($path), true);
 
@@ -20,6 +21,7 @@ class PayScale2015Seeder extends Seeder
                 ],
                 [
                     'name'           => $data['name'],
+                    'total_grades'   => count($data['grades']), // Fix 2: populate required column (20)
                     'effective_from' => $data['effective_from'],
                     'is_active'      => true,
                 ],
@@ -32,7 +34,7 @@ class PayScale2015Seeder extends Seeder
                     $rows[] = [
                         'pay_scale_id' => $payScale->id,
                         'grade'        => (int) $grade,
-                        'step'         => $index + 1,
+                        'step'         => $index + 1, // steps are 1-indexed
                         'basic_salary' => $salary,
                         'created_at'   => now(),
                         'updated_at'   => now(),
@@ -40,7 +42,12 @@ class PayScale2015Seeder extends Seeder
                 }
             }
 
-            DB::table('pay_scale_grades')->upsert($rows, ['pay_scale_id', 'grade', 'step'], ['basic_salary', 'updated_at']);
+            // Fix 3: correct table name (pay_scale_steps, not pay_scale_grades)
+            DB::table('pay_scale_steps')->upsert(
+                $rows,
+                ['pay_scale_id', 'grade', 'step'], // unique key for upsert
+                ['basic_salary', 'updated_at'],    // columns to update on conflict
+            );
         });
     }
 }

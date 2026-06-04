@@ -10,6 +10,7 @@ use App\Models\Employee;
 use App\Models\Setting;
 use App\Support\FiscalYearService;
 use App\Support\MoneyService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ContributionService
@@ -19,16 +20,24 @@ class ContributionService
 
     /**
      * Generate monthly contribution batch.
+     *
+     * Creates a DRAFT batch for the given month/year and pre-populates
+     * contribution rows for every active employee based on their current
+     * basic salary.  Nothing is posted to the ledger yet — that happens
+     * in submitBatch().
      */
     public function generateBatch(int $month, int $year, int $createdBy): CpfContributionBatch
     {
         return DB::transaction(function () use ($month, $year, $createdBy) {
+
+            // Fix 1: use contribution_month (date column), not separate month/year columns
+            $contributionMonth = Carbon::create($year, $month, 1);
+
             $batch = CpfContributionBatch::create([
-                'month'       => $month,
-                'year'        => $year,
-                'fiscal_year' => FiscalYearService::fromDate(now()->setMonth($month)->setYear($year)),
-                'status'      => BatchStatus::DRAFT,
-                'created_by'  => $createdBy,
+                'contribution_month' => $contributionMonth,
+                'fiscal_year'        => FiscalYearService::fromDate($contributionMonth),
+                'status'             => BatchStatus::DRAFT,
+                'created_by'         => $createdBy,
             ]);
 
             Employee::query()
@@ -38,8 +47,12 @@ class ContributionService
                     foreach ($employees as $employee) {
                         $basicSalary = $employee->current_basic_salary;
 
-                        $employeeContribution = MoneyService::percentage($basicSalary, Setting::employeeContributionRate());
+                        // Skip employees with no salary assigned yet
+                        if (! $basicSalary) {
+                            continue;
+                        }
 
+                        $employeeContribution   = MoneyService::percentage($basicSalary, Setting::employeeContributionRate());
                         $governmentContribution = MoneyService::percentage($basicSalary, Setting::governmentContributionRate());
 
                         CpfContribution::create([
@@ -57,7 +70,10 @@ class ContributionService
     }
 
     /**
-     * Submit contribution batch.
+     * Submit a draft batch.
+     *
+     * Posts ledger entries for every contribution row and transitions the
+     * batch to SUBMITTED.  Only DRAFT batches can be submitted.
      */
     public function submitBatch(CpfContributionBatch $batch, int $submittedBy): void
     {
@@ -69,32 +85,38 @@ class ContributionService
             $batch->load('contributions');
 
             foreach ($batch->contributions as $contribution) {
-                $this->submittedContribution($contribution, $submittedBy);
+                $this->postContribution($contribution, $submittedBy);
             }
 
             $batch->update([
                 'status'       => BatchStatus::SUBMITTED,
-                'submitted_by' => $submittedBy,
+                'submitted_by' => $submittedBy, // requires column in migration — see note
                 'submitted_at' => now(),
             ]);
         });
     }
 
     /**
-     * Post single contribution.
+     * Post a single contribution to the ledger.
+     *
+     * Creates two separate ledger entries per employee:
+     *  - Employee contribution  (credit)
+     *  - Government contribution (credit)
      */
-    protected function submittedContribution(CpfContribution $contribution, int $createdBy): void
+    protected function postContribution(CpfContribution $contribution, int $createdBy): void
     {
         $batch = $contribution->batch;
 
-        $referenceNo = sprintf('CPF-CON-%04d%02d', $batch->year, $batch->month);
+        // Fix 2: use contribution_month (the actual date column) instead of posting_date (non-existent)
+        $transactionDate = $batch->contribution_month;
 
-        /**
-         * Employee Contribution
-         */
+        // Reference number format: CPF-CON-YYYYMM  e.g. CPF-CON-202607
+        $referenceNo = 'CPF-CON-' . $transactionDate->format('Ym');
+
+        // Employee Contribution
         $this->ledgerService->create([
             'employee_id'      => $contribution->employee_id,
-            'transaction_date' => $batch->posting_date ?? now(),
+            'transaction_date' => $transactionDate,
             'transaction_type' => LedgerTransactionType::EMPLOYEE_CONTRIBUTION,
             'source_type'      => SourceType::CONTRIBUTION,
             'source_id'        => $contribution->id,
@@ -105,12 +127,10 @@ class ContributionService
             'created_by'       => $createdBy,
         ]);
 
-        /**
-         * Government Contribution
-         */
+        // Government Contribution
         $this->ledgerService->create([
             'employee_id'      => $contribution->employee_id,
-            'transaction_date' => $batch->posting_date ?? now(),
+            'transaction_date' => $transactionDate,
             'transaction_type' => LedgerTransactionType::GOVERNMENT_CONTRIBUTION,
             'source_type'      => SourceType::CONTRIBUTION,
             'source_id'        => $contribution->id,
@@ -123,7 +143,13 @@ class ContributionService
     }
 
     /**
-     * Reverse batch.
+     * Reverse a submitted batch.
+     *
+     * Transitions the batch to REVERSED.  Ledger reversal entries are
+     * intentionally deferred to a future implementation so the audit trail
+     * can be reviewed before reversal entries are written.
+     *
+     * Only SUBMITTED batches can be reversed.
      */
     public function reverseBatch(CpfContributionBatch $batch): void
     {
@@ -136,8 +162,7 @@ class ContributionService
                 'status' => BatchStatus::REVERSED,
             ]);
 
-            // Future implementation:
-            // Reverse ledger entries.
+            // TODO: create reversal ledger entries for each contribution.
         });
     }
 }

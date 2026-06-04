@@ -125,6 +125,22 @@ class Employee extends Authenticatable
     }
 
     /**
+     * CPF ledgers.
+     */
+    public function ledgers()
+    {
+        return $this->hasMany(CpfLedger::class);
+    }
+
+    /**
+     * Current CPF balance.
+     */
+    public function currentBalance(): int
+    {
+        return (int) $this->ledgers()->latest('transaction_date')->latest('id')->value('balance');
+    }
+
+    /**
      * CPF advances.
      */
     public function advances()

@@ -9,7 +9,7 @@ class CpfContributionBatch extends BaseModel
 {
     use SoftDeletes, HasCreatedBy;
 
-    protected $fillable = ['contribution_month', 'fiscal_year', 'submitted_at', 'status', 'remarks', 'created_by'];
+    protected $fillable = ['contribution_month', 'fiscal_year', 'status', 'remarks', 'submitted_by', 'submitted_at', 'created_by'];
 
     protected function casts(): array
     {
@@ -26,6 +26,14 @@ class CpfContributionBatch extends BaseModel
     public function contributions()
     {
         return $this->hasMany(CpfContribution::class);
+    }
+
+    /**
+     * Submitted by.
+     */
+    public function submitter()
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
     }
 
     /**

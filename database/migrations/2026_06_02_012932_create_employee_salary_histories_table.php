@@ -16,7 +16,6 @@ return new class extends Migration
 
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->foreignId('pay_scale_step_id')->constrained();
-            $table->unsignedInteger('basic_salary');
             $table->date('effective_date');
             $table->enum('change_type', ['initial', 'annual_increment', 'promotion', 'revision']);
             $table->text('remarks')->nullable();
