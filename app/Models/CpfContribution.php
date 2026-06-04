@@ -3,7 +3,7 @@ namespace App\Models;
 
 class CpfContribution extends BaseModel
 {
-    protected $fillable = ['cpf_contribution_batch_id', 'employee_id', 'basic_salary', 'employee_contribution', 'government_contribution'];
+    protected $fillable = ['cpf_contribution_batch_id', 'employee_id', 'basic_salary', 'employee_contribution', 'government_contribution', 'remarks'];
 
     /**
      * Employee.

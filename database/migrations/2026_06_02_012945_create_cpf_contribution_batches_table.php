@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('cpf_contribution_batches', function (Blueprint $table) {
             $table->id();
-            $table->unsignedTinyInteger('month');
-            $table->unsignedSmallInteger('year');
-            $table->string('fiscal_year');
-            $table->date('posting_date');
-            $table->enum('status', ['draft', 'posted', 'reversed'])->default('draft');
+            $table->date('contribution_month'); //Contribution Month, Example: 2026-07-01 = July 2026 Contribution
+            $table->string('fiscal_year', 9);
+            $table->date('submitted_at');
+            $table->enum('status', ['draft', 'submitted', 'reversed'])->default('draft');
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
 
-            $table->unique(['month', 'year']);
+            $table->unique('contribution_month'); //One batch per month
+            $table->index('fiscal_year');
+            $table->index('status');
+            $table->index('submitted_at');
         });
     }
 

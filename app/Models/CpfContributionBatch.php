@@ -2,25 +2,22 @@
 namespace App\Models;
 
 use App\Enums\BatchStatus;
+use App\Traits\HasCreatedBy;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CpfContributionBatch extends BaseModel
 {
-    protected $fillable = ['month', 'year', 'fiscal_year', 'posting_date', 'status', 'remarks', 'created_by'];
+    use SoftDeletes, HasCreatedBy;
+
+    protected $fillable = ['contribution_month', 'fiscal_year', 'submitted_at', 'status', 'remarks', 'created_by'];
 
     protected function casts(): array
     {
         return [
-            'posting_date' => 'date',
-            'status'       => BatchStatus::class,
+            'contribution_month' => 'date',
+            'submitted_at'       => 'date',
+            'status'             => BatchStatus::class,
         ];
-    }
-
-    /**
-     * Batch creator.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(Employee::class, 'created_by');
     }
 
     /**
@@ -40,11 +37,19 @@ class CpfContributionBatch extends BaseModel
     }
 
     /**
-     * Posted batches.
+     * Submitted batches.
      */
-    public function scopePosted($query)
+    public function scopeSubmitted($query)
     {
-        return $query->where('status', BatchStatus::POSTED);
+        return $query->where('status', BatchStatus::SUBMITTED);
+    }
+
+    /**
+     * Reversed batches.
+     */
+    public function scopeReversed($query)
+    {
+        return $query->where('status', BatchStatus::REVERSED);
     }
 
     /**
@@ -72,10 +77,43 @@ class CpfContributionBatch extends BaseModel
     }
 
     /**
-     * Display title.
+     * Number of employees included.
      */
-    public function getTitleAttribute(): string
+    public function employeeCount(): int
     {
-        return date('F', mktime(0, 0, 0, $this->month, 1)) . ' ' . $this->year;
+        return $this->contributions()->count();
+    }
+
+    /**
+     * Batch month label.
+     * Example: July 2026
+     */
+    public function getMonthLabelAttribute(): string
+    {
+        return $this->contribution_month->format('F Y');
+    }
+
+    /**
+     * Whether batch can be submitted.
+     */
+    public function canBeSubmitted(): bool
+    {
+        return $this->status === BatchStatus::DRAFT;
+    }
+
+    /**
+     * Whether batch can be reversed.
+     */
+    public function canBeReversed(): bool
+    {
+        return $this->status === BatchStatus::SUBMITTED;
+    }
+
+    /**
+     * Whether batch is editable.
+     */
+    public function isEditable(): bool
+    {
+        return $this->status === BatchStatus::DRAFT;
     }
 }

@@ -17,11 +17,11 @@ return new class extends Migration
             $table->string('fiscal_year', 9);
             $table->unsignedBigInteger('total_interest_amount');  // Total interest amount to be distributed
             $table->unsignedBigInteger('total_eligible_balance'); // Total eligible balance across all employees for the distribution
-            $table->enum('status', ['draft', 'posted', 'reversed'])->default('draft');
+            $table->enum('status', ['draft', 'submitted', 'reversed'])->default('draft');
             $table->text('remarks')->nullable();
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('posted_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('posted_at')->nullable();
+            $table->foreignId('submitted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('submitted_at')->nullable();
 
             $table->timestamps();
 
@@ -32,7 +32,7 @@ return new class extends Migration
             ↓
             Verify
             ↓
-            Post
+            Submit
             */
         });
     }

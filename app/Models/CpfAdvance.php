@@ -2,11 +2,12 @@
 namespace App\Models;
 
 use App\Enums\AdvanceStatus;
+use App\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CpfAdvance extends BaseModel
 {
-    use SoftDeletes;
+    use SoftDeletes, HasCreatedBy;
 
     protected $fillable = ['advance_no', 'employee_id', 'application_date', 'approval_date', 'approved_amount', 'interest_rate', 'installment_count', 'outstanding_amount', 'status', 'remarks', 'created_by', 'approved_by'];
 
@@ -41,14 +42,6 @@ class CpfAdvance extends BaseModel
     public function attachments()
     {
         return $this->morphMany(Attachment::class, 'attachable');
-    }
-
-    /**
-     * Creator.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

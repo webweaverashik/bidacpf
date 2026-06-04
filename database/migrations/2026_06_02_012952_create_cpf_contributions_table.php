@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedInteger('basic_salary');
             $table->unsignedInteger('employee_contribution');
             $table->unsignedInteger('government_contribution');
-
+            $table->text('remarks')->nullable();
             $table->timestamps();
 
             $table->unique(['cpf_contribution_batch_id', 'employee_id']);

@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Enums\EmployeeStatus;
+use App\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,12 +12,9 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Employee extends Authenticatable
 {
-    use SoftDeletes;
-    use Notifiable;
-    use HasRoles;
-    use LogsActivity;
+    use SoftDeletes, Notifiable, HasRoles, LogsActivity, HasCreatedBy;
 
-    protected $fillable = ['cpf_account_no', 'name', 'designation', 'email', 'mobile_number', 'photo', 'joining_date', 'retirement_date', 'pay_scale_step_id', 'status', 'is_active'];
+    protected $fillable = ['cpf_account_no', 'name', 'designation', 'email', 'mobile_number', 'photo', 'joining_date', 'retirement_date', 'pay_scale_step_id', 'status', 'is_active', 'created_by'];
 
     protected function casts(): array
     {
@@ -27,6 +25,14 @@ class Employee extends Authenticatable
             'status'          => EmployeeStatus::class,
             'password'        => 'hashed',
         ];
+    }
+
+    /**
+     * CPF opening balance when employee is onboarded.
+     */
+    public function openingBalance()
+    {
+        return $this->hasOne(CpfOpeningBalance::class);
     }
 
     /**
@@ -131,8 +137,6 @@ class Employee extends Authenticatable
      */
     public function interestDistributions()
     {
-        return $this->hasMany(
-            BankInterestDistribution::class
-        );
+        return $this->hasMany(BankInterestDistribution::class);
     }
 }

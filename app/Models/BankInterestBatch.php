@@ -2,17 +2,20 @@
 namespace App\Models;
 
 use App\Enums\BatchStatus;
+use App\Traits\HasCreatedBy;
 
 class BankInterestBatch extends BaseModel
 {
-    protected $fillable = ['distribution_date', 'fiscal_year', 'total_interest_amount', 'total_eligible_balance', 'status', 'remarks', 'created_by', 'posted_by', 'posted_at'];
+    use HasCreatedBy;
+
+    protected $fillable = ['distribution_date', 'fiscal_year', 'total_interest_amount', 'total_eligible_balance', 'status', 'remarks', 'created_by', 'submitted_by', 'submitted_at'];
 
     protected function casts(): array
     {
         return [
-            'distribution_date'      => 'date',
-            'posted_at'              => 'datetime',
-            'status'                 => BatchStatus::class,
+            'distribution_date' => 'date',
+            'submitted_at'      => 'datetime',
+            'status'            => BatchStatus::class,
         ];
     }
 
@@ -22,14 +25,6 @@ class BankInterestBatch extends BaseModel
     public function distributions()
     {
         return $this->hasMany(BankInterestDistribution::class);
-    }
-
-    /**
-     * Creator.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
@@ -49,11 +44,21 @@ class BankInterestBatch extends BaseModel
     }
 
     /**
-     * Posted batches.
+     * Submitted batches.
      */
-    public function scopePosted($query)
+    public function scopeSubmitted($query)
     {
-        return $query->where('status', BatchStatus::POSTED);
+        return $query->where('status', BatchStatus::SUBMITTED);
+    }
+
+    public function canBeSubmitted(): bool
+    {
+        return $this->status === BatchStatus::DRAFT;
+    }
+
+    public function canBeReversed(): bool
+    {
+        return $this->status === BatchStatus::SUBMITTED;
     }
 
     /**

@@ -1,8 +1,12 @@
 <?php
 namespace App\Models;
 
+use App\Traits\HasCreatedBy;
+
 class EmployeeSalaryHistory extends BaseModel
 {
+    use HasCreatedBy;
+    
     protected $fillable = ['employee_id', 'pay_scale_step_id', 'effective_date', 'change_type', 'remarks', 'created_by'];
 
     protected function casts(): array
@@ -26,14 +30,6 @@ class EmployeeSalaryHistory extends BaseModel
     public function payScaleStep()
     {
         return $this->belongsTo(PayScaleStep::class);
-    }
-
-    /**
-     * Creator.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(Employee::class, 'created_by');
     }
 
     /**

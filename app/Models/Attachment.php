@@ -1,9 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Traits\HasCreatedBy;
+
 class Attachment extends BaseModel
 {
-    protected $fillable = ['attachable_type', 'attachable_id', 'file_name', 'file_path', 'mime_type', 'file_size', 'uploaded_by'];
+    use HasCreatedBy;
+    
+    protected $fillable = ['attachable_type', 'attachable_id', 'file_name', 'file_path', 'mime_type', 'file_size', 'created_by'];
 
     /**
      * Parent model.
@@ -11,14 +15,6 @@ class Attachment extends BaseModel
     public function attachable()
     {
         return $this->morphTo();
-    }
-
-    /**
-     * Uploader.
-     */
-    public function uploader()
-    {
-        return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     /**

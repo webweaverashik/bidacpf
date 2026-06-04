@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('file_path');
             $table->string('mime_type')->nullable();
             $table->unsignedBigInteger('file_size')->nullable();
-            $table->foreignId('uploaded_by')->constrained('users');
+            $table->foreignId('created_by')->constrained('users');
 
             $table->timestamps();
         });

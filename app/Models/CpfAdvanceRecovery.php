@@ -1,6 +1,8 @@
 <?php
 namespace App\Models;
 
+use App\Traits\HasCreatedBy;
+
 /*
 Business Flow
 Employee
@@ -23,6 +25,8 @@ Outstanding Amount Reduced
 
 class CpfAdvanceRecovery extends BaseModel
 {
+    use HasCreatedBy;
+    
     protected $fillable = ['cpf_advance_id', 'recovery_date', 'amount', 'remarks', 'created_by'];
 
     protected function casts(): array
@@ -46,14 +50,6 @@ class CpfAdvanceRecovery extends BaseModel
     public function attachments()
     {
         return $this->morphMany(Attachment::class, 'attachable');
-    }
-
-    /**
-     * Creator.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

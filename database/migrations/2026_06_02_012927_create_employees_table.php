@@ -28,6 +28,7 @@ return new class extends Migration {
             $table->enum('status', ['active', 'retired', 'resigned', 'deceased'])->default('active');
             $table->boolean('is_active')->default(true);
 
+            $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
             $table->softDeletes();
 

@@ -2,9 +2,12 @@
 namespace App\Models;
 
 use App\Enums\LedgerTransactionType;
+use App\Traits\HasCreatedBy;
 
 class CpfLedger extends BaseModel
 {
+    use HasCreatedBy;
+    
     protected $fillable = ['employee_id', 'transaction_date', 'transaction_type', 'source_type', 'source_id', 'reference_no', 'remarks', 'debit', 'credit', 'balance', 'created_by'];
 
     protected function casts(): array
@@ -21,14 +24,6 @@ class CpfLedger extends BaseModel
     public function employee()
     {
         return $this->belongsTo(Employee::class);
-    }
-
-    /**
-     * Creator.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(Employee::class, 'created_by');
     }
 
     /**
