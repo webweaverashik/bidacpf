@@ -19,15 +19,19 @@ return new class extends Migration
             $table->unsignedBigInteger('interest_amount');
             $table->json('calculation_snapshot')->nullable(); // Store the details of the interest calculation for reference
             /*
-            {
-                "total_interest": 500000,
-                "fund_total": 20000000,
-                "eligible_balance": 250000,
-                "distribution_ratio": 0.0125
-            }
+                Example of calculation_snapshot:
+                {
+                    "eligible_balance": 250000,
+                    "fund_total": 20000000,
+                    "ratio": 0.0125,
+                    "calculated_interest": 3125.50,
+                    "posted_interest": 3126,
+                    "rounding_policy": "HALF_UP"
+                }
             */
 
             $table->timestamps();
+            $table->unique(['bank_interest_batch_id', 'employee_id']);
         });
     }
 

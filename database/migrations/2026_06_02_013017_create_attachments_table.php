@@ -16,8 +16,8 @@ return new class extends Migration
             $table->morphs('attachable');
             $table->string('file_name');
             $table->string('file_path');
-            $table->string('mime_type');
-            $table->unsignedBigInteger('file_size');
+            $table->string('mime_type')->nullable();
+            $table->unsignedBigInteger('file_size')->nullable();
             $table->foreignId('uploaded_by')->constrained('users');
 
             $table->timestamps();

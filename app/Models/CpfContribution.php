@@ -1,12 +1,31 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class CpfContribution extends Model
+class CpfContribution extends BaseModel
 {
-    /** @use HasFactory<\Database\Factories\CpfContributionFactory> */
-    use HasFactory;
+    protected $fillable = ['cpf_contribution_batch_id', 'employee_id', 'basic_salary', 'employee_contribution', 'government_contribution'];
+
+    /**
+     * Employee.
+     */
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    /**
+     * Contribution batch.
+     */
+    public function batch()
+    {
+        return $this->belongsTo(CpfContributionBatch::class, 'cpf_contribution_batch_id');
+    }
+
+    /**
+     * Total contribution.
+     */
+    public function totalContribution(): int
+    {
+        return $this->employee_contribution + $this->government_contribution;
+    }
 }

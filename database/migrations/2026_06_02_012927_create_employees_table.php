@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,20 +15,22 @@ return new class extends Migration
             $table->string('cpf_account_no')->unique();
             $table->string('name');
             $table->string('designation');
+
+            $table->string('email')->nullable();
+            $table->string('mobile_number', 20)->nullable();
+            $table->string('photo')->nullable();
+            
             $table->date('joining_date');
             $table->date('retirement_date')->nullable();
-
-            $table->foreignId('pay_scale_id')->nullable()->constrained();
-            $table->unsignedTinyInteger('grade');
-            $table->unsignedTinyInteger('current_step');
-            $table->unsignedInteger('current_basic_salary');
-
+            
+            $table->foreignId('pay_scale_step_id')->constrained()->comment('Current pay scale grade & step');
+            
             $table->enum('status', ['active', 'retired', 'resigned', 'deceased'])->default('active');
+            $table->boolean('is_active')->default(true);
 
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('cpf_account_no');
             $table->index('status');
             $table->index('grade');
         });

@@ -3,48 +3,67 @@ namespace App\Models;
 
 class Setting extends BaseModel
 {
-    protected $fillable = [
-        'key',
-        'value',
-        'type',
-        'description',
-    ];
+    protected $fillable = ['key', 'value', 'description'];
 
-    protected function casts(): array
+    /**
+     * Get setting value.
+     */
+    public static function get(string $key, mixed $default = null): mixed
     {
-        return [];
+        return static::query()->where('key', $key)->value('value') ?? $default;
     }
 
-    public static function value(
-        string $key,
-        mixed $default = null
-    ): mixed {
+    /**
+     * Save setting.
+     */
+    public static function set(string $key, mixed $value, ?string $description = null): void
+    {
+        static::updateOrCreate(
+            ['key' => $key],
+            [
+                'value'       => $value,
+                'description' => $description,
+            ],
+        );
+    }
 
-        $setting = static::query()
-            ->where('key', $key)
-            ->first();
+    /**
+     * Employee contribution percentage.
+     */
+    public static function employeeContributionRate(): float
+    {
+        return (float) static::get('employee_contribution_rate', 10);
+    }
 
-        if (! $setting) {
-            return $default;
-        }
+    /**
+     * Government contribution percentage.
+     */
+    public static function governmentContributionRate(): float
+    {
+        return (float) static::get('government_contribution_rate', 8.33);
+    }
 
-        return match ($setting->type) {
+    /**
+     * Maximum advance percentage.
+     */
+    public static function advanceLimitPercentage(): float
+    {
+        return (float) static::get('advance_limit_percentage', 80);
+    }
 
-            'integer' => (int) $setting->value,
+    /**
+     * Advance interest percentage.
+     */
+    public static function advanceInterestRate(): float
+    {
+        return (float) static::get('advance_interest_rate', 5);
+    }
 
-            'float'   => (float) $setting->value,
-
-            'boolean' => filter_var(
-                $setting->value,
-                FILTER_VALIDATE_BOOLEAN
-            ),
-
-            'json'    => json_decode(
-                $setting->value,
-                true
-            ),
-
-            default   => $setting->value,
-        };
+    /**
+     * Maximum installments.
+     */
+    public static function maxInstallments(): int
+    {
+        return (int) static::get('max_installments', 48);
     }
 }

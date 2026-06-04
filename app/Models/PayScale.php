@@ -1,17 +1,13 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
-class PayScale extends Model
+class PayScale extends BaseModel
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = ['name', 'total_grades', 'effective_year', 'effective_from', 'effective_to', 'is_active'];
 
     protected function casts(): array
     {
@@ -22,16 +18,27 @@ class PayScale extends Model
         ];
     }
 
-    public function getActivitylogOptions(): LogOptions
+    /**
+     * All steps under this pay scale.
+     */
+    public function steps()
     {
-        return LogOptions::defaults()
-            ->logOnly(['name', 'effective_year', 'effective_from', 'effective_to', 'is_active'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+        return $this->hasMany(PayScaleStep::class);
     }
 
-    public function grades()
+    /**
+     * Active pay scales.
+     */
+    public function scopeActive($query)
     {
-        return $this->hasMany(PayScaleGrade::class);
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Get salary by grade and step.
+     */
+    public function getSalary(int $grade, int $step): ?int
+    {
+        return $this->steps()->where('grade', $grade)->where('step', $step)->value('basic_salary');
     }
 }

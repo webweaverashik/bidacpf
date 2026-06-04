@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pay_scales', function (Blueprint $table) {
             $table->id();
             $table->string('name')->comment('National Pay Scale 2015');
+            $table->integer('total_grades');
             $table->year('effective_year');
             $table->date('effective_from');
             $table->date('effective_to')->nullable();

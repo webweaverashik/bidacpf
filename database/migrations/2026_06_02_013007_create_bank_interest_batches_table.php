@@ -14,14 +14,17 @@ return new class extends Migration
         Schema::create('bank_interest_batches', function (Blueprint $table) {
             $table->id();
             $table->date('distribution_date');
+            $table->string('fiscal_year', 9);
             $table->unsignedBigInteger('total_interest_amount');  // Total interest amount to be distributed
             $table->unsignedBigInteger('total_eligible_balance'); // Total eligible balance across all employees for the distribution
             $table->enum('status', ['draft', 'posted', 'reversed'])->default('draft');
             $table->text('remarks')->nullable();
             $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('posted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('posted_at')->nullable();
 
             $table->timestamps();
-            
+
             /*
             Create Batch
             ↓
