@@ -13,19 +13,12 @@ return new class extends Migration
     {
         Schema::create('cpf_contribution_batches', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('fiscal_year_id')->constrained();
-
             $table->unsignedTinyInteger('month');
-
             $table->unsignedSmallInteger('year');
-
+            $table->string('fiscal_year');
             $table->date('posting_date');
-
-            $table->enum('status', ['draft', 'posted', 'reversed']);
-
+            $table->enum('status', ['draft', 'posted', 'reversed'])->default('draft');
             $table->foreignId('created_by')->constrained('users');
-
             $table->timestamps();
 
             $table->unique(['month', 'year']);

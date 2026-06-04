@@ -11,25 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employee_salary_histories', function (Blueprint $table) {
+        Schema::create('pay_scale_grades', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('pay_scale_id')->constrained();
+            $table->foreignId('pay_scale_id')->constrained()->cascadeOnDelete();
             $table->unsignedTinyInteger('grade');
             $table->unsignedTinyInteger('step');
             $table->unsignedInteger('basic_salary');
 
-            $table->date('effective_date');
-
-            $table->enum('change_type', ['initial', 'annual_increment', 'promotion', 'revision']);
-
-            $table->text('remarks')->nullable();
-
             $table->timestamps();
 
-            $table->index('employee_id');
-            $table->index('effective_date');
+            $table->unique(['pay_scale_id', 'grade', 'step']);
+            $table->index('grade');
         });
     }
 
@@ -38,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employee_salary_histories');
+        Schema::dropIfExists('pay_scale_grades');
     }
 };

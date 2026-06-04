@@ -13,25 +13,15 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-
-            $table->string('employee_id')->unique();
-
             $table->string('cpf_account_no')->unique();
-
             $table->string('name');
-
             $table->string('designation');
-
             $table->date('joining_date');
-
             $table->date('retirement_date')->nullable();
 
             $table->foreignId('pay_scale_id')->nullable()->constrained();
-
             $table->unsignedTinyInteger('grade');
-
             $table->unsignedTinyInteger('current_step');
-
             $table->unsignedInteger('current_basic_salary');
 
             $table->enum('status', ['active', 'retired', 'resigned', 'deceased'])->default('active');
@@ -39,7 +29,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('employee_id');
             $table->index('cpf_account_no');
             $table->index('status');
             $table->index('grade');

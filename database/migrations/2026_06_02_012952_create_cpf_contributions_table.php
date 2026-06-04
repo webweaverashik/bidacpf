@@ -13,15 +13,10 @@ return new class extends Migration
     {
         Schema::create('cpf_contributions', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('cpf_contribution_batch_id')->constrained();
-
             $table->foreignId('employee_id')->constrained();
-
             $table->unsignedInteger('basic_salary');
-
             $table->unsignedInteger('employee_contribution');
-
             $table->unsignedInteger('government_contribution');
 
             $table->timestamps();

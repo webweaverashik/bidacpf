@@ -13,19 +13,13 @@ return new class extends Migration
     {
         Schema::create('cpf_advance_recoveries', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('cpf_advance_id')->constrained();
-
             $table->date('recovery_date');
-
             $table->unsignedBigInteger('amount');
-
-            $table->string('deposit_slip')->nullable();
+            $table->foreignId('deposit_slip_attachment_id')->nullable()->constrained('attachments');
 
             $table->text('remarks')->nullable();
-
             $table->foreignId('created_by')->constrained('users');
-
             $table->timestamps();
         });
     }

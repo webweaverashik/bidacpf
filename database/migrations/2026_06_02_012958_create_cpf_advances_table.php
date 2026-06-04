@@ -13,22 +13,15 @@ return new class extends Migration
     {
         Schema::create('cpf_advances', function (Blueprint $table) {
             $table->id();
-
             $table->string('advance_no')->unique();
-
             $table->foreignId('employee_id')->constrained();
-
             $table->date('application_date');
-
             $table->date('approval_date')->nullable();
-
             $table->unsignedBigInteger('approved_amount');
-
             $table->decimal('interest_rate', 5, 2);
 
-            $table->unsignedTinyInteger('installment_count');
-
-            $table->unsignedBigInteger('outstanding_amount');
+            $table->unsignedTinyInteger('installment_count'); // Number of installments for recovery
+            $table->unsignedBigInteger('outstanding_amount'); // The amount yet to be recovered
 
             $table->enum('status', ['pending', 'approved', 'completed', 'cancelled']);
 
