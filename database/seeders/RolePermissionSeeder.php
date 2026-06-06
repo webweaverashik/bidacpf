@@ -13,44 +13,66 @@ class RolePermissionSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
-            // Employee
+
+            // ---------------------------------------------------------------
+            // Employees
+            // ---------------------------------------------------------------
             'employee.view',
             'employee.create',
             'employee.update',
             'employee.delete',
 
-            // Salary
-            'salary.view',
-            'salary.create',
-            'salary.update',
+            // ---------------------------------------------------------------
+            // Salary (Pay Scale Step assignment & history)
+            // ---------------------------------------------------------------
+            'employee_salary.view',
+            'employee_salary.create',
+            'employee_salary.update',
 
-            // Contribution
-            'contribution.view',
-            'contribution.create',
-            'contribution.post',
+            // ---------------------------------------------------------------
+            // CPF Contribution Batches
+            // ---------------------------------------------------------------
+            'cpf_contribution.view',
+            'cpf_contribution.create',
+            'cpf_contribution.submit', // was: contribution.post
+            'cpf_contribution.reverse',
 
-            // Ledger
-            'ledger.view',
+            // ---------------------------------------------------------------
+            // CPF Ledger
+            // ---------------------------------------------------------------
+            'cpf_ledger.view',
 
-            // Advance
-            'advance.view',
-            'advance.create',
-            'advance.approve',
-            'advance.recovery',
+            // ---------------------------------------------------------------
+            // CPF Advances
+            // ---------------------------------------------------------------
+            'cpf_advance.view',
+            'cpf_advance.create',
+            'cpf_advance.approve',
+            'cpf_advance.recovery',
 
-            // Interest
-            'interest.view',
-            'interest.distribute',
+            // ---------------------------------------------------------------
+            // Bank Interest Distribution
+            // ---------------------------------------------------------------
+            'bank_interest.view',
+            'bank_interest.create',
+            'bank_interest.submit', // was: interest.distribute
+            'bank_interest.reverse',
 
+            // ---------------------------------------------------------------
             // Reports
+            // ---------------------------------------------------------------
             'report.view',
             'report.export',
 
+            // ---------------------------------------------------------------
             // Settings
+            // ---------------------------------------------------------------
             'setting.view',
             'setting.update',
 
+            // ---------------------------------------------------------------
             // Users
+            // ---------------------------------------------------------------
             'user.view',
             'user.create',
             'user.update',
@@ -63,6 +85,10 @@ class RolePermissionSeeder extends Seeder
                 'guard_name' => 'web',
             ]);
         }
+
+        // -------------------------------------------------------------------
+        // Roles
+        // -------------------------------------------------------------------
 
         $admin = Role::firstOrCreate([
             'name'       => 'Admin',
@@ -79,10 +105,51 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
+        // Admin gets everything
         $admin->syncPermissions(Permission::all());
 
-        $cpfOfficer->syncPermissions(['employee.view', 'employee.create', 'employee.update', 'salary.view', 'contribution.view', 'contribution.create', 'contribution.post', 'ledger.view', 'advance.view', 'advance.create', 'advance.recovery', 'interest.view', 'report.view', 'report.export']);
+        // CPF Officer — can do day-to-day CPF operations, no user/setting management
+        $cpfOfficer->syncPermissions([
+            'employee.view',
+            'employee.create',
+            'employee.update',
 
-        $auditor->syncPermissions(['employee.view', 'salary.view', 'ledger.view', 'advance.view', 'interest.view', 'report.view']);
+            'employee_salary.view',
+            'employee_salary.create',
+            'employee_salary.update',
+
+            'cpf_contribution.view',
+            'cpf_contribution.create',
+            'cpf_contribution.submit',
+
+            'cpf_ledger.view',
+
+            'cpf_advance.view',
+            'cpf_advance.create',
+            'cpf_advance.recovery',
+
+            'bank_interest.view',
+
+            'report.view',
+            'report.export',
+        ]);
+
+        // Auditor — read-only across all financial modules
+        $auditor->syncPermissions([
+            'employee.view',
+
+            'employee_salary.view',
+
+            'cpf_contribution.view',
+
+            'cpf_ledger.view',
+
+            'cpf_advance.view',
+
+            'bank_interest.view',
+
+            'report.view',
+            'report.export',
+        ]);
     }
 }
