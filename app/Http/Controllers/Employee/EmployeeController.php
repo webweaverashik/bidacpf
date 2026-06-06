@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Employee\UpdateEmployeeRequest;
-use App\Models\Employee;
-use App\Models\PayScale;
+use App\Models\Employee\Employee;
+use App\Models\Employee\PayScale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 

@@ -16,7 +16,7 @@ use App\Models\Auth\LoginActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, SoftDeletes, LogsActivity, Notifiable;
+    use HasRoles, SoftDeletes, LogsActivity, Notifiable;
 
     protected $fillable = ['name', 'designation', 'email', 'mobile_number', 'is_active', 'photo_url', 'password'];
 

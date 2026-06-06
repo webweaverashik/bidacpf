@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Cpf;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contribution\StoreContributionBatchRequest;
-use App\Models\CpfContributionBatch;
+use App\Models\Cpf\CpfContributionBatch;
 use App\Services\ContributionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;

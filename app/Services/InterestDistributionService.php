@@ -6,6 +6,7 @@ use App\Enums\LedgerTransactionType;
 use App\Enums\SourceType;
 use App\Models\Employee\Employee;
 use App\Models\Interest\BankInterestBatch;
+use App\Models\Interest\BankInterestDistribution;
 use App\Support\MoneyService;
 use Illuminate\Support\Facades\DB;
 

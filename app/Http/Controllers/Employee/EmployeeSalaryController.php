@@ -3,9 +3,9 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmployeeSalary\UpdateSalaryStepRequest;
-use App\Models\Employee;
-use App\Models\PayScale;
-use App\Models\PayScaleStep;
+use App\Models\Employee\Employee;
+use App\Models\Employee\PayScale;
+use App\Models\Employee\PayScaleStep;
 use App\Services\EmployeeSalaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;

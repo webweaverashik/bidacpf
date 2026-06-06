@@ -1,10 +1,8 @@
 <?php
-
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
-use App\Models\User;
+use App\Models\Auth\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -68,13 +66,13 @@ class UserController extends Controller
 
         // Sorting
         $orderColumnIndex = $request->input('order.0.column', 0);
-        $orderDirection = $request->input('order.0.dir', 'desc');
+        $orderDirection   = $request->input('order.0.dir', 'desc');
 
         $columns = ['id', 'name', 'mobile_number', 'branch_id', 'roles', 'created_at', 'is_active', 'id'];
 
         if (isset($columns[$orderColumnIndex])) {
             $orderColumn = $columns[$orderColumnIndex];
-            if (!in_array($orderColumn, ['roles'])) {
+            if (! in_array($orderColumn, ['roles'])) {
                 $query->orderBy($orderColumn, $orderDirection);
             }
         } else {
@@ -82,25 +80,25 @@ class UserController extends Controller
         }
 
         // Pagination
-        $start = $request->input('start', 0);
+        $start  = $request->input('start', 0);
         $length = $request->input('length', 10);
 
         $users = $query->skip($start)->take($length)->get();
 
         // Format data for DataTable
-        $data = [];
+        $data    = [];
         $counter = $start + 1;
 
         foreach ($users as $user) {
-            $role = $user->roles->first()?->name;
+            $role         = $user->roles->first()?->name;
             $badgeClasses = [
-                'admin' => 'badge badge-light-danger rounded-pill fs-7 fw-bold',
-                'manager' => 'badge badge-light-success rounded-pill fs-7 fw-bold',
+                'admin'      => 'badge badge-light-danger rounded-pill fs-7 fw-bold',
+                'manager'    => 'badge badge-light-success rounded-pill fs-7 fw-bold',
                 'accountant' => 'badge badge-light-info rounded-pill fs-7 fw-bold',
             ];
             $badgeClass = $badgeClasses[$role] ?? 'badge badge-light-secondary fw-bold';
 
-            $photoUrl = $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png');
+            $photoUrl  = $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png');
             $isDeleted = $request->deleted_only === 'true';
 
             // User info column - link to settlements only for non-deleted users
@@ -121,7 +119,7 @@ class UserController extends Controller
             } else {
                 // Active user - with settlements link
                 $settlementsUrl = route('settlements.show', $user->id);
-                $userInfoHtml = '
+                $userInfoHtml   = '
                     <div class="d-flex align-items-center">
                         <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                             <div class="symbol-label">
@@ -145,13 +143,13 @@ class UserController extends Controller
             $lastLoginHtml = '-';
             if ($user->latestLoginActivity) {
                 $lastLoginHtml = $user->latestLoginActivity->created_at->format('d-M-Y') . '<br>' .
-                    $user->latestLoginActivity->created_at->format('h:i:s A');
+                $user->latestLoginActivity->created_at->format('h:i:s A');
             }
 
             // Active toggle column
             $activeHtml = '';
-            if (!$isDeleted && $user->id != auth()->id()) {
-                $checked = $user->is_active ? 'checked' : '';
+            if (! $isDeleted && $user->id != auth()->id()) {
+                $checked    = $user->is_active ? 'checked' : '';
                 $activeHtml = '
                     <div class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
                         <input class="form-check-input toggle-active" type="checkbox" value="' . $user->id . '" ' . $checked . '>
@@ -201,22 +199,22 @@ class UserController extends Controller
             }
 
             $data[] = [
-                'counter' => $counter++,
-                'user_info' => $userInfoHtml,
-                'mobile' => e($user->mobile_number),
-                'branch' => $branchHtml,
-                'role' => $roleHtml,
+                'counter'    => $counter++,
+                'user_info'  => $userInfoHtml,
+                'mobile'     => e($user->mobile_number),
+                'branch'     => $branchHtml,
+                'role'       => $roleHtml,
                 'last_login' => $lastLoginHtml,
-                'active' => $activeHtml,
-                'actions' => $actionsHtml,
+                'active'     => $activeHtml,
+                'actions'    => $actionsHtml,
             ];
         }
 
         return response()->json([
-            'draw' => intval($request->input('draw', 1)),
-            'recordsTotal' => $totalRecords,
+            'draw'            => intval($request->input('draw', 1)),
+            'recordsTotal'    => $totalRecords,
             'recordsFiltered' => $filteredRecords,
-            'data' => $data,
+            'data'            => $data,
         ]);
     }
 
@@ -234,11 +232,11 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $commonRules = [
-            'user_name' => 'required|string|max:255',
-            'user_email' => 'required|string|email|max:255|unique:users,email',
+            'user_name'   => 'required|string|max:255',
+            'user_email'  => 'required|string|email|max:255|unique:users,email',
             'user_mobile' => 'required|string|size:11',
-            'user_role' => 'required|string|in:admin,manager,accountant',
-            'user_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:100',
+            'user_role'   => 'required|string|in:admin,manager,accountant',
+            'user_photo'  => 'nullable|image|mimes:jpg,jpeg,png|max:100',
         ];
 
         // Only validate branch if role is NOT admin
@@ -253,19 +251,19 @@ class UserController extends Controller
         // Handle photo upload
         $photoUrl = null;
         if ($request->hasFile('user_photo')) {
-            $photo = $request->file('user_photo');
+            $photo    = $request->file('user_photo');
             $filename = 'user_' . time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
             $photo->move(public_path('uploads/users'), $filename);
             $photoUrl = 'uploads/users/' . $filename;
         }
 
         $user = User::create([
-            'name' => $request->user_name,
-            'email' => $request->user_email,
+            'name'          => $request->user_name,
+            'email'         => $request->user_email,
             'mobile_number' => $request->user_mobile,
-            'password' => Hash::make('ucms@123'),
-            'branch_id' => $branch_id,
-            'photo_url' => $photoUrl,
+            'password'      => Hash::make('ucms@123'),
+            'branch_id'     => $branch_id,
+            'photo_url'     => $photoUrl,
         ]);
 
         $user->assignRole($request->user_role);
@@ -283,14 +281,14 @@ class UserController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+            'data'    => [
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'email'         => $user->email,
                 'mobile_number' => $user->mobile_number,
-                'branch_id' => $user->branch_id,
-                'role' => $user->getRoleNames()->first(),
-                'photo_url' => $user->photo_url ? asset($user->photo_url) : null,
+                'branch_id'     => $user->branch_id,
+                'role'          => $user->getRoleNames()->first(),
+                'photo_url'     => $user->photo_url ? asset($user->photo_url) : null,
             ],
         ]);
     }
@@ -311,11 +309,11 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $commonRules = [
-            'user_name_edit' => 'required|string|max:255',
-            'user_email_edit' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'user_name_edit'   => 'required|string|max:255',
+            'user_email_edit'  => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'user_mobile_edit' => 'required|string|size:11',
-            'user_role_edit' => 'required|string|in:admin,manager,accountant',
-            'user_photo_edit' => 'nullable|image|mimes:jpg,jpeg,png|max:100',
+            'user_role_edit'   => 'required|string|in:admin,manager,accountant',
+            'user_photo_edit'  => 'nullable|image|mimes:jpg,jpeg,png|max:100',
         ];
 
         // Only validate branch if role is NOT admin
@@ -346,7 +344,7 @@ class UserController extends Controller
                 unlink(public_path($user->photo_url));
             }
 
-            $photo = $request->file('user_photo_edit');
+            $photo    = $request->file('user_photo_edit');
             $filename = 'user_' . $user->id . '_' . time() . '.' . $photo->getClientOriginalExtension();
             $photo->move(public_path('uploads/users'), $filename);
             $photoUrl = 'uploads/users/' . $filename;
@@ -354,18 +352,18 @@ class UserController extends Controller
 
         // Update the user record
         $user->update([
-            'name' => $request->user_name_edit,
-            'email' => $request->user_email_edit,
+            'name'          => $request->user_name_edit,
+            'email'         => $request->user_email_edit,
             'mobile_number' => $request->user_mobile_edit,
-            'branch_id' => $branch_id,
-            'photo_url' => $photoUrl,
+            'branch_id'     => $branch_id,
+            'photo_url'     => $photoUrl,
         ]);
 
         $user->syncRoles($request->user_role_edit);
 
         return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully',
+            'success'   => true,
+            'message'   => 'User updated successfully',
             'photo_url' => $photoUrl ? asset($photoUrl) : asset('img/male-placeholder.png'),
         ]);
     }
@@ -396,7 +394,7 @@ class UserController extends Controller
 
         $user = User::onlyTrashed()->find($request->user_id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'User not found or already restored.',

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('submitted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('submitted_at')->nullable();
             $table->foreignId('created_by')->constrained('users');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->unique('contribution_month'); //One batch per month

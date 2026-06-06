@@ -2,8 +2,8 @@
 namespace App\Http\Controllers\Cpf;
 
 use App\Http\Controllers\Controller;
-use App\Models\CpfLedger;
-use App\Models\Employee;
+use App\Models\Cpf\CpfLedger;
+use App\Models\Employee\Employee;
 use App\Services\LedgerService;
 use Illuminate\View\View;
 
