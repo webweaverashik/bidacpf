@@ -4,9 +4,10 @@ namespace App\Services;
 use App\Enums\AdvanceStatus;
 use App\Enums\LedgerTransactionType;
 use App\Enums\SourceType;
-use App\Models\CpfAdvance;
-use App\Models\CpfAdvanceRecovery;
-use App\Models\Employee;
+use App\Models\Cpf\CpfAdvance;
+use App\Models\Cpf\CpfAdvanceRecovery;
+use App\Models\Employee\Employee;
+use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 
 class AdvanceService
@@ -19,7 +20,7 @@ class AdvanceService
      */
     public function eligibleAmount(Employee $employee): int
     {
-        return (int) floor($employee->currentBalance() * (setting('advance_limit_percentage', 80) / 100));
+        return (int) floor($employee->currentBalance() * (Setting::advanceLimitPercentage() / 100));
     }
 
     /**

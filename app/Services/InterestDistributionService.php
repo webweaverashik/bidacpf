@@ -4,9 +4,8 @@ namespace App\Services;
 use App\Enums\BatchStatus;
 use App\Enums\LedgerTransactionType;
 use App\Enums\SourceType;
-use App\Models\BankInterestBatch;
-use App\Models\BankInterestDistribution;
-use App\Models\Employee;
+use App\Models\Employee\Employee;
+use App\Models\Interest\BankInterestBatch;
 use App\Support\MoneyService;
 use Illuminate\Support\Facades\DB;
 

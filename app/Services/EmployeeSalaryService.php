@@ -1,9 +1,9 @@
 <?php
 namespace App\Services;
 
-use App\Models\Employee;
-use App\Models\EmployeeSalaryHistory;
-use App\Models\PayScaleStep;
+use App\Models\Employee\Employee;
+use App\Models\Employee\EmployeeSalaryHistory;
+use App\Models\Employee\PayScaleStep;
 use Illuminate\Support\Facades\DB;
 
 class EmployeeSalaryService

@@ -1,7 +1,7 @@
 <?php
 namespace App\Traits;
 
-use App\Models\User;
+use App\Models\Auth\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 trait HasCreatedBy

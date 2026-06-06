@@ -1,7 +1,8 @@
 <?php
 namespace App\Services;
 
-use App\Models\CpfLedger;
+use App\Models\Cpf\CpfLedger;
+use App\Support\FiscalYearService;
 use Illuminate\Support\Facades\DB;
 
 class LedgerService
@@ -108,8 +109,8 @@ class LedgerService
      */
     public function statementForFiscalYear(int $employeeId, string $fiscalYear)
     {
-        $startDate = \App\Support\FiscalYearService::startDate($fiscalYear);
-        $endDate   = \App\Support\FiscalYearService::endDate($fiscalYear);
+        $startDate = FiscalYearService::startDate($fiscalYear);
+        $endDate   = FiscalYearService::endDate($fiscalYear);
 
         return $this->ledgerQuery($employeeId)
             ->whereBetween('transaction_date', [$startDate, $endDate])

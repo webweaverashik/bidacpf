@@ -1,29 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\BankInterestController;
-use App\Http\Controllers\CpfAdvanceController;
-use App\Http\Controllers\CpfAdvanceRecoveryController;
-use App\Http\Controllers\CpfContributionController;
-use App\Http\Controllers\CpfLedgerController;
-use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\EmployeeSalaryController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Cpf\CpfAdvanceController;
+use App\Http\Controllers\Cpf\CpfAdvanceRecoveryController;
+use App\Http\Controllers\Cpf\CpfContributionController;
+use App\Http\Controllers\Cpf\CpfLedgerController;
+use App\Http\Controllers\Employee\EmployeeController;
+use App\Http\Controllers\Employee\EmployeeSalaryController;
+use App\Http\Controllers\Interest\BankInterestController;
+use App\Http\Controllers\Report\ReportController;
+use App\Http\Controllers\Setting\SettingController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| CPF Module Routes
-|--------------------------------------------------------------------------
-| Loaded via bootstrap/app.php. All routes require authentication.
-| Dashboard, login, logout and profile live in routes/web.php.
-|
-| NOTE on route ordering: static segments such as /outstanding and
-| /recovery are declared BEFORE /{advance} so the router does not try to
-| bind those words to a model.
-*/
 
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
@@ -50,7 +38,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         ->middleware('can:employee.delete')
         ->name('employees.destroy');
 
-    // {employee} show declared last so create/edit are not captured by it
     Route::get('employees/{employee}', [EmployeeController::class, 'show'])
         ->middleware('can:employee.view')
         ->name('employees.show');
@@ -128,7 +115,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::post('cpf-advances', [CpfAdvanceController::class, 'store'])->name('cpf-advances.store');
     });
 
-    // Recovery (static prefix declared before {advance})
     Route::middleware('can:cpf_advance.recovery')->group(function () {
         Route::get('cpf-advances/recovery', [CpfAdvanceRecoveryController::class, 'index'])->name('cpf-advances.recovery.index');
         Route::get('cpf-advances/{advance}/recovery/create', [CpfAdvanceRecoveryController::class, 'create'])->name('cpf-advances.recovery.create');
