@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Cpf;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Advance\ApproveAdvanceRequest;
 use App\Http\Requests\Advance\StoreAdvanceRequest;
 use App\Models\CpfAdvance;

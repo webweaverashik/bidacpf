@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Report;
 
+use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Services\LedgerService;
 use App\Services\ReportService;

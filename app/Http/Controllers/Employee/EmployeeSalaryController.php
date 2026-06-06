@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\EmployeeSalary\UpdateSalaryStepRequest;
 use App\Models\Employee;
 use App\Models\PayScale;

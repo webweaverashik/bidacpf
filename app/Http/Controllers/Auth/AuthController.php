@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers\Auth;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use App\Models\LoginActivity;
 use App\Http\Controllers\Controller;
+use App\Models\Auth\User;
+use App\Models\Auth\LoginActivity;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -98,8 +98,8 @@ class AuthController extends Controller
          */
         if (
             ! Auth::attempt([
-                'email' => $request->email,
-                'password'  => $request->password,
+                'email'    => $request->email,
+                'password' => $request->password,
             ])
         ) {
             return response()->json(

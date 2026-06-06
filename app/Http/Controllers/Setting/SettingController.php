@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Setting;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Setting\UpdateSettingRequest;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;

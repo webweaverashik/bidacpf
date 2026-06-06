@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Interest;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Interest\StoreInterestBatchRequest;
 use App\Models\BankInterestBatch;
 use App\Services\InterestDistributionService;

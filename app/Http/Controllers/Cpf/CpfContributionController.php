@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Cpf;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Contribution\StoreContributionBatchRequest;
 use App\Models\CpfContributionBatch;
 use App\Services\ContributionService;

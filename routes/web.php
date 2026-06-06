@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 routes/
 ├── web.php              # Main entry point (minimal)
 ├── auth.php             # Authentication routes (guest)
+├── modules.php          # Module-specific routes
 */
 
 /*

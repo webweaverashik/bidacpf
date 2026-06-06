@@ -1,7 +1,7 @@
 <?php
 namespace Database\Seeders;
 
-use App\Models\PayScale;
+use App\Models\Employee\PayScale;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

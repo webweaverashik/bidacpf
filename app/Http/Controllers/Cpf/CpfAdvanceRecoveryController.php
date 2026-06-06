@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Cpf;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Advance\StoreRecoveryRequest;
 use App\Models\CpfAdvance;
 use App\Models\CpfAdvanceRecovery;
