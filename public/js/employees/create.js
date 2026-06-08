@@ -3,7 +3,6 @@
 // =========================================================================
 // BidaEmployeeCreate
 // =========================================================================
-
 var BidaEmployeeCreate = (function () {
 
       var stepper;
@@ -23,22 +22,49 @@ var BidaEmployeeCreate = (function () {
                   _syncUI(current);
             });
 
+            // ─────────────────────────────────────────────────────────────
+            //  NEXT — this is where step validation is ENFORCED.
+            //
+            //  Because #btn_next carries data-kt-stepper-action="next",
+            //  KTStepper fires this event on click and WAITS for us to call
+            //  goNext(). We only advance if the current step's validator
+            //  returns "Valid". This is the path that was previously bypassed
+            //  by a direct stepperObj.goNext() listener in init().
+            // ─────────────────────────────────────────────────────────────
             stepperObj.on("kt.stepper.next", function (s) {
                   var currentStep = s.getCurrentStepIndex();
                   var validator = validations[currentStep - 1];
 
+                  var proceed = function () {
+                        // Extra guard for Step 1: the basic-salary <select> is
+                        // `disabled` until a grade is chosen, and FormValidation
+                        // skips disabled fields — so notEmpty never fires on it.
+                        // Enforce it explicitly here.
+                        if (currentStep === 1) {
+                              var salary = form.querySelector('[name="pay_scale_step_id"]');
+                              if (!salary || !salary.value) {
+                                    _markSalaryError(true);
+                                    _warn("Please select a grade and basic salary before continuing.");
+                                    KTUtil.scrollTop();
+                                    return;
+                              }
+                              _markSalaryError(false);
+                        }
+                        s.goNext();
+                        KTUtil.scrollTop();
+                  };
+
                   if (validator) {
                         validator.validate().then(function (status) {
                               if (status === "Valid") {
-                                    s.goNext();
-                                    KTUtil.scrollTop();
+                                    proceed();
                               } else {
+                                    _warn("Please fill in all required fields before continuing.");
                                     KTUtil.scrollTop();
                               }
                         });
                   } else {
-                        s.goNext();
-                        KTUtil.scrollTop();
+                        proceed();
                   }
             });
 
@@ -81,13 +107,76 @@ var BidaEmployeeCreate = (function () {
       var _show = function (el) {
             if (el) { el.classList.remove("d-none"); el.style.display = ""; }
       };
+
       var _hide = function (el) {
             if (el) { el.classList.add("d-none"); el.style.display = "none"; }
       };
 
+      // ── Toastr warning helper ──────────────────────────────────────────
+      //  toastr is initialised globally in layouts.app. Guard the call so a
+      //  missing/late-loaded toastr never throws and breaks validation flow.
+      var _warn = function (message, title) {
+            if (typeof toastr !== "undefined" && toastr && typeof toastr.warning === "function") {
+                  // toastr.warning(message, title || "Validation Failed");
+                  toastr.warning(message);
+            }
+      };
+
+      // ── Inline error for the (disabled) basic-salary select ────────────
+      var _markSalaryError = function (show) {
+            var salary = form.querySelector('[name="pay_scale_step_id"]');
+            if (!salary) return;
+            var row = salary.closest(".fv-row");
+            if (!row) return;
+
+            var existing = row.querySelector(".salary-guard-error");
+            if (show) {
+                  if (!existing) {
+                        var msg = document.createElement("div");
+                        msg.className = "fv-plugins-message-container salary-guard-error mt-2";
+                        msg.innerHTML =
+                              '<div class="fv-help-block"><span role="alert">'
+                              + 'Please select a grade and basic salary'
+                              + '</span></div>';
+                        row.appendChild(msg);
+                  }
+            } else if (existing) {
+                  existing.remove();
+            }
+      };
+
+      // ── Block spaces in the CPF Account No field ───────────────────────
+      //  Prevents typing a space, and strips spaces from pasted / autofilled
+      //  / IME input. Revalidates the field afterwards so FormValidation
+      //  state stays in sync.
+      var initCpfAccountNoFilter = function () {
+            var input = form.querySelector('[name="cpf_account_no"]');
+            if (!input) return;
+
+            // Block the space key outright.
+            input.addEventListener("keydown", function (e) {
+                  if (e.key === " " || e.code === "Space" || e.keyCode === 32) {
+                        e.preventDefault();
+                  }
+            });
+
+            // Catch-all: strip any whitespace that still gets in (paste, drag,
+            // autofill, mobile keyboards) while preserving caret position.
+            input.addEventListener("input", function () {
+                  var cleaned = input.value.replace(/\s+/g, "");
+                  if (cleaned !== input.value) {
+                        var pos = input.selectionStart - (input.value.length - cleaned.length);
+                        input.value = cleaned;
+                        if (pos >= 0) {
+                              input.setSelectionRange(pos, pos);
+                        }
+                  }
+                  if (validations[0]) validations[0].revalidateField("cpf_account_no");
+            });
+      };
+
       // ── FormValidation ─────────────────────────────────────────────────
       var initValidation = function () {
-
             // Step 1
             validations.push(
                   FormValidation.formValidation(form, {
@@ -253,14 +342,12 @@ var BidaEmployeeCreate = (function () {
             //  no upload path is executed, no ValueError is thrown.
             // ──────────────────────────────────────────────────────────────
             var photoInput = document.getElementById("photo_file_input");
-
             if (
                   photoInput &&
                   photoInput.files &&
                   photoInput.files.length > 0
             ) {
                   var file = photoInput.files[0];
-
                   if (file.size > 0 && file.name !== "") {
                         fd.append("photo", file, file.name);
                   }
@@ -276,9 +363,9 @@ var BidaEmployeeCreate = (function () {
                   e.preventDefault();
 
                   var validator = validations[1];
-
                   validator.validate().then(function (status) {
                         if (status !== "Valid") {
+                              _warn("Please correct the highlighted fields before submitting.");
                               KTUtil.scrollTop();
                               return;
                         }
@@ -321,7 +408,6 @@ var BidaEmployeeCreate = (function () {
                               .then(function (data) {
                                     var nameEl = document.getElementById("created_employee_name");
                                     var acctEl = document.getElementById("created_cpf_account");
-
                                     if (nameEl) nameEl.textContent = data.employee ? data.employee.name : "";
                                     if (acctEl) acctEl.textContent = data.employee ? data.employee.cpf_account_no : "";
 
@@ -430,7 +516,6 @@ var BidaEmployeeCreate = (function () {
                                                 + '</option>'
                                           );
                                     });
-
                                     $salary.prop("disabled", false);
                                     if (hint) hint.textContent = data.steps.length + " steps in Grade " + grade;
                               } else {
@@ -453,6 +538,8 @@ var BidaEmployeeCreate = (function () {
             });
 
             $(document).on("change", "#basic_salary_select", function () {
+                  // Clear the manual step-1 guard error once a salary is picked.
+                  _markSalaryError(false);
                   if (validations[0]) validations[0].revalidateField("pay_scale_step_id");
             });
       };
@@ -467,8 +554,8 @@ var BidaEmployeeCreate = (function () {
                   var govt = parseInt(form.querySelector('[name="opening_government_contribution"]').value) || 0;
                   var interest = parseInt(form.querySelector('[name="opening_bank_interest"]').value) || 0;
                   var advance = parseInt(form.querySelector('[name="opening_advance_balance"]').value) || 0;
-                  var net = own + govt + interest - advance;
 
+                  var net = own + govt + interest - advance;
                   display.textContent = "\u09F3\u00A0" + net.toLocaleString("en-IN");
 
                   var box = display.parentElement;
@@ -533,6 +620,7 @@ var BidaEmployeeCreate = (function () {
             });
 
             if (goStep1) { stepperObj.goTo(1); }
+            _warn("The server rejected some fields. Please review and try again.");
             KTUtil.scrollTop();
       };
 
@@ -565,8 +653,17 @@ var BidaEmployeeCreate = (function () {
                         return;
                   }
 
-                  nextBtn.addEventListener("click", function () { stepperObj.goNext(); });
-                  prevBtn.addEventListener("click", function () { stepperObj.goPrevious(); });
+                  // ─────────────────────────────────────────────────────────
+                  //  FIX — DO NOT wire the Next/Back buttons to goNext()/
+                  //  goPrevious() directly. That bypassed validation entirely
+                  //  and let users jump to Step 2 with an empty Step 1.
+                  //
+                  //  Navigation is now driven by KTStepper's own action
+                  //  buttons (data-kt-stepper-action="next|previous" in the
+                  //  blade), which fire kt.stepper.next / kt.stepper.previous.
+                  //  Those handlers (see initStepper) validate the CURRENT
+                  //  step before advancing.
+                  // ─────────────────────────────────────────────────────────
 
                   initStepper();
                   initValidation();
@@ -574,6 +671,7 @@ var BidaEmployeeCreate = (function () {
                   initDatePickers();
                   initGradeChange();
                   initOpeningBalanceCompute();
+                  initCpfAccountNoFilter();
             }
       };
 

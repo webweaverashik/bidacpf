@@ -1,5 +1,3 @@
-{{-- resources/views/employees/create.blade.php --}}
-
 @push('page-css')
     <link href="{{ asset('css/employees/create.css') }}" rel="stylesheet" type="text/css" />
 @endpush
@@ -9,10 +7,9 @@
 @section('title', 'New Employee')
 
 @section('header-title')
-    <div data-kt-swapper="true"
-         data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
-         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
-         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
+    <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
+        data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
+        class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
             Employee Creation Form
         </h1>
@@ -31,499 +28,500 @@
 
 @section('content')
 
-<div id="error-container"></div>
+    <div id="error-container"></div>
 
-{{-- ================================================================== --}}
-{{-- Stepper                                                             --}}
-{{-- ================================================================== --}}
-<div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
-     id="kt_create_employee_stepper">
+    {{-- ================================================================== --}}
+    {{-- Stepper                                                             --}}
+    {{-- ================================================================== --}}
+    <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
+        id="kt_create_employee_stepper">
 
-    {{-- ── Aside / Nav ──────────────────────────────────────────────── --}}
-    <div class="card d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px w-xxl-400px">
-        <div class="card-body px-6 px-lg-10 px-xxl-15 py-20">
-            <div class="stepper-nav">
+        {{-- ── Aside / Nav ──────────────────────────────────────────────── --}}
+        <div class="card d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px w-xxl-400px">
+            <div class="card-body px-6 px-lg-10 px-xxl-15 py-20">
+                <div class="stepper-nav">
 
-                {{-- Step 1 --}}
-                <div class="stepper-item current" data-kt-stepper-element="nav">
-                    <div class="stepper-wrapper">
-                        <div class="stepper-icon w-40px h-40px">
-                            <i class="ki-outline ki-check fs-2 stepper-check"></i>
-                            <span class="stepper-number">1</span>
+                    {{-- Step 1 --}}
+                    <div class="stepper-item current" data-kt-stepper-element="nav">
+                        <div class="stepper-wrapper">
+                            <div class="stepper-icon w-40px h-40px">
+                                <i class="ki-outline ki-check fs-2 stepper-check"></i>
+                                <span class="stepper-number">1</span>
+                            </div>
+                            <div class="stepper-label">
+                                <h3 class="stepper-title">Employee Information</h3>
+                                <div class="stepper-desc fw-semibold">Personal details &amp; pay scale</div>
+                            </div>
                         </div>
-                        <div class="stepper-label">
-                            <h3 class="stepper-title">Employee Information</h3>
-                            <div class="stepper-desc fw-semibold">Personal details &amp; pay scale</div>
+                        <div class="stepper-line h-40px"></div>
+                    </div>
+
+                    {{-- Step 2 --}}
+                    <div class="stepper-item" data-kt-stepper-element="nav">
+                        <div class="stepper-wrapper">
+                            <div class="stepper-icon w-40px h-40px">
+                                <i class="ki-outline ki-check fs-2 stepper-check"></i>
+                                <span class="stepper-number">2</span>
+                            </div>
+                            <div class="stepper-label">
+                                <h3 class="stepper-title">CPF Opening Balance</h3>
+                                <div class="stepper-desc fw-semibold">Set initial CPF balances</div>
+                            </div>
+                        </div>
+                        <div class="stepper-line h-40px"></div>
+                    </div>
+
+                    {{-- Step 3 --}}
+                    <div class="stepper-item" data-kt-stepper-element="nav">
+                        <div class="stepper-wrapper">
+                            <div class="stepper-icon w-40px h-40px">
+                                <i class="ki-outline ki-check fs-2 stepper-check"></i>
+                                <span class="stepper-number">3</span>
+                            </div>
+                            <div class="stepper-label">
+                                <h3 class="stepper-title">Registration Complete</h3>
+                                <div class="stepper-desc fw-semibold">Employee registered</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="stepper-line h-40px"></div>
-                </div>
 
-                {{-- Step 2 --}}
-                <div class="stepper-item" data-kt-stepper-element="nav">
-                    <div class="stepper-wrapper">
-                        <div class="stepper-icon w-40px h-40px">
-                            <i class="ki-outline ki-check fs-2 stepper-check"></i>
-                            <span class="stepper-number">2</span>
-                        </div>
-                        <div class="stepper-label">
-                            <h3 class="stepper-title">CPF Opening Balance</h3>
-                            <div class="stepper-desc fw-semibold">Set initial CPF balances</div>
-                        </div>
-                    </div>
-                    <div class="stepper-line h-40px"></div>
                 </div>
-
-                {{-- Step 3 --}}
-                <div class="stepper-item" data-kt-stepper-element="nav">
-                    <div class="stepper-wrapper">
-                        <div class="stepper-icon w-40px h-40px">
-                            <i class="ki-outline ki-check fs-2 stepper-check"></i>
-                            <span class="stepper-number">3</span>
-                        </div>
-                        <div class="stepper-label">
-                            <h3 class="stepper-title">Registration Complete</h3>
-                            <div class="stepper-desc fw-semibold">Employee registered</div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
-    </div>
-    {{-- ── end Aside ────────────────────────────────────────────────── --}}
+        {{-- ── end Aside ────────────────────────────────────────────────── --}}
 
-    {{-- ── Main Content ─────────────────────────────────────────────── --}}
-    <div class="card d-flex flex-row-fluid flex-center">
+        {{-- ── Main Content ─────────────────────────────────────────────── --}}
+        <div class="card d-flex flex-row-fluid flex-center">
 
-        {{--
+            {{--
             NOTE (Blade): enctype="multipart/form-data" is intentionally
             kept for semantic correctness / native fallback. It does NOT
             affect the fetch() submission — the browser sets the correct
             multipart boundary automatically when body is a FormData object.
         --}}
-        <form class="card-body py-20 w-100 px-9"
-              novalidate="novalidate"
-              enctype="multipart/form-data"
-              id="kt_create_employee_form">
+            <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
+                id="kt_create_employee_form">
+                @csrf
 
-            @csrf
+                {{-- ====================================================== --}}
+                {{-- STEP 1 — Employee Information                           --}}
+                {{-- ====================================================== --}}
+                <div data-kt-stepper-element="content" class="current">
+                    <div class="w-100">
 
-            {{-- ====================================================== --}}
-            {{-- STEP 1 — Employee Information                           --}}
-            {{-- ====================================================== --}}
-            <div data-kt-stepper-element="content" class="current">
-                <div class="w-100">
-                    <div class="pb-10 pb-lg-15">
-                        <h2 class="fw-bold d-flex align-items-center text-gray-900">
-                            Employee Personal Information
-                        </h2>
-                        <div class="text-muted fw-semibold fs-6">
-                            Fill in employee details and assign a pay scale grade.
+                        <div class="pb-10 pb-lg-15">
+                            <h2 class="fw-bold d-flex align-items-center text-gray-900">
+                                Employee Personal Information
+                            </h2>
+                            <div class="text-muted fw-semibold fs-6">
+                                Fill in employee details and assign a pay scale grade.
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="row">
+                        <div class="row">
 
-                        {{-- ── Left Column ──────────────────────────── --}}
-                        <div class="col-lg-8">
+                            {{-- ── Left Column ──────────────────────────── --}}
+                            <div class="col-lg-8">
 
-                            {{-- CPF Account No & Name --}}
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="fv-row mb-7">
-                                        <label class="required fw-semibold fs-6 mb-2">CPF Account No.</label>
-                                        <input type="text" name="cpf_account_no"
-                                               class="form-control form-control-solid"
-                                               placeholder="e.g. PRA/K/1234/25" />
-                                    </div>
-                                </div>
-                                <div class="col-md-7">
-                                    <div class="fv-row mb-7">
-                                        <label class="required fw-semibold fs-6 mb-2">Full Name</label>
-                                        <input type="text" name="name"
-                                               class="form-control form-control-solid"
-                                               placeholder="Enter employee full name" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Designation --}}
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Designation</label>
-                                <input type="text" name="designation"
-                                       class="form-control form-control-solid"
-                                       placeholder="e.g. Assistant Director, Investment Officer" />
-                            </div>
-
-                            {{-- Email & Mobile --}}
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="fv-row mb-7">
-                                        <label class="fw-semibold fs-6 mb-2">
-                                            Email <span class="text-muted">(optional)</span>
-                                        </label>
-                                        <input type="email" name="email"
-                                               class="form-control form-control-solid"
-                                               placeholder="Enter email address" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="fv-row mb-7">
-                                        <label class="fw-semibold fs-6 mb-2">
-                                            Mobile Number <span class="text-muted">(optional)</span>
-                                        </label>
-                                        <input type="text" name="mobile_number" maxlength="20"
-                                               class="form-control form-control-solid"
-                                               placeholder="e.g. 01712345678" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Joining Date & Retirement Date --}}
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="fv-row mb-7">
-                                        <label class="required fw-semibold fs-6 mb-2">Joining Date</label>
-                                        <input name="joining_date" id="joining_date_input"
-                                               class="form-control form-control-solid"
-                                               placeholder="Select joining date" autocomplete="off" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="fv-row mb-7">
-                                        <label class="fw-semibold fs-6 mb-2">
-                                            Retirement Date <span class="text-muted">(optional)</span>
-                                        </label>
-                                        <input name="retirement_date" id="retirement_date_input"
-                                               class="form-control form-control-solid"
-                                               placeholder="Select retirement date" autocomplete="off" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Status --}}
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Status</label>
-                                <div class="d-flex gap-6 flex-wrap mt-1">
-                                    @foreach (['active' => 'Active', 'retired' => 'Retired', 'resigned' => 'Resigned', 'deceased' => 'Deceased'] as $val => $label)
-                                        <div class="form-check form-check-custom form-check-solid">
-                                            <input class="form-check-input" type="radio"
-                                                   name="status" value="{{ $val }}"
-                                                   id="status_{{ $val }}"
-                                                   {{ $val === 'active' ? 'checked' : '' }} />
-                                            <label class="form-check-label fw-medium"
-                                                   for="status_{{ $val }}">{{ $label }}</label>
+                                {{-- CPF Account No & Name --}}
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="fv-row mb-7">
+                                            <label class="required fw-semibold fs-6 mb-2">CPF Account No.</label>
+                                            <input type="text" name="cpf_account_no"
+                                                class="form-control form-control-solid" placeholder="e.g. CPF/2026/001" />
                                         </div>
-                                    @endforeach
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="fv-row mb-7">
+                                            <label class="required fw-semibold fs-6 mb-2">Full Name</label>
+                                            <input type="text" name="name" class="form-control form-control-solid"
+                                                placeholder="Enter employee full name" />
+                                        </div>
+                                    </div>
                                 </div>
+
+                                {{-- Designation --}}
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">Designation</label>
+                                    <input type="text" name="designation" class="form-control form-control-solid"
+                                        placeholder="e.g. Assistant Director, Investment Officer" />
+                                </div>
+
+                                {{-- Email & Mobile --}}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="fv-row mb-7">
+                                            <label class="fw-semibold fs-6 mb-2">
+                                                Email <span class="text-muted">(optional)</span>
+                                            </label>
+                                            <input type="email" name="email" class="form-control form-control-solid"
+                                                placeholder="Enter email address" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="fv-row mb-7">
+                                            <label class="fw-semibold fs-6 mb-2">
+                                                Mobile Number <span class="text-muted">(optional)</span>
+                                            </label>
+                                            <input type="text" name="mobile_number" maxlength="20"
+                                                class="form-control form-control-solid" placeholder="e.g. 01712345678" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Joining Date & Retirement Date --}}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="fv-row mb-7">
+                                            <label class="required fw-semibold fs-6 mb-2">Joining Date</label>
+                                            <input name="joining_date" id="joining_date_input"
+                                                class="form-control form-control-solid" placeholder="Select joining date"
+                                                autocomplete="off" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="fv-row mb-7">
+                                            <label class="fw-semibold fs-6 mb-2">
+                                                Retirement Date <span class="text-muted">(optional)</span>
+                                            </label>
+                                            <input name="retirement_date" id="retirement_date_input"
+                                                class="form-control form-control-solid"
+                                                placeholder="Select retirement date" autocomplete="off" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Status --}}
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">Status</label>
+                                    <div class="d-flex gap-6 flex-wrap mt-1">
+                                        @foreach (['active' => 'Active', 'retired' => 'Retired', 'resigned' => 'Resigned', 'deceased' => 'Deceased'] as $val => $label)
+                                            <div class="form-check form-check-custom form-check-solid">
+                                                <input class="form-check-input" type="radio" name="status"
+                                                    value="{{ $val }}" id="status_{{ $val }}"
+                                                    {{ $val === 'active' ? 'checked' : '' }} />
+                                                <label class="form-check-label fw-medium"
+                                                    for="status_{{ $val }}">{{ $label }}</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+
                             </div>
+                            {{-- ── end Left Column ──────────────────────── --}}
 
-                        </div>
-                        {{-- ── end Left Column ──────────────────────── --}}
+                            {{-- ── Right Column ─────────────────────────── --}}
+                            <div class="col-lg-4">
 
-                        {{-- ── Right Column ─────────────────────────── --}}
-                        <div class="col-lg-4">
+                                {{-- Photo --}}
+                                <div class="fv-row mb-7">
+                                    <label class="d-block fw-semibold fs-6 mb-5">
+                                        Profile Photo <span class="text-muted">(optional)</span>
+                                    </label>
 
-                            {{-- Photo --}}
-                            <div class="fv-row mb-7">
-                                <label class="d-block fw-semibold fs-6 mb-5">
-                                    Profile Photo <span class="text-muted">(optional)</span>
-                                </label>
+                                    <style>
+                                        .image-input-placeholder {
+                                            background-image: url('{{ asset('assets/media/svg/files/blank-image.svg') }}');
+                                        }
 
-                                <style>
-                                    .image-input-placeholder {
-                                        background-image: url('{{ asset('assets/media/svg/files/blank-image.svg') }}');
-                                    }
-                                    [data-bs-theme="dark"] .image-input-placeholder {
-                                        background-image: url('{{ asset('assets/media/svg/files/blank-image-dark.svg') }}');
-                                    }
-                                </style>
+                                        [data-bs-theme="dark"] .image-input-placeholder {
+                                            background-image: url('{{ asset('assets/media/svg/files/blank-image-dark.svg') }}');
+                                        }
+                                    </style>
 
-                                {{--
+                                    {{--
                                     FIX (Blade): id="kt_employee_photo_input" lets the JS
                                     locate the KTImageInput instance. The file input has
                                     id="photo_file_input" so JS can read it directly.
                                 --}}
-                                <div class="image-input image-input-circle image-input-empty
+                                    <div class="image-input image-input-circle image-input-empty
                                             image-input-outline image-input-placeholder"
-                                     data-kt-image-input="true"
-                                     id="kt_employee_photo_input">
+                                        data-kt-image-input="true" id="kt_employee_photo_input">
+                                        <div class="image-input-wrapper w-125px h-125px"></div>
 
-                                    <div class="image-input-wrapper w-125px h-125px"></div>
-
-                                    <label class="btn btn-icon btn-circle btn-active-color-primary
+                                        <label
+                                            class="btn btn-icon btn-circle btn-active-color-primary
                                                   w-25px h-25px bg-body shadow"
-                                           data-kt-image-input-action="change"
-                                           data-bs-toggle="tooltip" title="Change photo">
-                                        <i class="ki-outline ki-pencil fs-7"></i>
-
-                                        {{--
+                                            data-kt-image-input-action="change" data-bs-toggle="tooltip"
+                                            title="Change photo">
+                                            <i class="ki-outline ki-pencil fs-7"></i>
+                                            {{--
                                             FIX (Blade): id="photo_file_input" — explicit ID
                                             so JS reads the file directly, bypassing
                                             KTImageInput's internal state.
                                         --}}
-                                        <input type="file" name="photo" id="photo_file_input"
-                                               accept=".png,.jpg,.jpeg" />
-                                        <input type="hidden" name="photo_remove" />
-                                    </label>
+                                            <input type="file" name="photo" id="photo_file_input"
+                                                accept=".png,.jpg,.jpeg" />
+                                            <input type="hidden" name="photo_remove" />
+                                        </label>
 
-                                    <span class="btn btn-icon btn-circle btn-active-color-primary
+                                        <span
+                                            class="btn btn-icon btn-circle btn-active-color-primary
                                                  w-25px h-25px bg-body shadow"
-                                          data-kt-image-input-action="cancel"
-                                          data-bs-toggle="tooltip" title="Cancel">
-                                        <i class="ki-outline ki-cross fs-2"></i>
-                                    </span>
+                                            data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel">
+                                            <i class="ki-outline ki-cross fs-2"></i>
+                                        </span>
 
-                                    <span class="btn btn-icon btn-circle btn-active-color-primary
+                                        <span
+                                            class="btn btn-icon btn-circle btn-active-color-primary
                                                  w-25px h-25px bg-body shadow"
-                                          data-kt-image-input-action="remove"
-                                          data-bs-toggle="tooltip" title="Remove">
-                                        <i class="ki-outline ki-cross fs-2"></i>
-                                    </span>
+                                            data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove">
+                                            <i class="ki-outline ki-cross fs-2"></i>
+                                        </span>
+                                    </div>
+                                    <div class="form-text">Allowed: png, jpg, jpeg. Max 512 KB.</div>
                                 </div>
 
-                                <div class="form-text">Allowed: png, jpg, jpeg. Max 512 KB.</div>
-                            </div>
+                                <div class="separator separator-dashed my-6"></div>
 
-                            <div class="separator separator-dashed my-6"></div>
-
-                            {{-- Pay Scale --}}
-                            <h4 class="fw-bold text-gray-800 mb-5">
-                                <i class="ki-outline ki-wallet fs-3 me-2 text-primary"></i>
-                                Pay Scale
-                                @if ($payScale)
-                                    <span class="badge badge-light-success ms-2 fs-8">{{ $payScale->name }}</span>
-                                @endif
-                            </h4>
-
-                            {{-- Grade --}}
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Grade</label>
-                                <select name="grade" id="grade_select"
-                                        class="form-select form-select-solid"
-                                        data-control="select2"
-                                        data-placeholder="Select a grade"
-                                        data-hide-search="true">
-                                    <option></option>
-                                    @if ($grades)
-                                        @foreach ($grades as $grade)
-                                            <option value="{{ $grade }}">Grade {{ $grade }}</option>
-                                        @endforeach
+                                {{-- Pay Scale --}}
+                                <h4 class="fw-bold text-gray-800 mb-5">
+                                    <i class="ki-outline ki-wallet fs-3 me-2 text-primary"></i>
+                                    Pay Scale
+                                    @if ($payScale)
+                                        <span class="badge badge-light-success ms-2 fs-8">{{ $payScale->name }}</span>
                                     @endif
-                                </select>
-                            </div>
-
-                            {{-- Basic Salary (populated via AJAX) --}}
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Basic Salary</label>
-                                <select name="pay_scale_step_id" id="basic_salary_select"
-                                        class="form-select form-select-solid"
-                                        data-placeholder="Select grade first"
-                                        disabled>
-                                    <option></option>
-                                </select>
-                                <div class="form-text" id="salary_hint"></div>
-                            </div>
-
-                            <input type="hidden" name="pay_scale_id" value="{{ $payScale?->id }}" />
-
-                        </div>
-                        {{-- ── end Right Column ─────────────────────── --}}
-
-                    </div>
-                </div>
-            </div>
-            {{-- end Step 1 --}}
-
-            {{-- ====================================================== --}}
-            {{-- STEP 2 — CPF Opening Balance                           --}}
-            {{-- ====================================================== --}}
-            <div data-kt-stepper-element="content" class="d-none">
-                <div class="w-100">
-                    <div class="pb-10 pb-lg-15">
-                        <h2 class="fw-bold text-gray-900">CPF Opening Balance</h2>
-                        <div class="text-muted fw-semibold fs-6">
-                            Enter the initial CPF balances. Use 0 for a fresh account.
-                        </div>
-                    </div>
-
-                    <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4 mb-8">
-                        <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
-                        <div class="fw-semibold">
-                            <div class="fs-6 text-gray-700">
-                                <strong>All amounts are integers (BDT).</strong>
-                                Opening balances seed the CPF ledger. Enter 0 if this is a new account.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">
-                                    <i class="ki-outline ki-people fs-5 me-1 text-success"></i>
-                                    Employee (Own) Contribution
-                                </label>
-                                <div class="input-group input-group-solid">
-                                    <span class="input-group-text fw-bold">৳</span>
-                                    <input type="number" name="opening_employee_contribution"
-                                           class="form-control form-control-solid" min="0" value="0" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">
-                                    <i class="ki-outline ki-bank fs-5 me-1 text-info"></i>
-                                    Government Contribution
-                                </label>
-                                <div class="input-group input-group-solid">
-                                    <span class="input-group-text fw-bold">৳</span>
-                                    <input type="number" name="opening_government_contribution"
-                                           class="form-control form-control-solid" min="0" value="0" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">
-                                    <i class="ki-outline ki-chart-line-up fs-5 me-1 text-warning"></i>
-                                    Bank Interest
-                                </label>
-                                <div class="input-group input-group-solid">
-                                    <span class="input-group-text fw-bold">৳</span>
-                                    <input type="number" name="opening_bank_interest"
-                                           class="form-control form-control-solid" min="0" value="0" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">
-                                    <i class="ki-outline ki-arrow-down fs-5 me-1 text-danger"></i>
-                                    Outstanding Advance (Loan)
-                                </label>
-                                <div class="input-group input-group-solid">
-                                    <span class="input-group-text fw-bold">৳</span>
-                                    <input type="number" name="opening_advance_balance"
-                                           class="form-control form-control-solid" min="0" value="0" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Effective Date</label>
-                                <input name="opening_effective_date" id="opening_effective_date_input"
-                                       class="form-control form-control-solid"
-                                       placeholder="Balance as of date" autocomplete="off" />
-                                <div class="form-text">Date from which these balances apply.</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2">Net Opening Balance</label>
-                                <div class="d-flex align-items-center bg-light-warning rounded p-4">
-                                    <span class="fw-bold fs-4 text-warning"
-                                          id="net_opening_balance_display">৳ 0</span>
-                                </div>
-                                <div class="form-text">(Own + Govt + Interest) &minus; Advance</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {{-- end Step 2 --}}
-
-            {{-- ====================================================== --}}
-            {{-- STEP 3 — Completion                                     --}}
-            {{-- ====================================================== --}}
-            <div data-kt-stepper-element="content" class="d-none">
-                <div class="w-100">
-                    <div class="pb-8 pb-lg-10">
-                        <h2 class="fw-bold text-gray-900">Employee Registered!</h2>
-                        <div class="text-muted fw-semibold fs-6">
-                            The employee has been successfully added to the CPF system.
-                        </div>
-                    </div>
-
-                    <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6 mb-8">
-                        <i class="ki-outline ki-check-circle fs-2tx text-success me-4"></i>
-                        <div class="d-flex flex-stack flex-grow-1">
-                            <div class="fw-semibold">
-                                <h4 class="text-gray-900 fw-bold">
-                                    <span id="created_employee_name"></span>
-                                    &mdash; CPF A/C:
-                                    <span id="created_cpf_account" class="text-primary"></span>
                                 </h4>
+
+                                {{-- Grade --}}
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">Grade</label>
+                                    <select name="grade" id="grade_select" class="form-select form-select-solid"
+                                        data-control="select2" data-placeholder="Select a grade" data-hide-search="true">
+                                        <option></option>
+                                        @if ($grades)
+                                            @foreach ($grades as $grade)
+                                                <option value="{{ $grade }}">Grade {{ $grade }}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+
+                                {{-- Basic Salary (populated via AJAX) --}}
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">Basic Salary</label>
+                                    <select name="pay_scale_step_id" id="basic_salary_select"
+                                        class="form-select form-select-solid" data-placeholder="Select grade first"
+                                        disabled>
+                                        <option></option>
+                                    </select>
+                                    <div class="form-text" id="salary_hint"></div>
+                                </div>
+
+                                <input type="hidden" name="pay_scale_id" value="{{ $payScale?->id }}" />
+
+                            </div>
+                            {{-- ── end Right Column ─────────────────────── --}}
+
+                        </div>
+                    </div>
+                </div>
+                {{-- end Step 1 --}}
+
+                {{-- ====================================================== --}}
+                {{-- STEP 2 — CPF Opening Balance                           --}}
+                {{-- ====================================================== --}}
+                <div data-kt-stepper-element="content" class="d-none">
+                    <div class="w-100">
+
+                        <div class="pb-10 pb-lg-15">
+                            <h2 class="fw-bold text-gray-900">CPF Opening Balance</h2>
+                            <div class="text-muted fw-semibold fs-6">
+                                Enter the initial CPF balances. Use 0 for a fresh account.
+                            </div>
+                        </div>
+
+                        <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4 mb-8">
+                            <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
+                            <div class="fw-semibold">
                                 <div class="fs-6 text-gray-700">
-                                    The CPF account has been initialized with the opening balances.
-                                    You can now manage contributions and advances from the employee profile.
+                                    <strong>All amounts are integers (BDT).</strong>
+                                    Opening balances seed the CPF ledger. Enter 0 if this is a new account.
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">
+                                        <i class="ki-outline ki-people fs-5 me-1 text-success"></i>
+                                        Employee (Own) Contribution
+                                    </label>
+                                    <div class="input-group input-group-solid">
+                                        <span class="input-group-text fw-bold">৳</span>
+                                        <input type="number" name="opening_employee_contribution"
+                                            class="form-control form-control-solid" min="0" value="0" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">
+                                        <i class="ki-outline ki-bank fs-5 me-1 text-info"></i>
+                                        Government Contribution
+                                    </label>
+                                    <div class="input-group input-group-solid">
+                                        <span class="input-group-text fw-bold">৳</span>
+                                        <input type="number" name="opening_government_contribution"
+                                            class="form-control form-control-solid" min="0" value="0" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">
+                                        <i class="ki-outline ki-chart-line-up fs-5 me-1 text-warning"></i>
+                                        Bank Interest
+                                    </label>
+                                    <div class="input-group input-group-solid">
+                                        <span class="input-group-text fw-bold">৳</span>
+                                        <input type="number" name="opening_bank_interest"
+                                            class="form-control form-control-solid" min="0" value="0" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">
+                                        <i class="ki-outline ki-arrow-down fs-5 me-1 text-danger"></i>
+                                        Outstanding Advance (Loan)
+                                    </label>
+                                    <div class="input-group input-group-solid">
+                                        <span class="input-group-text fw-bold">৳</span>
+                                        <input type="number" name="opening_advance_balance"
+                                            class="form-control form-control-solid" min="0" value="0" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">Effective Date</label>
+                                    <input name="opening_effective_date" id="opening_effective_date_input"
+                                        class="form-control form-control-solid" placeholder="Balance as of date"
+                                        autocomplete="off" />
+                                    <div class="form-text">Date from which these balances apply.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="fv-row mb-7">
+                                    <label class="fw-semibold fs-6 mb-2">Net Opening Balance</label>
+                                    <div class="d-flex align-items-center bg-light-warning rounded p-4">
+                                        <span class="fw-bold fs-4 text-warning" id="net_opening_balance_display">৳
+                                            0</span>
+                                    </div>
+                                    <div class="form-text">(Own + Govt + Interest) &minus; Advance</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                {{-- end Step 2 --}}
+
+                {{-- ====================================================== --}}
+                {{-- STEP 3 — Completion                                     --}}
+                {{-- ====================================================== --}}
+                <div data-kt-stepper-element="content" class="d-none">
+                    <div class="w-100">
+
+                        <div class="pb-8 pb-lg-10">
+                            <h2 class="fw-bold text-gray-900">Employee Registered!</h2>
+                            <div class="text-muted fw-semibold fs-6">
+                                The employee has been successfully added to the CPF system.
+                            </div>
+                        </div>
+
+                        <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6 mb-8">
+                            <i class="ki-outline ki-check-circle fs-2tx text-success me-4"></i>
+                            <div class="d-flex flex-stack flex-grow-1">
+                                <div class="fw-semibold">
+                                    <h4 class="text-gray-900 fw-bold">
+                                        <span id="created_employee_name"></span>
+                                        &mdash; CPF A/C:
+                                        <span id="created_cpf_account" class="text-primary"></span>
+                                    </h4>
+                                    <div class="fs-6 text-gray-700">
+                                        The CPF account has been initialized with the opening balances.
+                                        You can now manage contributions and advances from the employee profile.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <a href="#" id="btn_view_employee" class="btn btn-primary btn-sm">
+                                <i class="ki-outline ki-eye fs-4 me-1"></i> View Employee
+                            </a>
+                            <a href="{{ route('employees.create') }}" class="btn btn-light-primary btn-sm">
+                                <i class="ki-outline ki-plus fs-4 me-1"></i> Add Another
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+                {{-- end Step 3 --}}
+
+                {{-- ====================================================== --}}
+                {{-- Action Buttons                                          --}}
+                {{--                                                         --}}
+                {{-- FIX: the Back / Continue buttons now carry              --}}
+                {{-- data-kt-stepper-action="previous|next". KTStepper       --}}
+                {{-- intercepts the click and fires kt.stepper.previous /    --}}
+                {{-- kt.stepper.next, where the JS validates the CURRENT     --}}
+                {{-- step before advancing. The Submit button is NOT a       --}}
+                {{-- stepper action — it runs the AJAX save handler instead. --}}
+                {{-- ====================================================== --}}
+                <div class="d-flex flex-stack pt-10">
+                    <div>
+                        <button type="button" id="btn_prev" data-kt-stepper-action="previous"
+                            class="btn btn-lg btn-light-primary me-3 d-none">
+                            <i class="ki-outline ki-arrow-left fs-4 me-1"></i> Back
+                        </button>
                     </div>
 
-                    <div class="d-flex gap-3">
-                        <a href="#" id="btn_view_employee" class="btn btn-primary btn-sm">
-                            <i class="ki-outline ki-eye fs-4 me-1"></i> View Employee
-                        </a>
-                        <a href="{{ route('employees.create') }}" class="btn btn-light-primary btn-sm">
-                            <i class="ki-outline ki-plus fs-4 me-1"></i> Add Another
-                        </a>
+                    <div>
+                        <button type="button" id="btn_submit" class="btn btn-lg btn-primary me-3 d-none">
+                            <span class="indicator-label">
+                                Submit <i class="ki-outline ki-arrow-right fs-3 ms-2 me-0"></i>
+                            </span>
+                            <span class="indicator-progress">
+                                Please wait&hellip;
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+
+                        <button type="button" id="btn_next" data-kt-stepper-action="next"
+                            class="btn btn-lg btn-primary">
+                            Continue <i class="ki-outline ki-arrow-right fs-4 ms-1 me-0"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-            {{-- end Step 3 --}}
+                {{-- end Actions --}}
 
-            {{-- ====================================================== --}}
-            {{-- Action Buttons                                          --}}
-            {{-- ====================================================== --}}
-            <div class="d-flex flex-stack pt-10">
-                <div>
-                    <button type="button" id="btn_prev" class="btn btn-lg btn-light-primary me-3 d-none">
-                        <i class="ki-outline ki-arrow-left fs-4 me-1"></i> Back
-                    </button>
-                </div>
-                <div>
-                    <button type="button" id="btn_submit" class="btn btn-lg btn-primary me-3 d-none">
-                        <span class="indicator-label">
-                            Submit <i class="ki-outline ki-arrow-right fs-3 ms-2 me-0"></i>
-                        </span>
-                        <span class="indicator-progress">
-                            Please wait&hellip;
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                        </span>
-                    </button>
-                    <button type="button" id="btn_next" class="btn btn-lg btn-primary">
-                        Continue <i class="ki-outline ki-arrow-right fs-4 ms-1 me-0"></i>
-                    </button>
-                </div>
-            </div>
-            {{-- end Actions --}}
+            </form>
+        </div>
+        {{-- ── end Main Content ─────────────────────────────────────────── --}}
 
-        </form>
     </div>
-    {{-- ── end Main Content ─────────────────────────────────────────── --}}
+    {{-- end Stepper --}}
 
-</div>
-{{-- end Stepper --}}
-
-{{-- JS config object --}}
-<script>
-    var EmployeeConfig = {
-        stepsUrl  : "{{ route('employees.steps-by-grade') }}",
-        storeUrl  : "{{ route('employees.store') }}",
-        showUrl   : "{{ route('employees.show', ':id') }}",
-        csrfToken : "{{ csrf_token() }}"
-    };
-</script>
+    {{-- JS config object --}}
+    <script>
+        var EmployeeConfig = {
+            stepsUrl: "{{ route('employees.steps-by-grade') }}",
+            storeUrl: "{{ route('employees.store') }}",
+            showUrl: "{{ route('employees.show', ':id') }}",
+            csrfToken: "{{ csrf_token() }}"
+        };
+    </script>
 
 @endsection
 
