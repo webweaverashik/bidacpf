@@ -55,7 +55,6 @@
         </div>
 
         <div class="card-body py-10">
-            {{-- NOTE: enctype="multipart/form-data" for semantic correctness / native fallback. --}}
             <form id="kt_edit_employee_form" class="w-100" novalidate="novalidate" enctype="multipart/form-data">
                 @csrf
 
@@ -166,51 +165,132 @@
                             </div>
                         </div>
 
-                        {{-- Pay Scale Section --}}
+                        {{-- ============================================================ --}}
+                        {{--  Pay Scale Section                                            --}}
+                        {{-- ============================================================ --}}
                         <div class="separator separator-dashed my-8"></div>
 
-                        <h4 class="fw-bold text-gray-800 mb-5">
+                        <h4 class="fw-bold text-gray-800 mb-2">
                             <i class="ki-outline ki-wallet fs-3 me-2 text-primary"></i>
-                            Pay Scale
-                            @if ($payScale)
-                                <span class="badge badge-light-success ms-2 fs-8">{{ $payScale->name }}</span>
-                            @endif
+                            Pay Scale Assignment
                         </h4>
 
+                        {{-- ── Permission notices ─────────────────────────────────────── --}}
+                        @if (!$assignedActive && !$canChangePayScale)
+                            {{-- Inactive scale + no permission to change --}}
+                            <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-4 mb-6">
+                                <i class="ki-outline ki-shield-cross fs-2tx text-danger me-3"></i>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-1 text-danger fw-bold">Pay Scale Locked</h6>
+                                    <span class="fs-7 text-gray-700">
+                                        The assigned pay scale <strong>{{ $assignedScaleName ?? 'N/A' }}</strong> is
+                                        <strong>inactive</strong>. You do not have permission to change the pay scale.
+                                        Contact an administrator.
+                                    </span>
+                                </div>
+                            </div>
+                        @elseif (!$assignedActive && $canChangePayScale)
+                            {{-- Inactive scale + Admin can change --}}
+                            <div
+                                class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-4 mb-6">
+                                <i class="ki-outline ki-information-5 fs-2tx text-warning me-3"></i>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-1 text-warning fw-bold">Inactive Pay Scale — Action Required</h6>
+                                    <span class="fs-7 text-gray-700">
+                                        The assigned pay scale <strong>{{ $assignedScaleName ?? 'N/A' }}</strong> is
+                                        <strong>inactive</strong>. Please select a new <strong>active</strong> pay scale,
+                                        then choose the appropriate grade and basic salary.
+                                    </span>
+                                </div>
+                            </div>
+                        @elseif ($assignedActive && !$canChangeGradeSalary)
+                            {{-- Active scale but user has no permission to change grade/salary --}}
+                            <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-4 mb-6">
+                                <i class="ki-outline ki-information-5 fs-2tx text-info me-3"></i>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-1 text-info fw-bold">Pay Scale (Read-Only)</h6>
+                                    <span class="fs-7 text-gray-700">
+                                        You do not have permission to change the grade or basic salary.
+                                    </span>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- ── Pay Scale Selector (Admin only, when multiple active or assigned inactive) ── --}}
+                        @if ($canChangePayScale)
+                            <div class="fv-row mb-7" id="pay_scale_row">
+                                <label class="required fw-semibold fs-6 mb-2">Pay Scale</label>
+                                <select name="pay_scale_id" id="pay_scale_select" class="form-select form-select-solid"
+                                    data-control="select2" data-placeholder="Select a pay scale" data-hide-search="true">
+                                    <option></option>
+                                    @foreach ($payScales as $scale)
+                                        <option value="{{ $scale->id }}"
+                                            data-active="{{ $scale->is_active ? '1' : '0' }}"
+                                            {{ (int) $assignedScaleId === (int) $scale->id ? 'selected' : '' }}>
+                                            {{ $scale->name }}
+                                            ({{ $scale->effective_year }})
+                                            {{ $scale->is_active ? '' : '— Inactive' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text" id="pay_scale_hint"></div>
+                            </div>
+                        @else
+                            {{-- Hidden — always send the assigned pay scale id --}}
+                            <input type="hidden" name="pay_scale_id" value="{{ $assignedScaleId }}" />
+
+                            {{-- Read-only display badge --}}
+                            <div class="mb-6">
+                                <span class="fw-semibold fs-6 text-gray-700 me-2">Current Pay Scale:</span>
+                                <span
+                                    class="badge {{ $assignedActive ? 'badge-light-success' : 'badge-light-danger' }} fs-7">
+                                    {{ $assignedScaleName ?? 'N/A' }}
+                                    {{ $assignedActive ? '' : '(Inactive)' }}
+                                </span>
+                            </div>
+                        @endif
+
+                        {{-- ── Grade & Basic Salary ───────────────────────────────────── --}}
                         <div class="row">
                             <div class="col-md-4">
-                                {{-- Grade --}}
                                 <div class="fv-row mb-7">
-                                    <label class="required fw-semibold fs-6 mb-2">Grade</label>
+                                    <label class="{{ $canChangeGradeSalary ? 'required' : '' }} fw-semibold fs-6 mb-2">
+                                        Grade
+                                    </label>
                                     <select name="grade" id="grade_select" class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select a grade" data-hide-search="true">
+                                        data-control="select2" data-placeholder="Select a grade" data-hide-search="true"
+                                        {{ !$canChangeGradeSalary ? 'disabled' : '' }}>
                                         <option></option>
-                                        @if ($grades)
-                                            @foreach ($grades as $grade)
-                                                <option value="{{ $grade }}"
-                                                    {{ (int) old('grade', $employee->grade) === (int) $grade ? 'selected' : '' }}>
-                                                    Grade {{ $grade }}
-                                                </option>
-                                            @endforeach
-                                        @endif
+                                        @foreach ($grades as $grade)
+                                            <option value="{{ $grade }}"
+                                                {{ (int) old('grade', $currentGrade) === (int) $grade ? 'selected' : '' }}>
+                                                Grade {{ $grade }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-8">
-                                {{-- Basic Salary (populated via AJAX) --}}
                                 <div class="fv-row mb-7">
-                                    <label class="required fw-semibold fs-6 mb-2">Basic Salary</label>
+                                    <label class="{{ $canChangeGradeSalary ? 'required' : '' }} fw-semibold fs-6 mb-2">
+                                        Basic Salary
+                                    </label>
                                     <select name="pay_scale_step_id" id="basic_salary_select"
-                                        class="form-select form-select-solid" data-placeholder="Select grade first"
-                                        disabled>
+                                        class="form-select form-select-solid"
+                                        data-placeholder="{{ $canChangeGradeSalary ? 'Select grade first' : 'No permission' }}"
+                                        {{ !$canChangeGradeSalary ? 'disabled' : '' }}>
                                         <option></option>
+                                        {{-- Steps are pre-populated for the current grade on page load via JS --}}
                                     </select>
                                     <div class="form-text" id="salary_hint"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <input type="hidden" name="pay_scale_id" value="{{ $payScale?->id }}" />
+                        {{-- If user cannot change grade/salary, send the existing step id as hidden --}}
+                        @if (!$canChangeGradeSalary)
+                            <input type="hidden" name="pay_scale_step_id" value="{{ $employee->pay_scale_step_id }}" />
+                        @endif
 
                     </div>
                     {{-- ── end Left Column ──────────────────────────────────── --}}
@@ -234,7 +314,6 @@
                                 }
                             </style>
 
-                            {{-- Pre-populate with existing photo --}}
                             <div class="image-input image-input-circle image-input-outline
                                     {{ $employee->photo ? '' : 'image-input-empty image-input-placeholder' }}"
                                 data-kt-image-input="true" id="kt_employee_photo_input">
@@ -269,7 +348,7 @@
                         {{-- CPF Account info (read-only) --}}
                         <div class="separator separator-dashed my-6"></div>
 
-                        <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-4">
+                        <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-4 mb-5">
                             <i class="ki-outline ki-information-5 fs-2tx text-info me-3"></i>
                             <div class="fw-semibold">
                                 <div class="fs-7 text-gray-700">
@@ -280,6 +359,38 @@
                                     </span>
                                 </div>
                             </div>
+                        </div>
+
+                        {{-- Permission badge summary --}}
+                        <div class="card bg-light border-0 p-4">
+                            <div class="fs-7 fw-semibold text-gray-700 mb-2">
+                                <i class="ki-outline ki-shield-tick fs-5 me-1 text-success"></i>
+                                Your Edit Permissions
+                            </div>
+                            <ul class="list-unstyled mb-0 fs-8 text-gray-600">
+                                <li class="mb-1">
+                                    <i class="ki-outline ki-check fs-7 text-success me-1"></i>
+                                    Personal details &amp; status
+                                </li>
+                                <li class="mb-1">
+                                    @if ($canChangePayScale)
+                                        <i class="ki-outline ki-check fs-7 text-success me-1"></i>
+                                        Change pay scale
+                                    @else
+                                        <i class="ki-outline ki-cross fs-7 text-danger me-1"></i>
+                                        Change pay scale
+                                    @endif
+                                </li>
+                                <li class="mb-1">
+                                    @if ($canChangeGradeSalary)
+                                        <i class="ki-outline ki-check fs-7 text-success me-1"></i>
+                                        Change grade &amp; basic salary
+                                    @else
+                                        <i class="ki-outline ki-cross fs-7 text-danger me-1"></i>
+                                        Change grade &amp; basic salary
+                                    @endif
+                                </li>
+                            </ul>
                         </div>
 
                     </div>
@@ -310,16 +421,26 @@
         </div>
     </div>
 
-    {{-- JS config --}}
+    {{-- ================================================================== --}}
+    {{--  JS Configuration Object                                            --}}
+    {{-- ================================================================== --}}
     <script>
         var EmployeeEditConfig = {
             stepsUrl: "{{ route('employees.steps-by-grade') }}",
+            gradesByScaleUrl: "{{ route('employees.grades-by-pay-scale') }}",
             updateUrl: "{{ route('employees.update', $employee) }}",
             showUrl: "{{ route('employees.show', $employee) }}",
             csrfToken: "{{ csrf_token() }}",
+
+            // Permission flags (set by controller)
+            canChangePayScale: {{ $canChangePayScale ? 'true' : 'false' }},
+            canChangeGradeSalary: {{ $canChangeGradeSalary ? 'true' : 'false' }},
+
+            // Current employee pay scale state
             employee: {
-                grade: {{ $employee->grade ?? 'null' }},
-                pay_scale_step_id: {{ $employee->pay_scale_step_id ?? 'null' }},
+                pay_scale_step_id: {{ $currentStepId ?? 'null' }},
+                grade: {{ $currentGrade ?? 'null' }},
+                pay_scale_id: {{ $assignedScaleId ?? 'null' }},
             }
         };
     </script>

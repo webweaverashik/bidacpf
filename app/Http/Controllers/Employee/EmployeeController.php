@@ -7,10 +7,12 @@ use App\Http\Requests\Employee\UpdateEmployeeRequest;
 use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;
 use App\Models\Employee\PayScale;
+use App\Models\Employee\PayScaleStep;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class EmployeeController extends Controller
@@ -26,28 +28,77 @@ class EmployeeController extends Controller
 
     public function create(): View
     {
-        $payScale = PayScale::active()->first();
-        $grades   = $payScale?->steps()
+        // Load ALL active pay scales.
+        // When only one exists the blade hides the selector (legacy behaviour).
+        // When multiple exist the blade shows a pay scale <select>.
+        $payScales = PayScale::active()
+            ->orderByDesc('effective_year')
+            ->get(['id', 'name', 'effective_year', 'is_active']);
+
+        // Default / pre-selected pay scale (most recent active one).
+        $defaultPayScale = $payScales->first();
+
+        // Grades for the default scale — pre-populate the grade dropdown.
+        $grades = $defaultPayScale
+            ? $defaultPayScale->steps()
             ->select('grade')
             ->distinct()
             ->orderBy('grade')
-            ->pluck('grade');
+            ->pluck('grade')
+            : collect();
 
-        return view('employees.create', compact('payScale', 'grades'));
+        return view('employees.create', compact('payScales', 'defaultPayScale', 'grades'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | AJAX: grades for a given pay scale
+    |--------------------------------------------------------------------------
+    | Used by the create AND edit forms when the pay scale selector changes.
+    */
+    public function gradesByPayScale(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'pay_scale_id' => ['required', 'integer', 'exists:pay_scales,id'],
+        ]);
+
+        $payScale = PayScale::find($validated['pay_scale_id']);
+
+        $grades = $payScale
+            ? $payScale->steps()
+            ->select('grade')
+            ->distinct()
+            ->orderBy('grade')
+            ->pluck('grade')
+            : collect();
+
+        return response()->json(['grades' => $grades]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AJAX: steps (basic salary) for a grade
+    |--------------------------------------------------------------------------
+    | pay_scale_id is REQUIRED for the multi-scale create/edit form.
+    | Falls back to the single active scale only when omitted (legacy support).
+    */
     public function stepsByGrade(Request $request): JsonResponse
     {
-        $request->validate(['grade' => 'required|integer|min:1|max:20']);
+        $validated = $request->validate([
+            'grade'        => ['required', 'integer', 'min:1', 'max:20'],
+            'pay_scale_id' => ['nullable', 'integer', 'exists:pay_scales,id'],
+        ]);
 
-        $payScale = PayScale::active()->first();
+        $payScale = ! empty($validated['pay_scale_id'])
+            ? PayScale::find($validated['pay_scale_id'])
+            : PayScale::active()->first();
 
         if (! $payScale) {
             return response()->json(['steps' => []], 200);
         }
 
         $steps = $payScale->steps()
-            ->where('grade', $request->integer('grade'))
+            ->where('grade', $validated['grade'])
             ->orderBy('basic_salary')
             ->get(['id', 'grade', 'step', 'basic_salary']);
 
@@ -72,9 +123,7 @@ class EmployeeController extends Controller
                 'status'            => $request->validated('status'),
             ]);
 
-            // ──────────────────────────────────────────────────────────────
-            // PHOTO UPLOAD
-            // ──────────────────────────────────────────────────────────────
+            // ── PHOTO UPLOAD ──────────────────────────────────────────────────
             if (
                 $request->hasFile('photo') &&
                 $request->file('photo')->isValid() &&
@@ -92,8 +141,8 @@ class EmployeeController extends Controller
                 $file->move($uploadDir, $filename);
                 $employee->update(['photo' => 'uploads/employees/photos/' . $filename]);
             }
-            // ──────────────────────────────────────────────────────────────
 
+            // ── SALARY HISTORY — initial entry ───────────────────────────────
             EmployeeSalaryHistory::create([
                 'employee_id'       => $employee->id,
                 'pay_scale_step_id' => $employee->pay_scale_step_id,
@@ -128,16 +177,93 @@ class EmployeeController extends Controller
         return view('employees.show', compact('employee'));
     }
 
-    public function edit(Employee $employee): View
+    /**
+     * Show the employee edit form.
+     *
+     * Permission matrix:
+     * ┌───────────────────────────────┬───────┬─────────────┬─────────┐
+     * │ Scenario                      │ Admin │ CPF Officer │ Others  │
+     * ├───────────────────────────────┼───────┼─────────────┼─────────┤
+     * │ Assigned scale ACTIVE         │  PS+G │      G      │   –     │
+     * │ Assigned scale INACTIVE       │  PS+G │      –      │   –     │
+     * │ Multiple active scales exist  │  PS+G │      G*     │   –     │
+     * └───────────────────────────────┴───────┴─────────────┴─────────┘
+     * PS = may change pay scale | G = may change grade + basic salary
+     * * CPF Officer only within the currently assigned (active) scale.
+     */
+    public function edit(Request $request, Employee $employee): View
     {
-        $payScale = PayScale::active()->first();
-        $grades   = $payScale?->steps()
+        $user = $request->user();
+        $employee->load('payScaleStep');
+
+        $assignedStep  = $employee->payScaleStep;
+        $assignedScale = $assignedStep
+            ? PayScale::find($assignedStep->pay_scale_id)
+            : null;
+
+        $assignedScaleId   = $assignedScale?->id;
+        $assignedScaleName = $assignedScale?->name;
+        $assignedActive    = (bool) ($assignedScale?->is_active);
+        $multipleActive    = PayScale::active()->count() > 1;
+        $isAdmin           = $user->isAdmin();
+        $isCpf             = $user->isCpfOfficer();
+
+        /*
+         * canChangePayScale:
+         *   Admin can switch scale when:
+         *     (a) there are multiple active scales, OR
+         *     (b) the assigned scale is inactive (must migrate to a new active one)
+         */
+        $canChangePayScale = $isAdmin && ($multipleActive || ! $assignedActive);
+
+        /*
+         * canChangeGradeSalary:
+         *   - Requires the assigned scale to be active (otherwise the fields
+         *     are meaningless until a valid scale is chosen first).
+         *   - Admin OR CPF Officer when active.
+         *   - Nobody when inactive.
+         */
+        $canChangeGradeSalary = $assignedActive && ($isAdmin || $isCpf);
+
+        // All pay scales (active + inactive) for the pay-scale selector.
+        // Inactive options will be shown but blocked from selection via JS.
+        $payScales = PayScale::orderByDesc('is_active')
+            ->orderByDesc('effective_year')
+            ->get(['id', 'name', 'is_active', 'effective_year']);
+
+        // Grades for the currently assigned scale (pre-populate the dropdown).
+        $grades = $assignedScale
+            ? $assignedScale->steps()
             ->select('grade')
             ->distinct()
             ->orderBy('grade')
-            ->pluck('grade');
+            ->pluck('grade')
+            : collect();
 
-        return view('employees.edit', compact('employee', 'payScale', 'grades'));
+        $currentGrade  = $assignedStep?->grade;
+        $currentStepId = $assignedStep?->id;
+
+        // Pre-load steps for the current grade (only needed when user can edit).
+        $steps = ($assignedScale && $currentGrade !== null)
+            ? $assignedScale->steps()
+            ->where('grade', $currentGrade)
+            ->orderBy('basic_salary')
+            ->get(['id', 'grade', 'step', 'basic_salary'])
+            : collect();
+
+        return view('employees.edit', compact(
+            'employee',
+            'payScales',
+            'assignedScaleId',
+            'assignedScaleName',
+            'assignedActive',
+            'grades',
+            'steps',
+            'currentGrade',
+            'currentStepId',
+            'canChangePayScale',
+            'canChangeGradeSalary',
+        ));
     }
 
     /**
@@ -145,6 +271,8 @@ class EmployeeController extends Controller
      */
     public function update(UpdateEmployeeRequest $request, Employee $employee): JsonResponse | RedirectResponse
     {
+        $this->authorizePayScaleChange($request, $employee);
+
         DB::transaction(function () use ($request, $employee) {
             $employee->update([
                 'cpf_account_no'    => $request->validated('cpf_account_no'),
@@ -158,15 +286,12 @@ class EmployeeController extends Controller
                 'status'            => $request->validated('status'),
             ]);
 
-            // ──────────────────────────────────────────────────────────────
-            // PHOTO: replace only when a real new file is uploaded
-            // ──────────────────────────────────────────────────────────────
+            // ── PHOTO REPLACEMENT ─────────────────────────────────────────────
             if (
                 $request->hasFile('photo') &&
                 $request->file('photo')->isValid() &&
                 $request->file('photo')->getSize() > 0
             ) {
-                // Delete the old photo from disk (if any)
                 if ($employee->photo && file_exists(public_path($employee->photo))) {
                     @unlink(public_path($employee->photo));
                 }
@@ -184,9 +309,7 @@ class EmployeeController extends Controller
                 $employee->update(['photo' => 'uploads/employees/photos/' . $filename]);
             }
 
-            // ──────────────────────────────────────────────────────────────
-            // PHOTO REMOVE: client sent photo_remove = 1
-            // ──────────────────────────────────────────────────────────────
+            // ── PHOTO REMOVAL ─────────────────────────────────────────────────
             if ($request->input('photo_remove') == '1') {
                 if ($employee->photo && file_exists(public_path($employee->photo))) {
                     @unlink(public_path($employee->photo));
@@ -194,9 +317,7 @@ class EmployeeController extends Controller
                 $employee->update(['photo' => null]);
             }
 
-            // ──────────────────────────────────────────────────────────────
-            // PAY SCALE STEP: record salary history if the step changed
-            // ──────────────────────────────────────────────────────────────
+            // ── SALARY HISTORY ────────────────────────────────────────────────
             if ($employee->wasChanged('pay_scale_step_id')) {
                 EmployeeSalaryHistory::create([
                     'employee_id'       => $employee->id,
@@ -222,6 +343,75 @@ class EmployeeController extends Controller
 
         return redirect()->route('employees.show', $employee)
             ->with('success', 'Employee updated successfully.');
+    }
+
+    /**
+     * Server-side authorization guard for pay-scale / grade / salary changes.
+     *
+     * Rules (mirrors the blade permission logic):
+     *   1. No change in step id → always OK.
+     *   2. Pay scale changed    → must be Admin + target scale must be active.
+     *   3. Grade/salary changed within same scale → Admin or CPF Officer,
+     *      and the assigned scale must be active.
+     */
+    private function authorizePayScaleChange(UpdateEmployeeRequest $request, Employee $employee): void
+    {
+        $user          = $request->user();
+        $currentStepId = (int) $employee->pay_scale_step_id;
+        $chosenStepId  = (int) $request->validated('pay_scale_step_id');
+
+        // No change — nothing to authorize
+        if ($chosenStepId === $currentStepId) {
+            return;
+        }
+
+        $chosenStep = PayScaleStep::find($chosenStepId);
+
+        if (! $chosenStep) {
+            throw ValidationException::withMessages([
+                'pay_scale_step_id' => 'The selected basic salary is invalid.',
+            ]);
+        }
+
+        $assignedStep   = $employee->payScaleStep;
+        $assignedScale  = $assignedStep ? PayScale::find($assignedStep->pay_scale_id) : null;
+        $assignedActive = (bool) ($assignedScale?->is_active);
+
+        // Determine whether the pay scale itself is being changed
+        $scaleChanged = ! $assignedScale || ((int) $chosenStep->pay_scale_id !== (int) $assignedScale->id);
+
+        // ── Rule 2: Pay scale change ─────────────────────────────────────────
+        if ($scaleChanged) {
+            if (! $user->isAdmin()) {
+                throw ValidationException::withMessages([
+                    'pay_scale_step_id' => 'Only an administrator can change the pay scale.',
+                ]);
+            }
+
+            $targetScale = PayScale::find($chosenStep->pay_scale_id);
+
+            if (! $targetScale || ! $targetScale->is_active) {
+                throw ValidationException::withMessages([
+                    'pay_scale_step_id' => 'The selected pay scale is inactive and cannot be assigned.',
+                ]);
+            }
+
+            return; // Admin + active target scale → OK
+        }
+
+        // ── Rule 3: Grade/salary change within same scale ────────────────────
+        if (! $assignedActive) {
+            throw ValidationException::withMessages([
+                'pay_scale_step_id' =>
+                'The assigned pay scale is inactive. Select a new active pay scale first.',
+            ]);
+        }
+
+        if (! ($user->isAdmin() || $user->isCpfOfficer())) {
+            throw ValidationException::withMessages([
+                'pay_scale_step_id' => 'You are not permitted to change the grade or basic salary.',
+            ]);
+        }
     }
 
     public function destroy(Employee $employee): RedirectResponse

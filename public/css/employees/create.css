@@ -23,9 +23,16 @@
 }
 
 /* Server-side validation errors — match FormValidation styling */
-.server-error .fv-help-block span {
+.server-error .fv-help-block span,
+.salary-guard-error .fv-help-block span,
+.pay-scale-guard-error .fv-help-block span {
       color: var(--bs-danger);
       font-size: 0.85rem;
+}
+
+/* Pay scale selector highlight when multiple scales are active */
+#pay_scale_row .form-select {
+      border-left: 3px solid var(--bs-primary);
 }
 
 /* Stepper completed icon pulse */

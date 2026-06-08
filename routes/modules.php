@@ -21,9 +21,14 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // AJAX endpoint: load steps by grade (must be before resource route)
+    // AJAX endpoint: load steps by grade (must be before resource route).
     Route::get('employees/steps-by-grade', [EmployeeController::class, 'stepsByGrade'])
         ->name('employees.steps-by-grade')
+        ->middleware('permission:employee.create|employee.update');
+
+    // NEW — AJAX endpoint: load grades for a given pay scale.
+    Route::get('employees/grades-by-pay-scale', [EmployeeController::class, 'gradesByPayScale'])
+        ->name('employees.grades-by-pay-scale')
         ->middleware('permission:employee.create|employee.update');
 
     Route::post('employees/toggle-active', [EmployeeController::class, 'toggleActive'])

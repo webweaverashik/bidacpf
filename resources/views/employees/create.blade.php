@@ -27,12 +27,11 @@
 @endsection
 
 @section('content')
-
     <div id="error-container"></div>
 
-    {{-- ================================================================== --}}
-    {{-- Stepper                                                             --}}
-    {{-- ================================================================== --}}
+    {{-- ==================================================================
+     Stepper
+     ================================================================== --}}
     <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
         id="kt_create_employee_stepper">
 
@@ -92,13 +91,6 @@
 
         {{-- ── Main Content ─────────────────────────────────────────────── --}}
         <div class="card d-flex flex-row-fluid flex-center">
-
-            {{--
-            NOTE (Blade): enctype="multipart/form-data" is intentionally
-            kept for semantic correctness / native fallback. It does NOT
-            affect the fetch() submission — the browser sets the correct
-            multipart boundary automatically when body is a FormData object.
-        --}}
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
                 id="kt_create_employee_form">
                 @csrf
@@ -219,7 +211,6 @@
                                     <label class="d-block fw-semibold fs-6 mb-5">
                                         Profile Photo <span class="text-muted">(optional)</span>
                                     </label>
-
                                     <style>
                                         .image-input-placeholder {
                                             background-image: url('{{ asset('assets/media/svg/files/blank-image.svg') }}');
@@ -229,43 +220,25 @@
                                             background-image: url('{{ asset('assets/media/svg/files/blank-image-dark.svg') }}');
                                         }
                                     </style>
-
-                                    {{--
-                                    FIX (Blade): id="kt_employee_photo_input" lets the JS
-                                    locate the KTImageInput instance. The file input has
-                                    id="photo_file_input" so JS can read it directly.
-                                --}}
-                                    <div class="image-input image-input-circle image-input-empty
-                                            image-input-outline image-input-placeholder"
+                                    <div class="image-input image-input-circle image-input-empty image-input-outline image-input-placeholder"
                                         data-kt-image-input="true" id="kt_employee_photo_input">
                                         <div class="image-input-wrapper w-125px h-125px"></div>
-
                                         <label
-                                            class="btn btn-icon btn-circle btn-active-color-primary
-                                                  w-25px h-25px bg-body shadow"
+                                            class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
                                             data-kt-image-input-action="change" data-bs-toggle="tooltip"
                                             title="Change photo">
                                             <i class="ki-outline ki-pencil fs-7"></i>
-                                            {{--
-                                            FIX (Blade): id="photo_file_input" — explicit ID
-                                            so JS reads the file directly, bypassing
-                                            KTImageInput's internal state.
-                                        --}}
                                             <input type="file" name="photo" id="photo_file_input"
                                                 accept=".png,.jpg,.jpeg" />
                                             <input type="hidden" name="photo_remove" />
                                         </label>
-
                                         <span
-                                            class="btn btn-icon btn-circle btn-active-color-primary
-                                                 w-25px h-25px bg-body shadow"
+                                            class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
                                             data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel">
                                             <i class="ki-outline ki-cross fs-2"></i>
                                         </span>
-
                                         <span
-                                            class="btn btn-icon btn-circle btn-active-color-primary
-                                                 w-25px h-25px bg-body shadow"
+                                            class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
                                             data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove">
                                             <i class="ki-outline ki-cross fs-2"></i>
                                         </span>
@@ -275,26 +248,58 @@
 
                                 <div class="separator separator-dashed my-6"></div>
 
-                                {{-- Pay Scale --}}
+                                {{-- ── Pay Scale Section ───────────────────────────────────────
+                                 When there is only ONE active pay scale: show a static badge
+                                 (legacy single-scale behaviour — no change for existing setups).
+                                 When there are MULTIPLE active pay scales: show a <select> so
+                                 the user can pick the scale BEFORE choosing grade + step.
+                                 The JS cascades: scale → grades (AJAX) → steps (AJAX).
+                            --}}
                                 <h4 class="fw-bold text-gray-800 mb-5">
                                     <i class="ki-outline ki-wallet fs-3 me-2 text-primary"></i>
                                     Pay Scale
-                                    @if ($payScale)
-                                        <span class="badge badge-light-success ms-2 fs-8">{{ $payScale->name }}</span>
+                                    {{-- Single-scale badge (hidden when multiple scales) --}}
+                                    @if ($payScales->count() === 1)
+                                        <span class="badge badge-light-success ms-2 fs-8">
+                                            {{ $defaultPayScale->name }}
+                                        </span>
                                     @endif
                                 </h4>
+
+                                {{-- Pay Scale Selector — only rendered for multi-scale setups --}}
+                                @if ($payScales->count() > 1)
+                                    <div class="fv-row mb-7" id="pay_scale_row">
+                                        <label class="required fw-semibold fs-6 mb-2">Pay Scale</label>
+                                        <select name="pay_scale_id" id="pay_scale_select"
+                                            class="form-select form-select-solid" data-control="select2"
+                                            data-placeholder="Select a pay scale" data-hide-search="false">
+                                            <option></option>
+                                            @foreach ($payScales as $ps)
+                                                <option value="{{ $ps->id }}"
+                                                    {{ $ps->id === $defaultPayScale?->id ? 'selected' : '' }}>
+                                                    {{ $ps->name }}
+                                                    @if ($ps->effective_year)
+                                                        ({{ $ps->effective_year }})
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @else
+                                    {{-- Single scale: store its ID as a hidden input (original behaviour) --}}
+                                    <input type="hidden" name="pay_scale_id" value="{{ $defaultPayScale?->id }}" />
+                                @endif
 
                                 {{-- Grade --}}
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Grade</label>
                                     <select name="grade" id="grade_select" class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select a grade" data-hide-search="true">
+                                        data-control="select2" data-placeholder="Select a grade" data-hide-search="true"
+                                        {{ $payScales->count() > 1 && !$defaultPayScale ? 'disabled' : '' }}>
                                         <option></option>
-                                        @if ($grades)
-                                            @foreach ($grades as $grade)
-                                                <option value="{{ $grade }}">Grade {{ $grade }}</option>
-                                            @endforeach
-                                        @endif
+                                        @foreach ($grades as $grade)
+                                            <option value="{{ $grade }}">Grade {{ $grade }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
 
@@ -309,8 +314,6 @@
                                     <div class="form-text" id="salary_hint"></div>
                                 </div>
 
-                                <input type="hidden" name="pay_scale_id" value="{{ $payScale?->id }}" />
-
                             </div>
                             {{-- ── end Right Column ─────────────────────── --}}
 
@@ -324,7 +327,6 @@
                 {{-- ====================================================== --}}
                 <div data-kt-stepper-element="content" class="d-none">
                     <div class="w-100">
-
                         <div class="pb-10 pb-lg-15">
                             <h2 class="fw-bold text-gray-900">CPF Opening Balance</h2>
                             <div class="text-muted fw-semibold fs-6">
@@ -427,11 +429,10 @@
                 {{-- end Step 2 --}}
 
                 {{-- ====================================================== --}}
-                {{-- STEP 3 — Completion                                     --}}
+                {{-- STEP 3 — Completion                                    --}}
                 {{-- ====================================================== --}}
                 <div data-kt-stepper-element="content" class="d-none">
                     <div class="w-100">
-
                         <div class="pb-8 pb-lg-10">
                             <h2 class="fw-bold text-gray-900">Employee Registered!</h2>
                             <div class="text-muted fw-semibold fs-6">
@@ -464,20 +465,12 @@
                                 <i class="ki-outline ki-plus fs-4 me-1"></i> Add Another
                             </a>
                         </div>
-
                     </div>
                 </div>
                 {{-- end Step 3 --}}
 
                 {{-- ====================================================== --}}
-                {{-- Action Buttons                                          --}}
-                {{--                                                         --}}
-                {{-- FIX: the Back / Continue buttons now carry              --}}
-                {{-- data-kt-stepper-action="previous|next". KTStepper       --}}
-                {{-- intercepts the click and fires kt.stepper.previous /    --}}
-                {{-- kt.stepper.next, where the JS validates the CURRENT     --}}
-                {{-- step before advancing. The Submit button is NOT a       --}}
-                {{-- stepper action — it runs the AJAX save handler instead. --}}
+                {{-- Action Buttons                                         --}}
                 {{-- ====================================================== --}}
                 <div class="d-flex flex-stack pt-10">
                     <div>
@@ -486,7 +479,6 @@
                             <i class="ki-outline ki-arrow-left fs-4 me-1"></i> Back
                         </button>
                     </div>
-
                     <div>
                         <button type="button" id="btn_submit" class="btn btn-lg btn-primary me-3 d-none">
                             <span class="indicator-label">
@@ -497,14 +489,12 @@
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>
                         </button>
-
                         <button type="button" id="btn_next" data-kt-stepper-action="next"
                             class="btn btn-lg btn-primary">
                             Continue <i class="ki-outline ki-arrow-right fs-4 ms-1 me-0"></i>
                         </button>
                     </div>
                 </div>
-                {{-- end Actions --}}
 
             </form>
         </div>
@@ -517,12 +507,14 @@
     <script>
         var EmployeeConfig = {
             stepsUrl: "{{ route('employees.steps-by-grade') }}",
+            gradesUrl: "{{ route('employees.grades-by-pay-scale') }}",
             storeUrl: "{{ route('employees.store') }}",
             showUrl: "{{ route('employees.show', ':id') }}",
-            csrfToken: "{{ csrf_token() }}"
+            csrfToken: "{{ csrf_token() }}",
+            multiPayScale: {{ $payScales->count() > 1 ? 'true' : 'false' }},
+            defaultPayScaleId: {{ $defaultPayScale?->id ?? 'null' }}
         };
     </script>
-
 @endsection
 
 @push('page-js')

@@ -2,55 +2,70 @@
 
 // =========================================================================
 // BidaEmployeeEdit
+// Handles the edit-employee form with three permission tiers:
+//   1. Admin            — may change pay scale + grade + basic salary
+//   2. CPF Officer      — may change grade + basic salary (same active scale)
+//   3. Others / locked  — personal details only (pay scale fields are read-only)
 // =========================================================================
 var BidaEmployeeEdit = (function () {
+
       var form;
       var updateBtn;
       var validator;
 
+      // Shorthand flags from the PHP config object
+      var CAN_CHANGE_PAY_SCALE = false;
+      var CAN_CHANGE_GRADE_SALARY = false;
+
       // ── FormValidation ────────────────────────────────────────────────────
       var initValidation = function () {
-            validator = FormValidation.formValidation(form, {
-                  fields: {
-                        cpf_account_no: {
-                              validators: {
-                                    notEmpty: { message: "CPF account number is required" },
-                                    stringLength: { max: 50, message: "Maximum 50 characters" }
-                              }
-                        },
-                        name: {
-                              validators: {
-                                    notEmpty: { message: "Employee name is required" },
-                                    stringLength: { max: 255, message: "Maximum 255 characters" }
-                              }
-                        },
-                        designation: {
-                              validators: {
-                                    notEmpty: { message: "Designation is required" },
-                                    stringLength: { max: 255, message: "Maximum 255 characters" }
-                              }
-                        },
-                        email: {
-                              validators: {
-                                    emailAddress: { message: "Please enter a valid email" }
-                              }
-                        },
-                        joining_date: {
-                              validators: {
-                                    notEmpty: { message: "Joining date is required" }
-                              }
-                        },
-                        pay_scale_step_id: {
-                              validators: {
-                                    notEmpty: { message: "Please select a grade then a basic salary" }
-                              }
-                        },
-                        status: {
-                              validators: {
-                                    notEmpty: { message: "Status is required" }
-                              }
+            var fields = {
+                  cpf_account_no: {
+                        validators: {
+                              notEmpty: { message: "CPF account number is required" },
+                              stringLength: { max: 50, message: "Maximum 50 characters" }
                         }
                   },
+                  name: {
+                        validators: {
+                              notEmpty: { message: "Employee name is required" },
+                              stringLength: { max: 255, message: "Maximum 255 characters" }
+                        }
+                  },
+                  designation: {
+                        validators: {
+                              notEmpty: { message: "Designation is required" },
+                              stringLength: { max: 255, message: "Maximum 255 characters" }
+                        }
+                  },
+                  email: {
+                        validators: {
+                              emailAddress: { message: "Please enter a valid email" }
+                        }
+                  },
+                  joining_date: {
+                        validators: {
+                              notEmpty: { message: "Joining date is required" }
+                        }
+                  },
+                  status: {
+                        validators: {
+                              notEmpty: { message: "Status is required" }
+                        }
+                  }
+            };
+
+            // Only validate pay_scale_step_id when user can actually change it
+            if (CAN_CHANGE_GRADE_SALARY) {
+                  fields["pay_scale_step_id"] = {
+                        validators: {
+                              notEmpty: { message: "Please select a grade then a basic salary" }
+                        }
+                  };
+            }
+
+            validator = FormValidation.formValidation(form, {
+                  fields: fields,
                   plugins: {
                         trigger: new FormValidation.plugins.Trigger(),
                         bootstrap: new FormValidation.plugins.Bootstrap5({
@@ -62,11 +77,11 @@ var BidaEmployeeEdit = (function () {
             });
       };
 
-      // ── Build FormData (safe — avoids phantom file issue) ─────────────────
+      // ── Build FormData (avoids phantom file issues) ───────────────────────
       var _buildFormData = function () {
             var fd = new FormData();
 
-            // Method spoofing for Laravel PUT
+            // Laravel method spoofing
             fd.append("_method", "PUT");
 
             var scalarFields = [
@@ -78,9 +93,7 @@ var BidaEmployeeEdit = (function () {
                   "mobile_number",
                   "joining_date",
                   "retirement_date",
-                  "pay_scale_step_id",
-                  "pay_scale_id",
-                  "status"
+                  "pay_scale_id"
             ];
 
             scalarFields.forEach(function (name) {
@@ -90,13 +103,26 @@ var BidaEmployeeEdit = (function () {
                   }
             });
 
-            // Status radio — ensure the checked value is used
+            // Status radio
             var checkedStatus = form.querySelector('[name="status"]:checked');
             if (checkedStatus) {
-                  fd.set("status", checkedStatus.value);
+                  fd.append("status", checkedStatus.value);
             }
 
-            // Photo — only append if a real file is selected (size > 0)
+            // pay_scale_step_id — use the select if editable, otherwise the hidden field
+            if (CAN_CHANGE_GRADE_SALARY) {
+                  var salarySelect = document.getElementById("basic_salary_select");
+                  if (salarySelect) {
+                        fd.append("pay_scale_step_id", salarySelect.value || "");
+                  }
+            } else {
+                  var hiddenStep = form.querySelector('input[name="pay_scale_step_id"][type="hidden"]');
+                  if (hiddenStep) {
+                        fd.append("pay_scale_step_id", hiddenStep.value || "");
+                  }
+            }
+
+            // Photo — only append when a real file is selected
             var photoInput = document.getElementById("photo_file_input");
             if (photoInput && photoInput.files && photoInput.files.length > 0) {
                   var file = photoInput.files[0];
@@ -121,6 +147,7 @@ var BidaEmployeeEdit = (function () {
 
                   validator.validate().then(function (status) {
                         if (status !== "Valid") {
+                              toastr.warning("Please fix the highlighted errors before saving.");
                               KTUtil.scrollTop();
                               return;
                         }
@@ -131,7 +158,7 @@ var BidaEmployeeEdit = (function () {
                         var formData = _buildFormData();
 
                         fetch(EmployeeEditConfig.updateUrl, {
-                              method: "POST",   // POST + _method=PUT (Laravel method spoofing)
+                              method: "POST", // POST + _method=PUT (Laravel method spoofing)
                               headers: {
                                     "X-CSRF-TOKEN": EmployeeEditConfig.csrfToken,
                                     "X-Requested-With": "XMLHttpRequest",
@@ -142,20 +169,23 @@ var BidaEmployeeEdit = (function () {
                         })
                               .then(function (res) {
                                     if (res.ok) return res.json();
+
                                     if (res.status === 422) {
                                           return res.json().then(function (data) {
                                                 throw { validation: true, errors: data.errors };
                                           });
                                     }
+
                                     return res.json()
                                           .then(function (data) {
                                                 throw { validation: false, message: data.message || "Server error." };
                                           })
-                                          .catch(function () {
+                                          .catch(function (thrown) {
+                                                if (thrown && (thrown.validation !== undefined)) throw thrown;
                                                 throw { validation: false, message: "Something went wrong. Please try again." };
                                           });
                               })
-                              .then(function (data) {
+                              .then(function () {
                                     Swal.fire({
                                           text: "Employee updated successfully.",
                                           icon: "success",
@@ -213,82 +243,247 @@ var BidaEmployeeEdit = (function () {
             }
       };
 
-      // ── Grade → Basic Salary AJAX loader ──────────────────────────────────
-      var initGradeChange = function () {
+      // =========================================================================
+      // AJAX: Load grades for a given pay scale
+      // =========================================================================
+      var loadGrades = function (payScaleId, preselectGrade, preselectStepId) {
+            if (!payScaleId) return;
+
             var $grade = $("#grade_select");
             var $salary = $("#basic_salary_select");
             var hint = document.getElementById("salary_hint");
 
-            if (!$grade.length) return;
+            // Destroy existing Select2 instances before manipulating options
+            if ($grade.data("select2")) $grade.select2("destroy");
+            if ($salary.data("select2")) $salary.select2("destroy");
 
-            // Helper: load steps for a given grade
-            var loadSteps = function (grade, preselect) {
-                  if ($salary.data("select2")) {
-                        $salary.select2("destroy");
-                  }
-                  $salary.empty().append('<option value="">Loading…</option>');
-                  $salary.prop("disabled", true);
-                  if (hint) hint.textContent = "";
+            $grade.empty().append('<option value="">Loading grades…</option>');
+            $grade.prop("disabled", true);
 
-                  if (!grade) {
-                        $salary.empty().append('<option value=""></option>');
+            $salary.empty().append('<option value=""></option>');
+            $salary.prop("disabled", true);
+            if (hint) hint.textContent = "";
+
+            fetch(
+                  EmployeeEditConfig.gradesByScaleUrl + "?pay_scale_id=" + encodeURIComponent(payScaleId),
+                  { headers: { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json" } }
+            )
+                  .then(function (r) { return r.json(); })
+                  .then(function (data) {
+                        $grade.empty().append('<option value=""></option>');
+
+                        if (data.grades && data.grades.length) {
+                              data.grades.forEach(function (g) {
+                                    var sel = (preselectGrade && parseInt(preselectGrade) === parseInt(g)) ? " selected" : "";
+                                    $grade.append('<option value="' + g + '"' + sel + '>Grade ' + g + '</option>');
+                              });
+                              $grade.prop("disabled", false);
+                        } else {
+                              if (hint) hint.textContent = "No grades found for this pay scale.";
+                        }
+
+                        $grade.select2({ placeholder: "Select a grade", minimumResultsForSearch: -1 });
+
+                        // If a grade was pre-selected, auto-load its steps
+                        if (preselectGrade && data.grades && data.grades.indexOf(parseInt(preselectGrade)) !== -1) {
+                              loadSteps(payScaleId, preselectGrade, preselectStepId);
+                        } else {
+                              $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
+                        }
+                  })
+                  .catch(function () {
+                        $grade.empty().append('<option value=""></option>');
+                        if (hint) hint.textContent = "Error loading grades.";
+                        $grade.select2({ placeholder: "Error loading grades", minimumResultsForSearch: -1 });
                         $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
-                        return;
+                  });
+      };
+
+      // =========================================================================
+      // AJAX: Load steps (basic salary) for a grade within a pay scale
+      // =========================================================================
+      var loadSteps = function (payScaleId, grade, preselectStepId) {
+            var $salary = $("#basic_salary_select");
+            var hint = document.getElementById("salary_hint");
+
+            if ($salary.data("select2")) $salary.select2("destroy");
+
+            $salary.empty().append('<option value="">Loading…</option>');
+            $salary.prop("disabled", true);
+            if (hint) hint.textContent = "";
+
+            if (!grade) {
+                  $salary.empty().append('<option value=""></option>');
+                  $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
+                  return;
+            }
+
+            var url = EmployeeEditConfig.stepsUrl +
+                  "?grade=" + encodeURIComponent(grade) +
+                  (payScaleId ? "&pay_scale_id=" + encodeURIComponent(payScaleId) : "");
+
+            fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json" } })
+                  .then(function (r) { return r.json(); })
+                  .then(function (data) {
+                        $salary.empty().append('<option value=""></option>');
+
+                        if (data.steps && data.steps.length) {
+                              data.steps.forEach(function (s) {
+                                    var sel = (preselectStepId && parseInt(preselectStepId) === parseInt(s.id)) ? " selected" : "";
+                                    $salary.append(
+                                          '<option value="' + s.id + '"' + sel + '>' +
+                                          '৳ ' + Number(s.basic_salary).toLocaleString("en-IN") +
+                                          ' (Step ' + s.step + ')' +
+                                          '</option>'
+                                    );
+                              });
+                              $salary.prop("disabled", false);
+                              if (hint) hint.textContent = data.steps.length + " step(s) available in Grade " + grade;
+                        } else {
+                              if (hint) hint.textContent = "No steps found for Grade " + grade;
+                        }
+
+                        $salary.select2({ placeholder: "Select basic salary", minimumResultsForSearch: -1 });
+
+                        if (validator) validator.revalidateField("pay_scale_step_id");
+                  })
+                  .catch(function () {
+                        $salary.empty().append('<option value=""></option>');
+                        if (hint) hint.textContent = "Error loading salary steps.";
+                        $salary.select2({ placeholder: "Error loading", minimumResultsForSearch: -1 });
+                  });
+      };
+
+      // =========================================================================
+      // Wire up pay scale / grade / salary dropdowns
+      // =========================================================================
+      var initPayScaleDropdowns = function () {
+
+            var $payScale = $("#pay_scale_select");
+            var $grade = $("#grade_select");
+            var $salary = $("#basic_salary_select");
+
+            var cfg = EmployeeEditConfig;
+
+            // ── Pay scale selector (Admin only) ────────────────────────────────
+            if (CAN_CHANGE_PAY_SCALE && $payScale.length) {
+
+                  // Initialise Select2 with disabled-option support
+                  $payScale.select2({
+                        placeholder: "Select a pay scale",
+                        templateResult: function (state) {
+                              if (!state.id) return state.text;
+                              var isActive = $(state.element).data("active") == "1";
+                              var $el = $('<span></span>').text(state.text);
+                              if (!isActive) {
+                                    $el.addClass("text-muted");
+                                    $el.append(' <span class="badge badge-light-danger ms-1 fs-9">Inactive</span>');
+                              }
+                              return $el;
+                        },
+                        templateSelection: function (state) {
+                              return state.text || "Select a pay scale";
+                        }
+                  });
+
+                  // Prevent selecting inactive pay scales
+                  $payScale.on("select2:selecting", function (e) {
+                        var selectedEl = e.params.args.data.element;
+                        var isActive = $(selectedEl).data("active") == "1";
+
+                        if (!isActive) {
+                              e.preventDefault();
+                              Swal.fire({
+                                    icon: "warning",
+                                    title: "Inactive Pay Scale",
+                                    text: "Only an active pay scale can be assigned to an employee.",
+                                    buttonsStyling: false,
+                                    confirmButtonText: "OK",
+                                    customClass: { confirmButton: "btn btn-warning" }
+                              });
+                        }
+                  });
+
+                  // On pay scale change, reload grades (no grade/step preselect)
+                  $payScale.on("change", function () {
+                        var scaleId = $(this).val();
+                        var hint = document.getElementById("pay_scale_hint");
+
+                        if (!scaleId) {
+                              if (hint) hint.textContent = "";
+                              return;
+                        }
+
+                        var isActive = $(this).find("option:selected").data("active") == "1";
+                        if (hint) {
+                              hint.textContent = isActive ? "" : "This pay scale is inactive and cannot be assigned.";
+                        }
+
+                        if (CAN_CHANGE_GRADE_SALARY) {
+                              loadGrades(scaleId, null, null);
+                        }
+                  });
+            }
+
+            // ── Grade selector (Admin + CPF Officer) ───────────────────────────
+            if (CAN_CHANGE_GRADE_SALARY && $grade.length) {
+
+                  $grade.select2({ placeholder: "Select a grade", minimumResultsForSearch: -1 });
+
+                  $grade.on("change", function () {
+                        var grade = $(this).val();
+
+                        // Resolve the active pay scale id
+                        var payScaleId = null;
+                        if ($payScale.length) {
+                              payScaleId = $payScale.val();
+                        } else {
+                              // Non-admin: pay scale is a hidden field
+                              var hiddenScale = form.querySelector('input[name="pay_scale_id"]');
+                              if (hiddenScale) payScaleId = hiddenScale.value;
+                        }
+
+                        if (grade) {
+                              loadSteps(payScaleId, grade, null);
+                        } else {
+                              if ($salary.data("select2")) $salary.select2("destroy");
+                              $salary.empty().append('<option value=""></option>');
+                              $salary.prop("disabled", true);
+                              $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
+                              var hint = document.getElementById("salary_hint");
+                              if (hint) hint.textContent = "";
+                        }
+                  });
+
+                  $(document).on("change", "#basic_salary_select", function () {
+                        if (validator) validator.revalidateField("pay_scale_step_id");
+                  });
+
+                  // ── Auto-load on page load ──────────────────────────────────────
+                  var initScaleId = cfg.employee.pay_scale_id;
+                  var initGrade = cfg.employee.grade;
+                  var initStepId = cfg.employee.pay_scale_step_id;
+
+                  if (initScaleId && initGrade) {
+                        // Admin: also reload grades list for the assigned scale on page load
+                        if (CAN_CHANGE_PAY_SCALE) {
+                              loadGrades(initScaleId, initGrade, initStepId);
+                        } else {
+                              // CPF Officer: grades are already rendered server-side; just load steps
+                              loadSteps(initScaleId, initGrade, initStepId);
+                        }
+                  } else {
+                        $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
                   }
 
-                  fetch(
-                        EmployeeEditConfig.stepsUrl + "?grade=" + encodeURIComponent(grade),
-                        { headers: { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json" } }
-                  )
-                        .then(function (r) { return r.json(); })
-                        .then(function (data) {
-                              $salary.empty().append('<option value=""></option>');
-
-                              if (data.steps && data.steps.length) {
-                                    data.steps.forEach(function (s) {
-                                          var selected = (preselect && parseInt(preselect) === parseInt(s.id)) ? ' selected' : '';
-                                          $salary.append(
-                                                '<option value="' + s.id + '"' + selected + '>' +
-                                                '৳ ' + Number(s.basic_salary).toLocaleString("en-IN") +
-                                                '</option>'
-                                          );
-                                    });
-                                    $salary.prop("disabled", false);
-                                    if (hint) hint.textContent = data.steps.length + " steps available in Grade " + grade;
-                              } else {
-                                    if (hint) hint.textContent = "No steps found for Grade " + grade;
-                              }
-
-                              $salary.select2({ placeholder: "Select basic salary", minimumResultsForSearch: -1 });
-                        })
-                        .catch(function () {
-                              $salary.empty().append('<option value=""></option>');
-                              if (hint) hint.textContent = "Error loading salary steps.";
-                              $salary.select2({ placeholder: "Error loading", minimumResultsForSearch: -1 });
-                        });
-            };
-
-            // Initialise Select2 on grade dropdown
-            $grade.select2({ placeholder: "Select a grade", minimumResultsForSearch: -1 });
-
-            // On grade change load steps (no preselect needed — user is choosing a new one)
-            $grade.on("change", function () {
-                  loadSteps($(this).val(), null);
-            });
-
-            // On salary change re-validate the hidden field
-            $(document).on("change", "#basic_salary_select", function () {
-                  if (validator) validator.revalidateField("pay_scale_step_id");
-            });
-
-            // ── Auto-load current employee's grade & step on page load ────────
-            var currentGrade = EmployeeEditConfig.employee.grade;
-            var currentStepId = EmployeeEditConfig.employee.pay_scale_step_id;
-
-            if (currentGrade) {
-                  loadSteps(currentGrade, currentStepId);
             } else {
-                  $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
+                  // Read-only mode: just initialise Select2 visually (disabled)
+                  if ($grade.length) {
+                        $grade.select2({ placeholder: "Grade", minimumResultsForSearch: -1 });
+                  }
+                  if ($salary.length) {
+                        $salary.select2({ placeholder: "Basic salary", minimumResultsForSearch: -1 });
+                  }
             }
       };
 
@@ -361,13 +556,18 @@ var BidaEmployeeEdit = (function () {
                         return;
                   }
 
+                  // Read permission flags from server config
+                  CAN_CHANGE_PAY_SCALE = EmployeeEditConfig.canChangePayScale === true;
+                  CAN_CHANGE_GRADE_SALARY = EmployeeEditConfig.canChangeGradeSalary === true;
+
                   initValidation();
                   handleSubmit();
                   initDatePickers();
-                  initGradeChange();
+                  initPayScaleDropdowns();
                   initPhotoRemove();
             }
       };
+
 })();
 
 KTUtil.onDOMContentLoaded(function () {
