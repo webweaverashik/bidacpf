@@ -193,7 +193,7 @@ class Employee extends BaseModel
     public function getPhotoUrlAttribute(): string
     {
         return $this->photo
-            ? asset('storage/' . $this->photo)
+            ? asset($this->photo) // ✅ NEW — direct public path
             : asset('img/male-placeholder.png');
     }
 

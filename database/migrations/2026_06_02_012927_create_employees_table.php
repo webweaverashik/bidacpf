@@ -29,8 +29,8 @@ return new class extends Migration {
             $table->boolean('is_active')->default(true);
 
             $table->foreignId('created_by')->constrained('users');
-            $table->timestamps();
             $table->softDeletes();
+            $table->timestamps();
 
             $table->index('status');
         });

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('effective_date');
             $table->enum('change_type', ['initial', 'annual_increment', 'promotion', 'revision']);
             $table->text('remarks')->nullable();
-
+            $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
 
             $table->index('employee_id');
