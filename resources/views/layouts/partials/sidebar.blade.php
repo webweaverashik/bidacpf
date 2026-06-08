@@ -59,7 +59,7 @@
 
                                 @can('employee.view')
                                     <div class="menu-item">
-                                        <a class="menu-link {{ request()->routeIs('employees.index') ? 'active' : '' }}"
+                                        <a class="menu-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
                                             id="all_employees_link" href="{{ route('employees.index') }}">
                                             <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                             <span class="menu-title">All Employees</span>

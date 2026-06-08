@@ -36,6 +36,23 @@
       align-items: flex-start;
 }
 
+/* ── Notice transition: JS toggles d-none; add a smooth reveal ───────────── */
+#notice_pay_scale_unlocked {
+      animation: noticeSlideIn 0.3s ease forwards;
+}
+
+@keyframes noticeSlideIn {
+      from {
+            opacity: 0;
+            transform: translateY(-6px);
+      }
+
+      to {
+            opacity: 1;
+            transform: translateY(0);
+      }
+}
+
 /* ── Grade / salary hint text ────────────────────────────────────────────── */
 #salary_hint,
 #pay_scale_hint {
@@ -66,4 +83,15 @@
 .select2-results__option .badge-light-danger {
       background-color: rgba(var(--bs-danger-rgb), 0.1);
       color: var(--bs-danger);
+}
+
+/* ── Grade/salary selects: smooth enable transition ──────────────────────── */
+#grade_select,
+#basic_salary_select {
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+/* ── Pending permission badge (warning clock icon) ───────────────────────── */
+#perm_badge_grade .text-muted {
+      font-style: italic;
 }

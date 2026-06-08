@@ -176,9 +176,43 @@
                         </h4>
 
                         {{-- ── Permission notices ─────────────────────────────────────── --}}
+
+                        {{--
+                            Notice A — Inactive scale + Admin can change → shown until Admin picks a new active scale.
+                            JS hides this (notice_pay_scale_locked → d-none) and shows notice_pay_scale_unlocked instead.
+                        --}}
+                        @if (!$assignedActive && $canChangePayScale)
+                            <div id="notice_pay_scale_locked"
+                                class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-4 mb-6">
+                                <i class="ki-outline ki-information-5 fs-2tx text-warning me-3"></i>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-1 text-warning fw-bold">Inactive Pay Scale — Action Required</h6>
+                                    <span class="fs-7 text-gray-700">
+                                        The assigned pay scale <strong>{{ $assignedScaleName ?? 'N/A' }}</strong> is
+                                        <strong>inactive</strong>. Please select a new <strong>active</strong> pay scale
+                                        below, then choose the appropriate grade and basic salary.
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Shown by JS once a valid active scale is selected --}}
+                            <div id="notice_pay_scale_unlocked"
+                                class="notice d-flex bg-light-success rounded border-success border border-dashed p-4 mb-6 d-none">
+                                <i class="ki-outline ki-shield-tick fs-2tx text-success me-3"></i>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-1 text-success fw-bold">Active Pay Scale Selected</h6>
+                                    <span class="fs-7 text-gray-700">
+                                        You have selected an active pay scale. Please choose the appropriate
+                                        <strong>grade</strong> and <strong>basic salary</strong> below.
+                                    </span>
+                                </div>
+                            </div>
+                        @endif
+
                         @if (!$assignedActive && !$canChangePayScale)
-                            {{-- Inactive scale + no permission to change --}}
-                            <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-4 mb-6">
+                            {{-- Inactive scale + no permission to change at all --}}
+                            <div id="notice_pay_scale_locked"
+                                class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-4 mb-6">
                                 <i class="ki-outline ki-shield-cross fs-2tx text-danger me-3"></i>
                                 <div class="d-flex flex-column">
                                     <h6 class="mb-1 text-danger fw-bold">Pay Scale Locked</h6>
@@ -189,21 +223,9 @@
                                     </span>
                                 </div>
                             </div>
-                        @elseif (!$assignedActive && $canChangePayScale)
-                            {{-- Inactive scale + Admin can change --}}
-                            <div
-                                class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-4 mb-6">
-                                <i class="ki-outline ki-information-5 fs-2tx text-warning me-3"></i>
-                                <div class="d-flex flex-column">
-                                    <h6 class="mb-1 text-warning fw-bold">Inactive Pay Scale — Action Required</h6>
-                                    <span class="fs-7 text-gray-700">
-                                        The assigned pay scale <strong>{{ $assignedScaleName ?? 'N/A' }}</strong> is
-                                        <strong>inactive</strong>. Please select a new <strong>active</strong> pay scale,
-                                        then choose the appropriate grade and basic salary.
-                                    </span>
-                                </div>
-                            </div>
-                        @elseif ($assignedActive && !$canChangeGradeSalary)
+                        @endif
+
+                        @if ($assignedActive && !$canChangeGradeSalary)
                             {{-- Active scale but user has no permission to change grade/salary --}}
                             <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-4 mb-6">
                                 <i class="ki-outline ki-information-5 fs-2tx text-info me-3"></i>
@@ -216,8 +238,9 @@
                             </div>
                         @endif
 
-                        {{-- ── Pay Scale Selector (Admin only, when multiple active or assigned inactive) ── --}}
+                        {{-- ── Pay Scale Selector ──────────────────────────────────────── --}}
                         @if ($canChangePayScale)
+                            {{-- Admin sees the full pay scale dropdown --}}
                             <div class="fv-row mb-7" id="pay_scale_row">
                                 <label class="required fw-semibold fs-6 mb-2">Pay Scale</label>
                                 <select name="pay_scale_id" id="pay_scale_select" class="form-select form-select-solid"
@@ -251,6 +274,17 @@
                         @endif
 
                         {{-- ── Grade & Basic Salary ───────────────────────────────────── --}}
+                        {{--
+                            IMPORTANT: The grade and salary selects are ALWAYS rendered in the
+                            DOM — even when canChangeGradeSalary is false. They start as disabled.
+                            When the Admin picks a new active pay scale (inactive-scale scenario),
+                            JS calls enableGradeSalarySelects() which removes the disabled attribute
+                            and loads grades + steps via AJAX.
+
+                            When neither canChangePayScale NOR canChangeGradeSalary is true
+                            (e.g. CPF Officer with inactive scale, or regular user), the selects
+                            remain permanently disabled and a hidden input carries the current step id.
+                        --}}
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="fv-row mb-7">
@@ -277,18 +311,25 @@
                                     </label>
                                     <select name="pay_scale_step_id" id="basic_salary_select"
                                         class="form-select form-select-solid"
-                                        data-placeholder="{{ $canChangeGradeSalary ? 'Select grade first' : 'No permission' }}"
+                                        data-placeholder="{{ $canChangeGradeSalary ? 'Select grade first' : ($canChangePayScale ? 'Select pay scale first' : 'No permission') }}"
                                         {{ !$canChangeGradeSalary ? 'disabled' : '' }}>
                                         <option></option>
-                                        {{-- Steps are pre-populated for the current grade on page load via JS --}}
+                                        {{-- Steps are populated by JS (on page load for active scales, or after pay scale selection) --}}
                                     </select>
                                     <div class="form-text" id="salary_hint"></div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- If user cannot change grade/salary, send the existing step id as hidden --}}
-                        @if (!$canChangeGradeSalary)
+                        {{--
+                            Hidden fallback for pay_scale_step_id:
+                            - Sent when the user has NO ability to change grade/salary at all
+                              (CPF Officer with inactive scale, regular user, or no permission).
+                            - NOT rendered when canChangePayScale is true (Admin with inactive scale)
+                              because the Admin will pick a new step via the visible selects.
+                            - NOT rendered when canChangeGradeSalary is true (normal editable flow).
+                        --}}
+                        @if (!$canChangeGradeSalary && !$canChangePayScale)
                             <input type="hidden" name="pay_scale_step_id" value="{{ $employee->pay_scale_step_id }}" />
                         @endif
 
@@ -381,10 +422,19 @@
                                         Change pay scale
                                     @endif
                                 </li>
-                                <li class="mb-1">
+                                <li class="mb-1" id="perm_badge_grade">
                                     @if ($canChangeGradeSalary)
                                         <i class="ki-outline ki-check fs-7 text-success me-1"></i>
                                         Change grade &amp; basic salary
+                                    @elseif ($canChangePayScale)
+                                        {{--
+                                            Admin with inactive scale: grade/salary will become
+                                            available once a new active pay scale is selected.
+                                            JS updates this badge text dynamically.
+                                        --}}
+                                        <i class="ki-outline ki-time fs-7 text-warning me-1"></i>
+                                        Change grade &amp; basic salary
+                                        <span class="text-muted">(after selecting pay scale)</span>
                                     @else
                                         <i class="ki-outline ki-cross fs-7 text-danger me-1"></i>
                                         Change grade &amp; basic salary

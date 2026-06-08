@@ -181,15 +181,21 @@ class EmployeeController extends Controller
      * Show the employee edit form.
      *
      * Permission matrix:
-     * ┌───────────────────────────────┬───────┬─────────────┬─────────┐
-     * │ Scenario                      │ Admin │ CPF Officer │ Others  │
-     * ├───────────────────────────────┼───────┼─────────────┼─────────┤
-     * │ Assigned scale ACTIVE         │  PS+G │      G      │   –     │
-     * │ Assigned scale INACTIVE       │  PS+G │      –      │   –     │
-     * │ Multiple active scales exist  │  PS+G │      G*     │   –     │
-     * └───────────────────────────────┴───────┴─────────────┴─────────┘
+     * ┌──────────────────────────────────────────┬───────┬─────────────┬─────────┐
+     * │ Scenario                                 │ Admin │ CPF Officer │ Others  │
+     * ├──────────────────────────────────────────┼───────┼─────────────┼─────────┤
+     * │ Assigned scale ACTIVE, 1 active scale    │   G   │      G      │   –     │
+     * │ Assigned scale ACTIVE, multi active      │  PS+G │      G      │   –     │
+     * │ Assigned scale INACTIVE                  │  PS+G │      –      │   –     │
+     * └──────────────────────────────────────────┴───────┴─────────────┴─────────┘
      * PS = may change pay scale | G = may change grade + basic salary
-     * * CPF Officer only within the currently assigned (active) scale.
+     *
+     * Note on canChangeGradeSalary when assigned scale is INACTIVE:
+     *   - For Admin: starts as false on page load (because the inactive scale's
+     *     grades/steps are meaningless). Grade/salary selects become interactive
+     *     AFTER the Admin picks a new active pay scale (handled in JS).
+     *   - The server-side authorizePayScaleChange() guard handles the actual
+     *     validation and accepts the new step from the Admin.
      */
     public function edit(Request $request, Employee $employee): View
     {
@@ -217,22 +223,27 @@ class EmployeeController extends Controller
         $canChangePayScale = $isAdmin && ($multipleActive || ! $assignedActive);
 
         /*
-         * canChangeGradeSalary:
-         *   - Requires the assigned scale to be active (otherwise the fields
-         *     are meaningless until a valid scale is chosen first).
-         *   - Admin OR CPF Officer when active.
-         *   - Nobody when inactive.
+         * canChangeGradeSalary (INITIAL state, used for blade rendering):
+         *   - true  → grade and salary selects are enabled on page load.
+         *   - false → grade and salary selects start disabled.
+         *
+         *   Rules:
+         *   • Requires the assigned scale to be ACTIVE.
+         *   • Admin OR CPF Officer.
+         *   • Nobody when the assigned scale is inactive
+         *     (Admin will unlock via JS after picking a new active scale).
          */
         $canChangeGradeSalary = $assignedActive && ($isAdmin || $isCpf);
 
         // All pay scales (active + inactive) for the pay-scale selector.
-        // Inactive options will be shown but blocked from selection via JS.
         $payScales = PayScale::orderByDesc('is_active')
             ->orderByDesc('effective_year')
             ->get(['id', 'name', 'is_active', 'effective_year']);
 
-        // Grades for the currently assigned scale (pre-populate the dropdown).
-        $grades = $assignedScale
+        // Grades for the currently assigned scale (pre-populate the dropdown for active scale).
+        // When the assigned scale is inactive, we render no grade options —
+        // JS will load them after the Admin selects a new active scale.
+        $grades = ($assignedScale && $assignedActive)
             ? $assignedScale->steps()
             ->select('grade')
             ->distinct()
@@ -243,8 +254,8 @@ class EmployeeController extends Controller
         $currentGrade  = $assignedStep?->grade;
         $currentStepId = $assignedStep?->id;
 
-        // Pre-load steps for the current grade (only needed when user can edit).
-        $steps = ($assignedScale && $currentGrade !== null)
+        // Pre-load steps for the current grade only when scale is active and user can edit.
+        $steps = ($assignedActive && $canChangeGradeSalary && $assignedScale && $currentGrade !== null)
             ? $assignedScale->steps()
             ->where('grade', $currentGrade)
             ->orderBy('basic_salary')
@@ -348,11 +359,14 @@ class EmployeeController extends Controller
     /**
      * Server-side authorization guard for pay-scale / grade / salary changes.
      *
-     * Rules (mirrors the blade permission logic):
+     * Rules (mirrors the blade/JS permission logic):
      *   1. No change in step id → always OK.
      *   2. Pay scale changed    → must be Admin + target scale must be active.
      *   3. Grade/salary changed within same scale → Admin or CPF Officer,
      *      and the assigned scale must be active.
+     *
+     * Note: When the assigned scale is inactive and Admin provides a new step
+     * from a DIFFERENT (active) scale, this falls under Rule 2 and is allowed.
      */
     private function authorizePayScaleChange(UpdateEmployeeRequest $request, Employee $employee): void
     {
@@ -377,8 +391,10 @@ class EmployeeController extends Controller
         $assignedScale  = $assignedStep ? PayScale::find($assignedStep->pay_scale_id) : null;
         $assignedActive = (bool) ($assignedScale?->is_active);
 
-        // Determine whether the pay scale itself is being changed
-        $scaleChanged = ! $assignedScale || ((int) $chosenStep->pay_scale_id !== (int) $assignedScale->id);
+        // Determine whether the pay scale itself is being changed.
+        // Also treat a missing assigned scale as a scale change.
+        $scaleChanged = ! $assignedScale
+            || ((int) $chosenStep->pay_scale_id !== (int) $assignedScale->id);
 
         // ── Rule 2: Pay scale change ─────────────────────────────────────────
         if ($scaleChanged) {
