@@ -3,7 +3,6 @@
 @endpush
 
 @extends('layouts.app')
-
 @section('title', 'Edit Employee — ' . $employee->name)
 
 @section('header-title')
@@ -35,7 +34,6 @@
 @endsection
 
 @section('content')
-
     <div id="error-container"></div>
 
     {{-- ================================================================== --}}
@@ -57,7 +55,6 @@
         </div>
 
         <div class="card-body py-10">
-
             {{-- NOTE: enctype="multipart/form-data" for semantic correctness / native fallback. --}}
             <form id="kt_edit_employee_form" class="w-100" novalidate="novalidate" enctype="multipart/form-data">
                 @csrf
@@ -70,7 +67,7 @@
                         <div class="pb-8">
                             <h4 class="fw-bold text-gray-700 mb-1">Personal Details &amp; Pay Scale</h4>
                             <div class="text-muted fw-semibold fs-7">
-                                Update employee information. CPF opening balances cannot be changed here.
+                                Update employee information and pay scale assignment.
                             </div>
                         </div>
 
@@ -214,11 +211,13 @@
                         </div>
 
                         <input type="hidden" name="pay_scale_id" value="{{ $payScale?->id }}" />
+
                     </div>
                     {{-- ── end Left Column ──────────────────────────────────── --}}
 
-                    {{-- ── Right Column — Photo ────────────────────────────── --}}
+                    {{-- ── Right Column — Photo only ───────────────────────── --}}
                     <div class="col-lg-4">
+
                         <div class="fv-row mb-7">
                             <label class="d-block fw-semibold fs-6 mb-5">
                                 Profile Photo
@@ -267,7 +266,7 @@
                             <div class="form-text">Allowed: png, jpg, jpeg. Max 512 KB.</div>
                         </div>
 
-                        {{-- CPF Info (read-only info card) --}}
+                        {{-- CPF Account info (read-only) --}}
                         <div class="separator separator-dashed my-6"></div>
 
                         <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-4">
@@ -275,45 +274,14 @@
                             <div class="fw-semibold">
                                 <div class="fs-7 text-gray-700">
                                     <strong>CPF A/C:</strong> {{ $employee->cpf_account_no }}<br>
-                                    <strong class="mt-1 d-block">Opening Balance</strong>
+                                    <strong class="mt-1 d-block">Joining Date</strong>
                                     <span class="text-muted fs-8">
-                                        CPF opening balances cannot be edited after creation.
-                                        Contact a super-admin for corrections.
+                                        {{ $employee->joining_date?->format('d M Y') ?? '—' }}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        @if ($employee->openingBalance)
-                            <div class="mt-4 p-4 bg-light rounded">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="fs-7 text-muted">Own Contribution</span>
-                                    <span class="fs-7 fw-bold">৳
-                                        {{ number_format($employee->openingBalance->self_contribution) }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="fs-7 text-muted">Govt Contribution</span>
-                                    <span class="fs-7 fw-bold">৳
-                                        {{ number_format($employee->openingBalance->government_contribution) }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="fs-7 text-muted">Bank Interest</span>
-                                    <span class="fs-7 fw-bold">৳
-                                        {{ number_format($employee->openingBalance->interest_amount) }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="fs-7 text-muted">Advance Balance</span>
-                                    <span class="fs-7 fw-bold text-danger">৳
-                                        {{ number_format($employee->openingBalance->outstanding_advance) }}</span>
-                                </div>
-                                <div class="separator separator-dashed my-2"></div>
-                                <div class="d-flex justify-content-between">
-                                    <span class="fs-7 fw-bold">Net Balance</span>
-                                    <span class="fs-6 fw-bolder text-success">৳
-                                        {{ number_format($employee->openingBalance->net_balance) }}</span>
-                                </div>
-                            </div>
-                        @endif
                     </div>
                     {{-- ── end Right Column ────────────────────────────────── --}}
 
@@ -339,7 +307,6 @@
                 </div>
 
             </form>
-
         </div>
     </div>
 
@@ -356,7 +323,6 @@
             }
         };
     </script>
-
 @endsection
 
 @push('page-js')

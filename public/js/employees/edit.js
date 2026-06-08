@@ -4,7 +4,6 @@
 // BidaEmployeeEdit
 // =========================================================================
 var BidaEmployeeEdit = (function () {
-
       var form;
       var updateBtn;
       var validator;
@@ -157,7 +156,6 @@ var BidaEmployeeEdit = (function () {
                                           });
                               })
                               .then(function (data) {
-                                    // Success — show a toast / redirect to show page
                                     Swal.fire({
                                           text: "Employee updated successfully.",
                                           icon: "success",
@@ -200,7 +198,6 @@ var BidaEmployeeEdit = (function () {
                   flatpickr(joiningInput, Object.assign({}, sharedOpts, {
                         defaultDate: existingJoining || null,
                         onChange: function (dates, str) {
-                              // Keep the hidden value in sync
                               joiningInput.value = str;
                               if (validator) validator.revalidateField("joining_date");
                         }
@@ -229,7 +226,6 @@ var BidaEmployeeEdit = (function () {
                   if ($salary.data("select2")) {
                         $salary.select2("destroy");
                   }
-
                   $salary.empty().append('<option value="">Loading…</option>');
                   $salary.prop("disabled", true);
                   if (hint) hint.textContent = "";
@@ -253,13 +249,12 @@ var BidaEmployeeEdit = (function () {
                                           var selected = (preselect && parseInt(preselect) === parseInt(s.id)) ? ' selected' : '';
                                           $salary.append(
                                                 '<option value="' + s.id + '"' + selected + '>' +
-                                                '৳ ' + Number(s.basic_salary).toLocaleString("en-IN") +
-                                                ' (Step ' + s.step + ')' +
+                                                '৳ ' + Number(s.basic_salary).toLocaleString("en-IN") +
                                                 '</option>'
                                           );
                                     });
                                     $salary.prop("disabled", false);
-                                    if (hint) hint.textContent = data.steps.length + " steps in Grade " + grade;
+                                    if (hint) hint.textContent = data.steps.length + " steps available in Grade " + grade;
                               } else {
                                     if (hint) hint.textContent = "No steps found for Grade " + grade;
                               }
@@ -291,10 +286,8 @@ var BidaEmployeeEdit = (function () {
             var currentStepId = EmployeeEditConfig.employee.pay_scale_step_id;
 
             if (currentGrade) {
-                  // Mark the correct grade as selected (already done in Blade, but trigger the load)
                   loadSteps(currentGrade, currentStepId);
             } else {
-                  // No grade assigned — init empty salary select2
                   $salary.select2({ placeholder: "Select grade first", minimumResultsForSearch: -1 });
             }
       };
@@ -304,7 +297,6 @@ var BidaEmployeeEdit = (function () {
             var photoInputEl = document.getElementById("kt_employee_photo_input");
             if (!photoInputEl) return;
 
-            // Observe KTImageInput remove click to set photo_remove = 1
             var removeBtn = photoInputEl.querySelector('[data-kt-image-input-action="remove"]');
             if (removeBtn) {
                   removeBtn.addEventListener("click", function () {
@@ -313,7 +305,6 @@ var BidaEmployeeEdit = (function () {
                   });
             }
 
-            // If user picks a new photo, reset the remove flag
             var fileInput = document.getElementById("photo_file_input");
             if (fileInput) {
                   fileInput.addEventListener("change", function () {
@@ -330,6 +321,7 @@ var BidaEmployeeEdit = (function () {
             Object.keys(errors).forEach(function (field) {
                   var input = form.querySelector('[name="' + field + '"]');
                   if (!input) return;
+
                   var row = input.closest(".fv-row");
                   if (row) {
                         var msg = document.createElement("div");
@@ -376,7 +368,6 @@ var BidaEmployeeEdit = (function () {
                   initPhotoRemove();
             }
       };
-
 })();
 
 KTUtil.onDOMContentLoaded(function () {

@@ -1,13 +1,9 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
-use App\Enums\LedgerTransactionType;
-use App\Enums\SourceType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Employee\UpdateEmployeeRequest;
-use App\Models\Cpf\CpfLedger;
-use App\Models\Cpf\CpfOpeningBalance;
 use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;
 use App\Models\Employee\PayScale;
@@ -59,7 +55,7 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Store a new employee + CPF opening balance.
+     * Store a new employee.
      */
     public function store(StoreEmployeeRequest $request): JsonResponse | RedirectResponse
     {
@@ -98,31 +94,6 @@ class EmployeeController extends Controller
             }
             // ──────────────────────────────────────────────────────────────
 
-            $openingBalance = CpfOpeningBalance::create([
-                'employee_id'             => $employee->id,
-                'self_contribution'       => $request->validated('opening_employee_contribution', 0),
-                'government_contribution' => $request->validated('opening_government_contribution', 0),
-                'interest_amount'         => $request->validated('opening_bank_interest', 0),
-                'outstanding_advance'     => $request->validated('opening_advance_balance', 0),
-                'net_balance'             => $request->validated('opening_employee_contribution', 0)
-                 + $request->validated('opening_government_contribution', 0)
-                 + $request->validated('opening_bank_interest', 0)
-                 - $request->validated('opening_advance_balance', 0),
-                'effective_date'          => $request->validated('opening_effective_date'),
-                'created_by'              => auth()->id(),
-            ]);
-
-            CpfLedger::create([
-                'employee_id'      => $employee->id,
-                'transaction_date' => $request->validated('opening_effective_date'),
-                'transaction_type' => LedgerTransactionType::OPENING_BALANCE,
-                'source_type'      => SourceType::OPENING_BALANCE,
-                'source_id'        => $openingBalance->id,
-                'credit'           => $openingBalance->net_balance,
-                'debit'            => 0,
-                'balance'          => $openingBalance->net_balance,
-            ]);
-
             EmployeeSalaryHistory::create([
                 'employee_id'       => $employee->id,
                 'pay_scale_step_id' => $employee->pay_scale_step_id,
@@ -152,7 +123,7 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee): View
     {
-        $employee->load('payScaleStep', 'salaryHistories.payScaleStep', 'openingBalance');
+        $employee->load('payScaleStep', 'salaryHistories.payScaleStep');
 
         return view('employees.show', compact('employee'));
     }
