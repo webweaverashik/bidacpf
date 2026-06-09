@@ -4,13 +4,19 @@ namespace App\Models\Cpf;
 use App\Enums\BatchStatus;
 use App\Models\BaseModel;
 use App\Traits\HasCreatedBy;
+use App\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class CpfContributionBatch extends BaseModel
 {
-    use SoftDeletes, HasCreatedBy, LogsActivity;
+    use SoftDeletes, HasCreatedBy, LogsModelActivity;
+
+        // Activity-log config (replaces getActivitylogOptions)
+    protected ?string $auditLogName  = 'cpf_contribution_batch';
+    protected ?string $auditLabel    = 'CPF Contribution';
+    protected array $auditAttributes = ['contribution_month', 'fiscal_year', 'status', 'submitted_at', 'submitted_by', 'remarks'];
 
     protected $fillable = [
         'contribution_month',
@@ -29,20 +35,6 @@ class CpfContributionBatch extends BaseModel
             'submitted_at'       => 'datetime',
             'status'             => BatchStatus::class,
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['contribution_month', 'fiscal_year', 'status', 'submitted_at', 'submitted_by', 'remarks'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('cpf_contribution_batch');
     }
 
     /*

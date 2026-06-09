@@ -1,0 +1,47 @@
+/* =========================================================================
+   Audit Logs index — minor tweaks on top of Metronic / DataTables.
+   ========================================================================= */
+
+#bida_audit_logs_table th,
+#bida_audit_logs_table td {
+      vertical-align: middle;
+}
+
+/* Tight, centred row-number column */
+#bida_audit_logs_table th:first-child,
+#bida_audit_logs_table td:first-child {
+      width: 40px;
+      text-align: center;
+}
+
+/* Changes column can get tall — top-align it so the diff reads cleanly */
+#bida_audit_logs_table td:nth-child(6) {
+      vertical-align: top;
+}
+
+/* Bottom-left length menu + record count: keep them inline and compact */
+#bida_audit_logs_table_length,
+#bida_audit_logs_table_info {
+      margin: 0;
+      padding: 0;
+}
+
+#bida_audit_logs_table_length label {
+      display: flex;
+      align-items: center;
+      margin: 0;
+}
+
+#bida_audit_logs_table_length select {
+      width: auto;
+      min-width: 75px;
+      display: inline-block;
+}
+
+#bida_audit_logs_table_paginate {
+      margin: 0;
+}
+
+#bida_audit_logs_table_processing {
+      z-index: 10;
+}

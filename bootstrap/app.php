@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Middleware\IsLoggedIn;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -45,6 +48,44 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return redirect()->route('login')->with('error', 'Your session has expired due to inactivity. Please login again.');
+        });
+
+        /*
+        | Unauthorized access → redirect authenticated users to /dashboard.
+        | Covers can: (Gate) and Spatie permission:/role: middleware.
+        | AJAX/JSON callers get a 403 JSON so the front-end can handle it.
+        */
+        $redirectUnauthorized = function (Request $request) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are not authorized to perform this action.',
+                ], 403);
+            }
+
+            // Guests fall through to the default (auth) handling → login.
+            if (! $request->user()) {
+                return null;
+            }
+
+            // Defensive: never loop on the dashboard itself.
+            if ($request->routeIs('dashboard')) {
+                abort(403);
+            }
+
+            return redirect()
+                ->route('dashboard')
+                ->with('error', 'You are not authorized to access that page.');
+        };
+
+        // Spatie permission: / role: middleware
+        $exceptions->render(function (UnauthorizedException $e, Request $request) use ($redirectUnauthorized) {
+            return $redirectUnauthorized($request);
+        });
+
+        // Laravel can: middleware / Gate::authorize()
+        $exceptions->render(function (AuthorizationException $e, Request $request) use ($redirectUnauthorized) {
+            return $redirectUnauthorized($request);
         });
     })
     ->create();

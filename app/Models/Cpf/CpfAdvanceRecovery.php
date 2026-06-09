@@ -4,12 +4,16 @@ namespace App\Models\Cpf;
 use App\Models\Attachment;
 use App\Models\BaseModel;
 use App\Traits\HasCreatedBy;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsModelActivity;
 
 class CpfAdvanceRecovery extends BaseModel
 {
-    use HasCreatedBy, LogsActivity;
+    use HasCreatedBy, LogsModelActivity;
+
+    // Activity-log config (replaces getActivitylogOptions)
+    protected ?string $auditLogName  = 'cpf_advance_loan';
+    protected ?string $auditLabel    = 'CPF Advance Recovery';
+    protected array $auditAttributes = ['cpf_advance_id', 'recovery_date', 'amount', 'remarks'];
 
     protected $fillable = [
         'cpf_advance_id',
@@ -24,20 +28,6 @@ class CpfAdvanceRecovery extends BaseModel
         return [
             'recovery_date' => 'date',
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['cpf_advance_id', 'recovery_date', 'amount', 'remarks'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('cpf_advance_recovery');
     }
 
     /*

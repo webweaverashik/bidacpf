@@ -9,9 +9,8 @@ use App\Models\Cpf\CpfLedger;
 use App\Models\Cpf\CpfOpeningBalance;
 use App\Models\Interest\BankInterestDistribution;
 use App\Traits\HasCreatedBy;
+use App\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Represents a BIDA CPF member (officer or employee).
@@ -24,7 +23,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Employee extends BaseModel
 {
-    use SoftDeletes, LogsActivity, HasCreatedBy;
+    use SoftDeletes, LogsModelActivity, HasCreatedBy;
+
+    // Activity-log config (replaces getActivitylogOptions)
+    protected ?string $auditLogName = 'employee_crud';
+    protected ?string $auditLabel   = 'Employee';
+    // no $auditAttributes → logs all fillable, same as the old logFillable()
+    
 
     protected $fillable = [
         'cpf_account_no',
@@ -49,20 +54,6 @@ class Employee extends BaseModel
             'is_active'       => 'boolean',
             'status'          => EmployeeStatus::class,
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
     }
 
     /*

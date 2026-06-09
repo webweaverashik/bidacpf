@@ -2,21 +2,23 @@
 namespace App\Models\Auth;
 
 use App\Models\Attachment;
+use App\Models\Auth\LoginActivity;
 use App\Models\Cpf\CpfAdvance;
 use App\Models\Cpf\CpfAdvanceRecovery;
 use App\Models\Interest\BankInterestBatch;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\Auth\LoginActivity;
 
 class User extends Authenticatable
 {
-    use HasRoles, SoftDeletes, LogsActivity, Notifiable;
+    use HasRoles, SoftDeletes, LogsModelActivity, Notifiable;
+
+    protected ?string $auditLogName  = 'user'; // was implicitly 'default' before
+    protected ?string $auditLabel    = 'User';
+    protected array $auditAttributes = ['name', 'email', 'designation', 'mobile_number', 'is_active'];
 
     protected $fillable = ['name', 'designation', 'email', 'mobile_number', 'is_active', 'photo_url', 'password'];
 
@@ -29,19 +31,6 @@ class User extends Authenticatable
             'password'          => 'hashed',
             'is_active'         => 'boolean',
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'designation', 'mobile_number', 'is_active'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
     }
 
     /*

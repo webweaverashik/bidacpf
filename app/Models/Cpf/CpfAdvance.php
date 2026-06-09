@@ -7,28 +7,19 @@ use App\Models\Auth\User;
 use App\Models\BaseModel;
 use App\Models\Employee\Employee;
 use App\Traits\HasCreatedBy;
+use App\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class CpfAdvance extends BaseModel
 {
-    use SoftDeletes, HasCreatedBy, LogsActivity;
+    use SoftDeletes, HasCreatedBy, LogsModelActivity;
 
-    protected $fillable = [
-        'advance_no',
-        'employee_id',
-        'application_date',
-        'approval_date',
-        'approved_amount',
-        'interest_rate',
-        'installment_count',
-        'outstanding_amount',
-        'status',
-        'remarks',
-        'created_by',
-        'approved_by',
-    ];
+    // Activity-log config (replaces getActivitylogOptions)
+    protected ?string $auditLogName  = 'cpf_advance_loan';
+    protected ?string $auditLabel    = 'Employee CPF Advance';
+    protected array $auditAttributes = ['advance_no', 'employee_id', 'application_date', 'approval_date', 'approved_amount', 'interest_rate', 'installment_count', 'outstanding_amount', 'status', 'approved_by', 'remarks'];
+
+    protected $fillable = ['advance_no', 'employee_id', 'application_date', 'approval_date', 'approved_amount', 'interest_rate', 'installment_count', 'outstanding_amount', 'status', 'remarks', 'created_by', 'approved_by'];
 
     protected function casts(): array
     {
@@ -37,32 +28,6 @@ class CpfAdvance extends BaseModel
             'approval_date'    => 'date',
             'status'           => AdvanceStatus::class,
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly([
-                'advance_no',
-                'employee_id',
-                'application_date',
-                'approval_date',
-                'approved_amount',
-                'interest_rate',
-                'installment_count',
-                'outstanding_amount',
-                'status',
-                'approved_by',
-                'remarks',
-            ])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('cpf_advance');
     }
 
     /*

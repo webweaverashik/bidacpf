@@ -5,24 +5,17 @@ use App\Enums\BatchStatus;
 use App\Models\Auth\User;
 use App\Models\BaseModel;
 use App\Traits\HasCreatedBy;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsModelActivity;
 
 class BankInterestBatch extends BaseModel
 {
-    use HasCreatedBy, LogsActivity;
+    use HasCreatedBy, LogsModelActivity;
 
-    protected $fillable = [
-        'distribution_date',
-        'fiscal_year',
-        'total_interest_amount',
-        'total_eligible_balance',
-        'status',
-        'remarks',
-        'created_by',
-        'submitted_by',
-        'submitted_at',
-    ];
+    protected ?string $auditLogName  = 'bank_interest_batch';
+    protected ?string $auditLabel    = 'Salary History';
+    protected array $auditAttributes = ['distribution_date', 'fiscal_year', 'total_interest_amount', 'total_eligible_balance', 'status', 'submitted_by', 'submitted_at', 'remarks'];
+
+    protected $fillable = ['distribution_date', 'fiscal_year', 'total_interest_amount', 'total_eligible_balance', 'status', 'remarks', 'created_by', 'submitted_by', 'submitted_at'];
 
     protected function casts(): array
     {
@@ -31,29 +24,6 @@ class BankInterestBatch extends BaseModel
             'submitted_at'      => 'datetime',
             'status'            => BatchStatus::class,
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly([
-                'distribution_date',
-                'fiscal_year',
-                'total_interest_amount',
-                'total_eligible_balance',
-                'status',
-                'submitted_by',
-                'submitted_at',
-                'remarks',
-            ])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('bank_interest_batch');
     }
 
     /*

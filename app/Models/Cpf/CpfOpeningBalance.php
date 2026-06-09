@@ -4,53 +4,24 @@ namespace App\Models\Cpf;
 use App\Models\BaseModel;
 use App\Models\Employee\Employee;
 use App\Traits\HasCreatedBy;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsModelActivity;
 
 class CpfOpeningBalance extends BaseModel
 {
-    use HasCreatedBy, LogsActivity;
+    use HasCreatedBy, LogsModelActivity;
 
-    protected $fillable = [
-        'employee_id',
-        'effective_date',
-        'self_contribution',
-        'government_contribution',
-        'interest_amount',
-        'outstanding_advance',
-        'net_balance',
-        'remarks',
-        'created_by',
-    ];
+    // Activity-log config (replaces getActivitylogOptions)
+    protected ?string $auditLogName  = 'cpf_opening_balance';
+    protected ?string $auditLabel    = 'CPF Opening Balance';
+    protected array $auditAttributes = ['employee_id', 'effective_date', 'self_contribution', 'government_contribution', 'interest_amount', 'outstanding_advance', 'net_balance', 'remarks'];
+
+    protected $fillable = ['employee_id', 'effective_date', 'self_contribution', 'government_contribution', 'interest_amount', 'outstanding_advance', 'net_balance', 'remarks', 'created_by'];
 
     protected function casts(): array
     {
         return [
             'effective_date' => 'date',
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly([
-                'employee_id',
-                'effective_date',
-                'self_contribution',
-                'government_contribution',
-                'interest_amount',
-                'outstanding_advance',
-                'net_balance',
-                'remarks',
-            ])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('cpf_opening_balance');
     }
 
     /*
@@ -105,13 +76,6 @@ class CpfOpeningBalance extends BaseModel
 
     public function getSummaryAttribute(): string
     {
-        return sprintf(
-            'Self: %s | Govt: %s | Interest: %s | Advance: %s | Net: %s',
-            number_format($this->self_contribution),
-            number_format($this->government_contribution),
-            number_format($this->interest_amount),
-            number_format($this->outstanding_advance),
-            number_format($this->net_balance),
-        );
+        return sprintf('Self: %s | Govt: %s | Interest: %s | Advance: %s | Net: %s', number_format($this->self_contribution), number_format($this->government_contribution), number_format($this->interest_amount), number_format($this->outstanding_advance), number_format($this->net_balance));
     }
 }

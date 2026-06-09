@@ -3,12 +3,15 @@ namespace App\Models\Employee;
 
 use App\Models\BaseModel;
 use App\Traits\HasCreatedBy;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsModelActivity;
 
 class EmployeeSalaryHistory extends BaseModel
 {
-    use HasCreatedBy, LogsActivity;
+    use HasCreatedBy, LogsModelActivity;
+
+    protected ?string $auditLogName  = 'employee_salary_history';
+    protected ?string $auditLabel    = 'Salary History';
+    protected array $auditAttributes = ['employee_id', 'pay_scale_step_id', 'effective_date', 'change_type', 'remarks'];
 
     protected $fillable = [
         'employee_id',
@@ -24,20 +27,6 @@ class EmployeeSalaryHistory extends BaseModel
         return [
             'effective_date' => 'date',
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log
-    |--------------------------------------------------------------------------
-    */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['employee_id', 'pay_scale_step_id', 'effective_date', 'change_type', 'remarks'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('employee_salary_history');
     }
 
     /*

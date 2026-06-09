@@ -1,23 +1,17 @@
 <?php
 namespace App\Models;
 
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\LogsModelActivity;
 
 class Setting extends BaseModel
 {
-    use LogsActivity;
+    use LogsModelActivity;
+
+    protected ?string $auditLogName = 'settings';
+    protected ?string $auditLabel   = 'System Settings';
+    // protected array $auditAttributes = ['key', 'value', 'description'];
 
     protected $fillable = ['key', 'value', 'description'];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['key', 'value', 'description'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->useLogName('setting');
-    }
 
     /**
      * Get setting value.
