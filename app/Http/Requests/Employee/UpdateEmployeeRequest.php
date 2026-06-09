@@ -15,10 +15,10 @@ class UpdateEmployeeRequest extends FormRequest
         $employeeId = $this->route('employee')->id;
 
         return [
-            'cpf_account_no'    => ['required', 'string', 'max:50', "unique:employees,cpf_account_no,{$employeeId}"],
-            'name'              => ['required', 'string', 'max:255'],
-            'designation'       => ['required', 'string', 'max:255'],
-            'email'             => ['nullable', 'email', 'max:255', "unique:employees,email,{$employeeId}"],
+            'cpf_account_no' => ['required', 'string', 'max:50', "unique:employees,cpf_account_no,{$employeeId}"],
+            'name'        => ['required', 'string', 'max:255'],
+            'designation' => ['required', 'string', 'max:255'],
+            'email'       => ['nullable', 'email', 'max:255', "unique:employees,email,{$employeeId}"],
             'mobile_number'     => ['nullable', 'string', 'max:20'],
             'joining_date'      => ['required', 'date'],
             'retirement_date'   => ['nullable', 'date', 'after:joining_date'],
@@ -31,7 +31,8 @@ class UpdateEmployeeRequest extends FormRequest
     {
         return [
             'cpf_account_no'    => 'CPF account number',
-            'pay_scale_step_id' => 'pay scale step',
+            'status'            => 'employment status',
+            'pay_scale_step_id' => 'basic salary',
             'joining_date'      => 'joining date',
             'retirement_date'   => 'retirement date',
             'mobile_number'     => 'mobile number',

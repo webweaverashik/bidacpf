@@ -21,6 +21,13 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    Route::middleware('can:cpf_ledger.view')->group(function () {
+        Route::get('employees/{employee}/ledger/pdf', [EmployeeController::class, 'ledgerPdf'])
+            ->name('employees.ledger.pdf');
+        Route::get('employees/{employee}/ledger/excel', [EmployeeController::class, 'ledgerExcel'])
+            ->name('employees.ledger.excel');
+    });
+
     // AJAX endpoint: load steps by grade (must be before resource route).
     Route::get('employees/steps-by-grade', [EmployeeController::class, 'stepsByGrade'])
         ->name('employees.steps-by-grade')
@@ -32,7 +39,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         ->middleware('permission:employee.create|employee.update');
 
     Route::post('employees/toggle-active', [EmployeeController::class, 'toggleActive'])
+        ->middleware('can:employee.update')
         ->name('employees.toggleActive');
+
+    Route::get('employees/{employee}/activities', [EmployeeController::class, 'activities'])
+        ->middleware('can:employee.view')
+        ->name('employees.activities');
 
     Route::middleware('can:employee.view')->group(function () {
         Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');

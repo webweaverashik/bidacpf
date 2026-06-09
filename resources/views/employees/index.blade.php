@@ -172,41 +172,6 @@
         <!--end::Card header-->
         <!--begin::Card body-->
         <div class="card-body py-4">
-            {{-- 
-            Employees Table - AJAX version
-            --}}
-
-            {{-- Skeleton preloader - shown while DataTable initializes --}}
-            {{-- <div class="employees-skeleton" id="skeleton_{{ $tableId }}">
-                <div class="skeleton-header">
-                    <div class="skeleton-bar" style="width:3%"></div>
-                    <div class="skeleton-bar" style="width:18%"></div>
-                    <div class="skeleton-bar" style="width:8%"></div>
-                    <div class="skeleton-bar" style="width:7%"></div>
-                    <div class="skeleton-bar" style="width:9%"></div>
-                    <div class="skeleton-bar" style="width:15%"></div>
-                    <div class="skeleton-bar" style="width:10%"></div>
-                    <div class="skeleton-bar" style="width:9%"></div>
-                    <div class="skeleton-bar" style="width:10%"></div>
-                    <div class="skeleton-bar" style="width:6%"></div>
-                </div>
-                @for ($i = 0; $i < 8; $i++)
-                    <div class="skeleton-row">
-                        <div class="skeleton-cell" style="width:3%"></div>
-                        <div class="skeleton-cell" style="width:18%"></div>
-                        <div class="skeleton-cell" style="width:8%"></div>
-                        <div class="skeleton-cell" style="width:7%"></div>
-                        <div class="skeleton-cell" style="width:9%"></div>
-                        <div class="skeleton-cell" style="width:15%"></div>
-                        <div class="skeleton-cell" style="width:10%"></div>
-                        <div class="skeleton-cell" style="width:9%"></div>
-                        <div class="skeleton-cell" style="width:10%"></div>
-                        <div class="skeleton-cell" style="width:6%"></div>
-                    </div>
-                @endfor
-            </div> --}}
-
-            {{-- Actual DataTable - hidden until ready --}}
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ashik-table" id="bida_employee_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">

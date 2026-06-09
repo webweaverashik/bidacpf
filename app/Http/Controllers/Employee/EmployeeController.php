@@ -1,22 +1,38 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
+use App\Exports\EmployeeLedgerExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Employee\UpdateEmployeeRequest;
+use App\Models\Auth\User;
+use App\Models\Cpf\CpfAdvance;
+use App\Models\Cpf\CpfAdvanceRecovery;
+use App\Models\Cpf\CpfOpeningBalance;
 use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;
 use App\Models\Employee\PayScale;
 use App\Models\Employee\PayScaleStep;
+use App\Support\FiscalYearService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Activitylog\Models\Activity;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class EmployeeController extends Controller
 {
+    /** In-request cache for foreign-key → label lookups in the activity log. */
+    private array $refCache = [];
+
     public function index(): View
     {
         $employees = Employee::with('payScaleStep')
@@ -170,32 +186,437 @@ class EmployeeController extends Controller
             ->with('success', 'Employee created successfully.');
     }
 
+    /**
+     * Show the full employee profile (tabbed view).
+     *
+     * Loads everything the system holds about the employee: profile, opening
+     * balance, contributions, running ledger, advances + recoveries, bank
+     * interest distributions, salary history. The activity log is fetched
+     * separately via AJAX (see activities()).
+     */
     public function show(Employee $employee): View
     {
-        $employee->load('payScaleStep', 'salaryHistories.payScaleStep');
+        $employee->load([
+            'payScaleStep.payScale',
+            'openingBalance',
+            'salaryHistories.payScaleStep',
+            'advances' => fn($q) => $q->latest('application_date'),
+            'advances.recoveries.creator',
+            'advances.approver',
+            'interestDistributions.batch',
+            'contributions.batch',
+            'ledgers'  => fn($q)  => $q->with('creator')->orderByDesc('created_at')->orderByDesc('id'),
+            'creator',
+        ]);
 
-        return view('employees.show', compact('employee'));
+        // NOTE: ledger summary values are read straight from the database
+        // (aggregate queries) so they never depend on eager-load state.
+        $currentBalance            = $employee->currentBalance();
+        $ledgerCredits             = (int) $employee->ledgers()->sum('credit');
+        $ledgerDebits              = (int) $employee->ledgers()->sum('debit');
+        $outstandingAdvance        = (int) $employee->advances->sum('outstanding_amount');
+        $totalEmployeeContribution = (int) $employee->contributions->sum('employee_contribution');
+        $totalGovtContribution     = (int) $employee->contributions->sum('government_contribution');
+        $totalBankInterest         = (int) $employee->interestDistributions->sum('interest_amount');
+
+        $activityCount = $this->buildActivityQuery($this->activitySubjectMap($employee))->count();
+
+        // Distinct fiscal years + transaction types present in the ledger,
+        // used to populate the Running Ledger filter dropdown.
+        $ledgerFiscalYears = $employee->ledgers
+            ->map(fn($l) => $l->transaction_date ? FiscalYearService::fromDate($l->transaction_date) : null)
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $ledgerTypes = $employee->ledgers
+            ->map(fn($l) => $l->transaction_type?->value)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        return view('employees.show', compact(
+            'employee',
+            'currentBalance',
+            'ledgerCredits',
+            'ledgerDebits',
+            'outstandingAdvance',
+            'totalEmployeeContribution',
+            'totalGovtContribution',
+            'totalBankInterest',
+            'activityCount',
+            'ledgerFiscalYears',
+            'ledgerTypes',
+        ));
+    }
+
+    /**
+     * DataTables (server-side) endpoint for the employee activity log.
+     *
+     * Aggregates Spatie activity for the employee AND its owned records
+     * (opening balance, salary history, advances, recoveries).
+     */
+    public function activities(Request $request, Employee $employee): JsonResponse
+    {
+        $employee->load([
+            'openingBalance:id,employee_id',
+            'salaryHistories:id,employee_id',
+            'advances:id,employee_id',
+            'advances.recoveries:id,cpf_advance_id',
+        ]);
+
+        $map  = $this->activitySubjectMap($employee);
+        $base = $this->buildActivityQuery($map);
+
+        $recordsTotal = (clone $base)->count();
+
+        // ── event / subject dropdown filters ─────────────────────────────
+        if (! empty($request->input('event'))) {
+            $base->where('event', $request->input('event'));
+        }
+        if ($morph = $this->subjectMorphFromToken($request->input('subject'))) {
+            $base->where('subject_type', $morph);
+        }
+
+        // ── global search ────────────────────────────────────────────────
+        $search = (string) $request->input('search.value', '');
+        if ($search !== '') {
+            $base->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                    ->orWhere('event', 'like', "%{$search}%")
+                    ->orWhere('subject_type', 'like', "%{$search}%");
+            });
+        }
+
+        $recordsFiltered = (clone $base)->count();
+
+        // ── ordering (column index → DB column) ──────────────────────────
+        $orderable     = [null, 'description', 'event', 'subject_type', null, null, 'created_at'];
+        $orderColIndex = (int) $request->input('order.0.column', 6);
+        $orderDir      = $request->input('order.0.dir', 'desc') === 'asc' ? 'asc' : 'desc';
+        $orderColumn   = $orderable[$orderColIndex] ?? 'created_at';
+        $base->orderBy($orderColumn ?: 'created_at', $orderColumn ? $orderDir : 'desc');
+
+        // ── pagination ───────────────────────────────────────────────────
+        $start  = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        if ($length > 0) {
+            $base->skip($start)->take($length);
+        }
+
+        $data = $base->with('causer')->get()->map(function (Activity $activity) {
+            return [
+                'description' => Str::headline((string) ($activity->description ?? '')),
+                'event'       => $activity->event,
+                'subject'     => class_basename($activity->subject_type ?? '') ?: '—',
+                'changes'     => $this->renderActivityChanges($activity),
+                'causer'      => $activity->causer?->name ?? 'System',
+                'when'        => optional($activity->created_at)->diffForHumans(),
+                'when_exact'  => optional($activity->created_at)->format('h:i:s A, d-M-Y'),
+                'when_ts'     => optional($activity->created_at)->timestamp,
+            ];
+        });
+
+        return response()->json([
+            'draw'            => (int) $request->input('draw'),
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Map a Subject filter token to its morph class.
+     */
+    private function subjectMorphFromToken(?string $token): ?string
+    {
+        return match ($token) {
+            'employee'        => (new Employee)->getMorphClass(),
+            'opening_balance' => (new CpfOpeningBalance)->getMorphClass(),
+            'salary'          => (new EmployeeSalaryHistory)->getMorphClass(),
+            'advance'         => (new CpfAdvance)->getMorphClass(),
+            'recovery'        => (new CpfAdvanceRecovery)->getMorphClass(),
+            default           => null,
+        };
+    }
+
+    /**
+     * Map of [morph class => subject ids] covering the employee and the
+     * records it owns, for activity-log aggregation.
+     */
+    private function activitySubjectMap(Employee $employee): array
+    {
+        $map = [
+            (new Employee)->getMorphClass() => [$employee->id],
+        ];
+
+        if ($employee->openingBalance) {
+            $map[(new CpfOpeningBalance)->getMorphClass()] = [$employee->openingBalance->id];
+        }
+
+        $salaryHistoryIds = $employee->salaryHistories->pluck('id')->all();
+        if ($salaryHistoryIds) {
+            $map[(new EmployeeSalaryHistory)->getMorphClass()] = $salaryHistoryIds;
+        }
+
+        $advanceIds = $employee->advances->pluck('id')->all();
+        if ($advanceIds) {
+            $map[(new CpfAdvance)->getMorphClass()] = $advanceIds;
+        }
+
+        $recoveryIds = $employee->advances->flatMap(fn($a) => $a->recoveries->pluck('id'))->all();
+        if ($recoveryIds) {
+            $map[(new CpfAdvanceRecovery)->getMorphClass()] = $recoveryIds;
+        }
+
+        return $map;
+    }
+
+    /**
+     * Base Activity query for a subject map.
+     */
+    private function buildActivityQuery(array $map)
+    {
+        return Activity::query()->where(function ($query) use ($map) {
+            foreach ($map as $subjectType => $ids) {
+                $query->orWhere(function ($sub) use ($subjectType, $ids) {
+                    $sub->where('subject_type', $subjectType)
+                        ->whereIn('subject_id', $ids);
+                });
+            }
+        });
+    }
+
+    /**
+     * Render the changed-attributes diff for an activity row as safe HTML.
+     * Foreign keys are resolved to human labels and dates are formatted.
+     */
+    private function renderActivityChanges(Activity $activity): string
+    {
+        $attrs = data_get($activity->properties, 'attributes', []);
+        $old   = data_get($activity->properties, 'old', []);
+
+        if (empty($attrs)) {
+            return '<span class="text-muted">—</span>';
+        }
+
+        $parts = [];
+        foreach ($attrs as $key => $val) {
+            $label = e($this->activityLabel($key));
+            $new   = e($this->formatActivityValue($key, $val));
+
+            if (array_key_exists($key, $old)) {
+                $oldV    = e($this->formatActivityValue($key, $old[$key]));
+                $parts[] = "<div class='fs-8 mb-1'><span class='fw-semibold text-gray-700'>{$label}:</span> "
+                    . "<span class='text-danger'>{$oldV}</span> "
+                    . "<i class='ki-outline ki-arrow-right fs-8 mx-1'></i>"
+                    . "<span class='text-success'>{$new}</span></div>";
+            } else {
+                $parts[] = "<div class='fs-8 mb-1'><span class='fw-semibold text-gray-700'>{$label}:</span> "
+                    . "<span class='text-success'>{$new}</span></div>";
+            }
+        }
+
+        return "<div class='d-flex flex-column'>" . implode('', $parts) . '</div>';
+    }
+
+    /**
+     * Friendly column label for an activity attribute key.
+     */
+    private function activityLabel(string $key): string
+    {
+        return match ($key) {
+            'employee_id'       => 'Employee',
+            'pay_scale_step_id' => 'Basic Salary',
+            'cpf_advance_id'    => 'Advance',
+            'created_by'        => 'Created By',
+            'approved_by'       => 'Approved By',
+            'submitted_by'      => 'Submitted By',
+            'updated_by'        => 'Updated By',
+            default             => Str::headline($key),
+        };
+    }
+
+    /**
+     * Format an activity attribute value: resolve references, booleans, dates.
+     */
+    private function formatActivityValue(string $key, $value): string
+    {
+        if ($value === null || $value === '') {
+            return '∅';
+        }
+
+        if ($key === 'is_active') {
+            return $value ? 'Active' : 'Inactive';
+        }
+
+        if ($key === 'status') {
+            return Str::headline((string) $value);
+        }
+
+        // Foreign-key reference → human label.
+        $resolved = $this->resolveReference($key, $value);
+        if ($resolved !== null) {
+            return $resolved;
+        }
+
+        // ISO date / datetime → "09-Jun-2026, 12:00:00 AM" in app timezone.
+        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2}:\d{2})?/', $value)) {
+            try {
+                return Carbon::parse($value)
+                    ->timezone(config('app.timezone'))
+                    ->format('d-M-Y, h:i:s A');
+            } catch (\Throwable $e) {
+                // fall through to raw value
+            }
+        }
+
+        return (string) $value;
+    }
+
+    /**
+     * Resolve a foreign-key attribute to a display label (cached per request).
+     * Returns null when the key is not a known reference.
+     */
+    private function resolveReference(string $key, $value): ?string
+    {
+        $cacheKey = $key . ':' . $value;
+        if (array_key_exists($cacheKey, $this->refCache)) {
+            return $this->refCache[$cacheKey];
+        }
+
+        $label = match ($key) {
+            'employee_id'       => optional(Employee::withTrashed()->find($value))->name,
+            'pay_scale_step_id' => $this->payScaleStepLabel($value),
+            'cpf_advance_id'    => optional(CpfAdvance::withTrashed()->find($value))->advance_no,
+            'created_by',
+            'approved_by',
+            'submitted_by',
+            'updated_by'        => optional(User::find($value))->name,
+            default             => null,
+        };
+
+        return $this->refCache[$cacheKey] = $label;
+    }
+
+    /**
+     * "৳45,610 (Grade 8, Step 14)" label for a pay scale step id.
+     */
+    private function payScaleStepLabel($value): ?string
+    {
+        $step = PayScaleStep::find($value);
+
+        if (! $step) {
+            return null;
+        }
+
+        return '৳' . number_format($step->basic_salary)
+        . ' (Grade ' . $step->grade . ', Step ' . $step->step . ')';
+    }
+
+    /**
+     * Download the employee's CPF ledger as an Excel workbook.
+     * Honours the on-screen year / month / search filter via query params.
+     */
+    public function ledgerExcel(Request $request, Employee $employee): BinaryFileResponse
+    {
+        $employee->load('payScaleStep.payScale');
+
+        $ledgers = $this->ledgerQuery($employee, $this->ledgerFilters($request))->get();
+
+        return Excel::download(
+            new EmployeeLedgerExport($ledgers, $employee),
+            $this->ledgerFilename($employee, 'xlsx'),
+        );
+    }
+
+    /**
+     * Download the employee's CPF ledger as a PDF.
+     * Honours the on-screen year / month / search filter via query params.
+     */
+    public function ledgerPdf(Request $request, Employee $employee): Response
+    {
+        $employee->load('payScaleStep');
+
+        $filters        = $this->ledgerFilters($request);
+        $ledgers        = $this->ledgerQuery($employee, $filters)->get();
+        $currentBalance = $employee->currentBalance();
+
+        $pdf = Pdf::loadView('employees.ledger-pdf', compact('employee', 'ledgers', 'currentBalance', 'filters'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download($this->ledgerFilename($employee, 'pdf'));
+    }
+
+    /**
+     * Normalise the ledger filter query params.
+     */
+    private function ledgerFilters(Request $request): array
+    {
+        return [
+            'fiscal_year' => $request->query('fiscal_year'),
+            'type'        => $request->query('type'),
+            'month'       => $request->query('month'),
+            'search'      => trim((string) $request->query('search', '')),
+        ];
+    }
+
+    /**
+     * Build the (optionally filtered) ledger query — the single source of
+     * truth shared by the on-screen table order and both export formats.
+     */
+    private function ledgerQuery(Employee $employee, array $filters)
+    {
+        $query = $employee->ledgers()
+            ->with('creator')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+
+        if (! empty($filters['fiscal_year'])) {
+            $query->whereBetween('transaction_date', [
+                FiscalYearService::startDate($filters['fiscal_year']),
+                FiscalYearService::endDate($filters['fiscal_year']),
+            ]);
+        }
+
+        if (! empty($filters['type'])) {
+            $query->where('transaction_type', $filters['type']);
+        }
+
+        if (! empty($filters['month'])) {
+            $query->whereMonth('transaction_date', $filters['month']);
+        }
+
+        if (! empty($filters['search'])) {
+            $term     = $filters['search'];
+            $typeTerm = str_replace(' ', '_', strtolower($term));
+
+            $query->where(function ($w) use ($term, $typeTerm) {
+                $w->where('reference_no', 'like', "%{$term}%")
+                    ->orWhere('remarks', 'like', "%{$term}%")
+                    ->orWhere('transaction_type', 'like', "%{$typeTerm}%")
+                    ->orWhere('source_type', 'like', "%{$typeTerm}%");
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Build a filesystem-safe download filename (CPF account numbers contain
+     * slashes, e.g. "PRA/K/94/36").
+     */
+    private function ledgerFilename(Employee $employee, string $extension): string
+    {
+        $account = str_replace(['/', '\\', ' '], '-', $employee->cpf_account_no);
+
+        return 'cpf-ledger-' . $account . '-' . now()->format('Ymd_His') . '.' . $extension;
     }
 
     /**
      * Show the employee edit form.
-     *
-     * Permission matrix:
-     * ┌──────────────────────────────────────────┬───────┬─────────────┬─────────┐
-     * │ Scenario                                 │ Admin │ CPF Officer │ Others  │
-     * ├──────────────────────────────────────────┼───────┼─────────────┼─────────┤
-     * │ Assigned scale ACTIVE, 1 active scale    │   G   │      G      │   –     │
-     * │ Assigned scale ACTIVE, multi active      │  PS+G │      G      │   –     │
-     * │ Assigned scale INACTIVE                  │  PS+G │      –      │   –     │
-     * └──────────────────────────────────────────┴───────┴─────────────┴─────────┘
-     * PS = may change pay scale | G = may change grade + basic salary
-     *
-     * Note on canChangeGradeSalary when assigned scale is INACTIVE:
-     *   - For Admin: starts as false on page load (because the inactive scale's
-     *     grades/steps are meaningless). Grade/salary selects become interactive
-     *     AFTER the Admin picks a new active pay scale (handled in JS).
-     *   - The server-side authorizePayScaleChange() guard handles the actual
-     *     validation and accepts the new step from the Admin.
      */
     public function edit(Request $request, Employee $employee): View
     {
@@ -214,35 +635,14 @@ class EmployeeController extends Controller
         $isAdmin           = $user->isAdmin();
         $isCpf             = $user->isCpfOfficer();
 
-        /*
-         * canChangePayScale:
-         *   Admin can switch scale when:
-         *     (a) there are multiple active scales, OR
-         *     (b) the assigned scale is inactive (must migrate to a new active one)
-         */
         $canChangePayScale = $isAdmin && ($multipleActive || ! $assignedActive);
 
-        /*
-         * canChangeGradeSalary (INITIAL state, used for blade rendering):
-         *   - true  → grade and salary selects are enabled on page load.
-         *   - false → grade and salary selects start disabled.
-         *
-         *   Rules:
-         *   • Requires the assigned scale to be ACTIVE.
-         *   • Admin OR CPF Officer.
-         *   • Nobody when the assigned scale is inactive
-         *     (Admin will unlock via JS after picking a new active scale).
-         */
         $canChangeGradeSalary = $assignedActive && ($isAdmin || $isCpf);
 
-        // All pay scales (active + inactive) for the pay-scale selector.
         $payScales = PayScale::orderByDesc('is_active')
             ->orderByDesc('effective_year')
             ->get(['id', 'name', 'is_active', 'effective_year']);
 
-        // Grades for the currently assigned scale (pre-populate the dropdown for active scale).
-        // When the assigned scale is inactive, we render no grade options —
-        // JS will load them after the Admin selects a new active scale.
         $grades = ($assignedScale && $assignedActive)
             ? $assignedScale->steps()
             ->select('grade')
@@ -254,7 +654,6 @@ class EmployeeController extends Controller
         $currentGrade  = $assignedStep?->grade;
         $currentStepId = $assignedStep?->id;
 
-        // Pre-load steps for the current grade only when scale is active and user can edit.
         $steps = ($assignedActive && $canChangeGradeSalary && $assignedScale && $currentGrade !== null)
             ? $assignedScale->steps()
             ->where('grade', $currentGrade)
@@ -297,7 +696,6 @@ class EmployeeController extends Controller
                 'status'            => $request->validated('status'),
             ]);
 
-            // ── PHOTO REPLACEMENT ─────────────────────────────────────────────
             if (
                 $request->hasFile('photo') &&
                 $request->file('photo')->isValid() &&
@@ -320,7 +718,6 @@ class EmployeeController extends Controller
                 $employee->update(['photo' => 'uploads/employees/photos/' . $filename]);
             }
 
-            // ── PHOTO REMOVAL ─────────────────────────────────────────────────
             if ($request->input('photo_remove') == '1') {
                 if ($employee->photo && file_exists(public_path($employee->photo))) {
                     @unlink(public_path($employee->photo));
@@ -328,7 +725,6 @@ class EmployeeController extends Controller
                 $employee->update(['photo' => null]);
             }
 
-            // ── SALARY HISTORY ────────────────────────────────────────────────
             if ($employee->wasChanged('pay_scale_step_id')) {
                 EmployeeSalaryHistory::create([
                     'employee_id'       => $employee->id,
@@ -358,15 +754,6 @@ class EmployeeController extends Controller
 
     /**
      * Server-side authorization guard for pay-scale / grade / salary changes.
-     *
-     * Rules (mirrors the blade/JS permission logic):
-     *   1. No change in step id → always OK.
-     *   2. Pay scale changed    → must be Admin + target scale must be active.
-     *   3. Grade/salary changed within same scale → Admin or CPF Officer,
-     *      and the assigned scale must be active.
-     *
-     * Note: When the assigned scale is inactive and Admin provides a new step
-     * from a DIFFERENT (active) scale, this falls under Rule 2 and is allowed.
      */
     private function authorizePayScaleChange(UpdateEmployeeRequest $request, Employee $employee): void
     {
@@ -374,7 +761,6 @@ class EmployeeController extends Controller
         $currentStepId = (int) $employee->pay_scale_step_id;
         $chosenStepId  = (int) $request->validated('pay_scale_step_id');
 
-        // No change — nothing to authorize
         if ($chosenStepId === $currentStepId) {
             return;
         }
@@ -391,12 +777,9 @@ class EmployeeController extends Controller
         $assignedScale  = $assignedStep ? PayScale::find($assignedStep->pay_scale_id) : null;
         $assignedActive = (bool) ($assignedScale?->is_active);
 
-        // Determine whether the pay scale itself is being changed.
-        // Also treat a missing assigned scale as a scale change.
         $scaleChanged = ! $assignedScale
             || ((int) $chosenStep->pay_scale_id !== (int) $assignedScale->id);
 
-        // ── Rule 2: Pay scale change ─────────────────────────────────────────
         if ($scaleChanged) {
             if (! $user->isAdmin()) {
                 throw ValidationException::withMessages([
@@ -412,10 +795,9 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            return; // Admin + active target scale → OK
+            return;
         }
 
-        // ── Rule 3: Grade/salary change within same scale ────────────────────
         if (! $assignedActive) {
             throw ValidationException::withMessages([
                 'pay_scale_step_id' =>
@@ -432,6 +814,12 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee): RedirectResponse
     {
+        // Safety guard: never delete an employee that still has a CPF balance.
+        if ($employee->currentBalance() !== 0) {
+            return redirect()->route('employees.show', $employee)
+                ->with('error', 'Employee cannot be deleted while the CPF balance is non-zero.');
+        }
+
         $employee->delete();
 
         return redirect()->route('employees.index')

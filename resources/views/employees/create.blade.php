@@ -186,7 +186,7 @@
 
                                 {{-- Status --}}
                                 <div class="fv-row mb-7">
-                                    <label class="required fw-semibold fs-6 mb-2">Status</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Employment Status</label>
                                     <div class="d-flex gap-6 flex-wrap mt-1">
                                         @foreach (['active' => 'Active', 'retired' => 'Retired', 'resigned' => 'Resigned', 'deceased' => 'Deceased'] as $val => $label)
                                             <div class="form-check form-check-custom form-check-solid">

@@ -38,6 +38,7 @@ class StoreEmployeeRequest extends FormRequest
     {
         return [
             'cpf_account_no'                  => 'CPF account number',
+            'status'                          => 'employment status',
             'pay_scale_step_id'               => 'basic salary',
             'joining_date'                    => 'joining date',
             'retirement_date'                 => 'retirement date',

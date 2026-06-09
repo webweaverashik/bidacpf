@@ -1,0 +1,28 @@
+/* Employee show page — minor refinements over the Metronic base theme */
+
+#kt_employee_show .symbol>img {
+      object-fit: cover;
+}
+
+#kt_employee_show .nav-line-tabs .nav-item .nav-link {
+      white-space: nowrap;
+}
+
+#kt_employee_show table tfoot td {
+      padding-top: 0.85rem;
+}
+
+/* keep ledger / activity DataTables tidy inside cards */
+#kt_employee_ledger_table_wrapper .dataTables_filter,
+#kt_employee_activity_table_wrapper .dataTables_filter {
+      margin-bottom: 1rem;
+}
+
+/* DataTables wrappers fill the card width */
+#kt_employee_show .dataTables_wrapper {
+      width: 100%;
+}
+
+#kt_employee_show table.dataTable {
+      width: 100% !important;
+}
