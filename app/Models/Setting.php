@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\LogsModelActivity;
+use Spatie\Activitylog\Contracts\Activity as ActivityContract;
 
 class Setting extends BaseModel
 {
@@ -12,6 +13,31 @@ class Setting extends BaseModel
     // protected array $auditAttributes = ['key', 'value', 'description'];
 
     protected $fillable = ['key', 'value', 'description'];
+
+    /**
+     * Always record the (immutable) setting key alongside the value.
+     *
+     * `key` and `description` never change, so logOnlyDirty() omits them on an
+     * update — leaving the diff showing only "Value: old → new" with no hint of
+     * which setting it was. Here we prepend the key to the logged attributes so
+     * the change record stays self-explanatory later. The key is added to
+     * `attributes` only (not `old`), so it renders as plain context rather than
+     * a fake "changed" value.
+     */
+    public function tapActivity(ActivityContract $activity, string $eventName): void
+    {
+        if ($eventName !== 'updated') {
+            return;
+        }
+
+        $properties = $activity->properties;
+        $attributes = (array) $properties->get('attributes', []);
+
+        // Union keeps `key` first, then the actual changed attributes.
+        $attributes = ['key' => $this->key] + $attributes;
+
+        $activity->properties = $properties->put('attributes', $attributes);
+    }
 
     /**
      * Get setting value.
@@ -26,13 +52,13 @@ class Setting extends BaseModel
      */
     public static function set(string $key, mixed $value, ?string $description = null): void
     {
-        static::updateOrCreate(
-            ['key' => $key],
-            [
-                'value'       => $value,
-                'description' => $description,
-            ],
-        );
+        $attributes = ['value' => $value];
+
+        if ($description !== null) {
+            $attributes['description'] = $description;
+        }
+
+        static::updateOrCreate(['key' => $key], $attributes);
     }
 
     /**

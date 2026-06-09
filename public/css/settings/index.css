@@ -1,0 +1,17 @@
+.month-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+}
+
+.month-grid .btn {
+      min-width: 7.25rem;
+}
+
+.fv-feedback {
+      display: none;
+}
+
+.fv-feedback.show {
+      display: block;
+}

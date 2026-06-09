@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Setting;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Setting\UpdateSettingRequest;
 use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -16,10 +17,17 @@ class SettingController extends Controller
         return view('settings.index', compact('settings'));
     }
 
-    public function update(UpdateSettingRequest $request): RedirectResponse
+    public function update(UpdateSettingRequest $request): JsonResponse | RedirectResponse
     {
         foreach ($request->validated('settings') as $key => $value) {
-            Setting::set($key, $value);
+            Setting::set($key, is_array($value) ? json_encode(array_values($value)) : $value);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Settings updated successfully.',
+            ]);
         }
 
         return redirect()->route('settings.index')

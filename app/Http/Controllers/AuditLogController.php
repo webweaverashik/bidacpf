@@ -6,6 +6,7 @@ use App\Models\Cpf\CpfAdvance;
 use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;
 use App\Models\Employee\PayScaleStep;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -93,7 +94,12 @@ class AuditLogController extends Controller
                     ->orWhere($this->table . '.event', 'like', "%{$search}%")
                     ->orWhere($this->table . '.log_name', 'like', "%{$search}%")
                     ->orWhere($this->table . '.subject_type', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%");
+                    ->orWhere($this->table . '.properties', 'like', "%{$search}%") // Changes (raw values)
+                    ->orWhere('users.name', 'like', "%{$search}%");                // Causer
+
+                // Match the resolved subject NAME (employee / user / setting / advance …),
+                // which lives in related tables rather than on the activity row.
+                $this->applySubjectNameSearch($q, $search);
             });
         }
 
@@ -203,6 +209,49 @@ class AuditLogController extends Controller
     }
 
     /**
+     * OR-match activity rows whose resolved subject name matches the search.
+     *
+     * The subject name comes from related tables (employees.name, users.name,
+     * settings.key, cpf_advances.advance_no, salary-history → employee.name),
+     * so we resolve matching ids per morph type and constrain by them.
+     */
+    private function applySubjectNameSearch($query, string $search): void
+    {
+        $like  = "%{$search}%";
+        $snake = '%' . Str::snake($search) . '%'; // setting keys are snake_case
+
+        $idsByType = [
+            (new Employee)->getMorphClass()              => Employee::withTrashed()
+                ->where('name', 'like', $like)->pluck('id'),
+
+            (new User)->getMorphClass()                  => User::withTrashed()
+                ->where('name', 'like', $like)->pluck('id'),
+
+            (new CpfAdvance)->getMorphClass()            => CpfAdvance::withTrashed()
+                ->where('advance_no', 'like', $like)->pluck('id'),
+
+            // Match either the raw key or a snake_cased version of the typed
+            // text, so "Interest Distribution" finds "interest_distribution_*".
+            (new Setting)->getMorphClass()               => Setting::where('key', 'like', $like)
+                ->orWhere('key', 'like', $snake)->pluck('id'),
+
+            (new EmployeeSalaryHistory)->getMorphClass() => EmployeeSalaryHistory::whereHas(
+                'employee',
+                fn($q) => $q->where('name', 'like', $like)
+            )->pluck('id'),
+        ];
+
+        foreach ($idsByType as $type => $ids) {
+            if ($ids->isNotEmpty()) {
+                $query->orWhere(function ($sub) use ($type, $ids) {
+                    $sub->where($this->table . '.subject_type', $type)
+                        ->whereIn($this->table . '.subject_id', $ids->all());
+                });
+            }
+        }
+    }
+
+    /**
      * Resolve display names for a set of subject ids of one morph type.
      * Returns [id => name]; unknown types yield an empty map.
      */
@@ -226,6 +275,13 @@ class AuditLogController extends Controller
             (new EmployeeSalaryHistory)->getMorphClass() => EmployeeSalaryHistory::with('employee:id,name')
                 ->whereIn('id', $ids)->get()
                 ->mapWithKeys(fn($h) => [$h->id => $h->employee?->name])->all(),
+
+            // Settings: surface the setting key as a readable label
+            // (e.g. "interest_distribution_months" → "Interest Distribution Months").
+            (new Setting)->getMorphClass()               => Setting::whereIn('id', $ids)
+                ->pluck('key', 'id')
+                ->map(fn($key) => Str::headline((string) $key))
+                ->all(),
 
             default                                      => [],
         };

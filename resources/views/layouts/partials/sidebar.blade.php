@@ -245,41 +245,15 @@
                     <!--end::Settings Section heading-->
 
                     <!--begin::Users-->
-                    @canany(['user.view', 'user.create'])
-                        <div data-kt-menu-trigger="click"
-                            class="menu-item menu-accordion {{ request()->routeIs('users.*') ? 'here show' : '' }}"
-                            id="users_menu">
-                            <span class="menu-link">
+                    @canany(['user.view', 'user.create', 'user.update'])
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}"
+                                href="{{ route('users.index') }}" id="users_link">
                                 <span class="menu-icon">
-                                    <i class="ki-outline ki-user fs-1"></i>
+                                    <i class="ki-outline ki-user fs-2"></i>
                                 </span>
-                                <span class="menu-title">Users</span>
-                                <span class="menu-arrow"></span>
-                            </span>
-
-                            <div class="menu-sub menu-sub-accordion">
-
-                                @can('user.view')
-                                    <div class="menu-item">
-                                        <a class="menu-link {{ request()->routeIs('users.index') ? 'active' : '' }}"
-                                            id="all_users_link" href="{{ route('users.index') }}">
-                                            <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                            <span class="menu-title">All Users</span>
-                                        </a>
-                                    </div>
-                                @endcan
-
-                                @can('user.create')
-                                    <div class="menu-item">
-                                        <a class="menu-link {{ request()->routeIs('users.create') ? 'active' : '' }}"
-                                            id="add_user_link" href="{{ route('users.create') }}">
-                                            <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                            <span class="menu-title">Add New</span>
-                                        </a>
-                                    </div>
-                                @endcan
-
-                            </div>
+                                <span class="menu-title">User Management</span>
+                            </a>
                         </div>
                     @endcanany
                     <!--end::Users-->

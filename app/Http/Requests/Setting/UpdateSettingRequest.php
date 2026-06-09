@@ -13,19 +13,15 @@ class UpdateSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'settings'                                => ['required', 'array'],
+            'settings'                              => ['required', 'array'],
 
-            'settings.employee_contribution_rate'     => ['required', 'numeric', 'min:0', 'max:100'],
-            'settings.government_contribution_rate'   => ['required', 'numeric', 'min:0', 'max:100'],
-            'settings.advance_limit_percentage'       => ['required', 'numeric', 'min:0', 'max:100'],
-            'settings.advance_interest_rate'          => ['required', 'numeric', 'min:0', 'max:100'],
-            'settings.max_installments'               => ['required', 'integer', 'min:1', 'max:120'],
-            'settings.interest_distribution_months'   => ['required', 'array', 'min:1'],
-            'settings.interest_distribution_months.*' => [
-                'required',
-                'string',
-                'in:January,February,March,April,May,June,July,August,September,October,November,December',
-            ],
+            'settings.employee_contribution_rate'   => ['required', 'numeric', 'min:0', 'max:100'],
+            'settings.government_contribution_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'settings.advance_limit_percentage'     => ['required', 'numeric', 'min:0', 'max:100'],
+            'settings.advance_interest_rate'        => ['required', 'numeric', 'min:0', 'max:100'],
+            'settings.max_installments'             => ['required', 'integer', 'min:1', 'max:120'],
+            'settings.interest_distribution_months' => ['required', 'array', 'min:1'],
+            'settings.interest_distribution_months' => ['required', 'array', 'min:1', 'max:2'],
         ];
     }
 

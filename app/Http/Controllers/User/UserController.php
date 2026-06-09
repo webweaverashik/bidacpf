@@ -14,13 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->can('users.manage')) {
-            return redirect()->back()->with('error', 'No permission to manage users.');
-        }
-
-        $branches = Branch::all();
-
-        return view('settings.users.index', compact('branches'));
+        return view('users.index');
     }
 
     /**

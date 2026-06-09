@@ -240,10 +240,5 @@
 @endpush
 
 @push('page-js')
-    <script>
-        const routeDeleteEmployee = "{{ route('employees.destroy', ':id') }}";
-        const routeEmployeeShow = "{{ route('employees.show', ':id') }}";
-        const routeToggleActive = "{{ route('employees.toggleActive') }}";
-    </script>
     <script src="{{ asset('js/employees/index.js') }}"></script>
 @endpush
