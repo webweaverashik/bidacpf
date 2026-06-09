@@ -284,11 +284,12 @@ class UserController extends Controller
             'data'    => [
                 'id'            => $user->id,
                 'name'          => $user->name,
+                'designation'   => $user->designation,
                 'email'         => $user->email,
                 'mobile_number' => $user->mobile_number,
-                'branch_id'     => $user->branch_id,
                 'role'          => $user->getRoleNames()->first(),
                 'photo_url'     => $user->photo_url ? asset($user->photo_url) : null,
+                'is_active'     => $user->is_active,
             ],
         ]);
     }

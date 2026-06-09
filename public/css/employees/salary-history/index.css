@@ -1,0 +1,44 @@
+/* =========================================================================
+   Salary History index — minor tweaks on top of Metronic / DataTables.
+   ========================================================================= */
+
+#bida_salary_history_table th,
+#bida_salary_history_table td {
+      vertical-align: middle;
+}
+
+/* Tight, centred row-number column */
+#bida_salary_history_table th:first-child,
+#bida_salary_history_table td:first-child {
+      width: 40px;
+      text-align: center;
+}
+
+/* Bottom-left length menu + record count: keep them inline and compact */
+#bida_salary_history_table_length,
+#bida_salary_history_table_info {
+      margin: 0;
+      padding: 0;
+}
+
+#bida_salary_history_table_length label {
+      display: flex;
+      align-items: center;
+      margin: 0;
+}
+
+#bida_salary_history_table_length select {
+      width: auto;
+      min-width: 75px;
+      display: inline-block;
+}
+
+/* Pagination flush right */
+#bida_salary_history_table_paginate {
+      margin: 0;
+}
+
+/* Processing overlay above the table */
+#bida_salary_history_table_processing {
+      z-index: 10;
+}

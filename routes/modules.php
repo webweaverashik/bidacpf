@@ -75,6 +75,13 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     */
     Route::middleware('can:employee_salary.view')->group(function () {
         Route::get('employee-salary', [EmployeeSalaryController::class, 'index'])->name('employee-salary.index');
+
+        // Server-side DataTable feed.
+        Route::get('employee-salary/data', [EmployeeSalaryController::class, 'data'])->name('employee-salary.data');
+
+        // Cascading filter feeds (Pay Scale → Grade → Basic Salary).
+        Route::get('employee-salary/filter/grades', [EmployeeSalaryController::class, 'filterGrades'])->name('employee-salary.filter.grades');
+        Route::get('employee-salary/filter/steps', [EmployeeSalaryController::class, 'filterSteps'])->name('employee-salary.filter.steps');
     });
 
     Route::middleware('can:employee_salary.create')->group(function () {
@@ -253,6 +260,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     */
     Route::middleware('role:Admin')->group(function () {
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+        // NEW — server-side DataTable feed.
+        Route::get('audit-logs/data', [AuditLogController::class, 'data'])->name('audit-logs.data');
+
         Route::get('audit-logs/{log}', [AuditLogController::class, 'show'])->name('audit-logs.show');
     });
 });
