@@ -40,7 +40,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Cache clearing
     Route::get('clear-cache', function () {
-        clearUCMSCaches();
         clearServerCache();
         return response()->json(['success' => true]);
     })->name('clear.cache');
