@@ -189,13 +189,13 @@
                         <th class="not-export">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="text-gray-600 fw-semibold">
+                <tbody class="text-gray-800 fw-semibold">
                     @foreach ($employees as $employee)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <a href="{{ route('employees.show', $employee->id) }}"
-                                    class="text-gray-600 text-hover-primary" title="View Employee Details"
+                                    class="text-gray-800 text-hover-primary" title="View Employee Details"
                                     target="_blank">
                                     {{ $employee->cpf_account_no }}
                                 </a>

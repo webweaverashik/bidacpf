@@ -1,0 +1,52 @@
+/* ============================================================
+   Profile / User-show — responsive helpers only
+   (wallet-logs & cost-records styles removed — not used in BIDA)
+   ============================================================ */
+
+/* Stat card sizing */
+@media (max-width: 575.98px) {
+      .fs-md-2 {
+            font-size: 1.1rem !important;
+      }
+
+      .fs-md-6 {
+            font-size: 0.85rem !important;
+      }
+}
+
+@media (min-width: 576px) {
+      .fs-md-2 {
+            font-size: 1.5rem !important;
+      }
+
+      .fs-md-6 {
+            font-size: 1rem !important;
+      }
+}
+
+/* Break long emails on mobile */
+@media (max-width: 575.98px) {
+      .text-break {
+            word-break: break-all;
+      }
+}
+
+/* Card header flex layout on small screens */
+@media (max-width: 767.98px) {
+      .card-header.flex-column {
+            align-items: stretch !important;
+      }
+}
+
+/* DataTables horizontal scroll on narrow viewports */
+@media (max-width: 767.98px) {
+
+      #kt_profile_activity_table,
+      #kt_profile_login_table,
+      #kt_user_activity_table,
+      #kt_user_login_table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+      }
+}

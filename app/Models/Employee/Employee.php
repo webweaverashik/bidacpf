@@ -204,7 +204,6 @@ class Employee extends BaseModel
     public function currentBalance(): int
     {
         return (int) $this->ledgers()
-            ->latest('transaction_date')
             ->latest('id')
             ->value('balance');
     }

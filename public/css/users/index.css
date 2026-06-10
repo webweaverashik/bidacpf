@@ -1,0 +1,42 @@
+/* ============================================================
+   Users index — small utilities
+   ============================================================ */
+
+/* Ensure the search input never collapses too far on small screens */
+@media (max-width: 575.98px) {
+      [data-kt-user-table-filter="search"] {
+            width: 100% !important;
+      }
+
+      .card-toolbar {
+            width: 100%;
+      }
+
+      .card-toolbar [data-kt-user-table-toolbar="base"] {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+      }
+}
+
+/* Action icons spacing inside the table */
+#kt_users_table td .btn-icon {
+      margin-right: 0.25rem;
+}
+
+/* Horizontal scroll for the table on narrow viewports */
+@media (max-width: 767.98px) {
+      #kt_users_table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+      }
+}
+
+/* Two-step delete confirm input states */
+#delete_confirm_input.is-valid {
+      border-color: var(--bs-success);
+}
+
+#delete_confirm_input.is-invalid {
+      border-color: var(--bs-danger);
+}

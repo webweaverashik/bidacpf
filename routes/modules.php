@@ -10,6 +10,7 @@ use App\Http\Controllers\Employee\EmployeeSalaryController;
 use App\Http\Controllers\Interest\BankInterestController;
 use App\Http\Controllers\Report\ReportController;
 use App\Http\Controllers\Setting\SettingController;
+use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -233,25 +234,44 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     */
     Route::middleware('can:user.view')->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');
+
+        // Server-side DataTable feed (must precede users/{user}).
+        Route::get('users/data', [UserController::class, 'data'])->name('users.data');
+
+        // Edit-modal JSON + activity feeds.
+        Route::get('users/{user}/json', [UserController::class, 'json'])->name('users.json');
+        Route::get('users/{user}/activities', [UserController::class, 'activities'])->name('users.activities');
+        Route::get('users/{user}/login-activities', [UserController::class, 'loginActivities'])->name('users.login-activities');
+
+        // Full activity page (wildcard — keep LAST among GETs).
+        Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
     });
 
     Route::middleware('can:user.create')->group(function () {
-        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('users', [UserController::class, 'store'])->name('users.store');
     });
 
     Route::middleware('can:user.update')->group(function () {
-        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::put('users/{user}/password', [UserController::class, 'resetPassword'])->name('users.password');
     });
 
-    Route::delete('users/{user}', [UserController::class, 'destroy'])
-        ->middleware('can:user.delete')
-        ->name('users.destroy');
+    Route::middleware('can:user.delete')->group(function () {
+        Route::post('users/recover', [UserController::class, 'recover'])->name('users.recover');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
 
-    Route::get('users/{user}', [UserController::class, 'show'])
-        ->middleware('can:user.view')
-        ->name('users.show');
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
+    |--------------------------------------------------------------------------
+    */
+    Route::get('profile', [ProfileController::class, 'profile'])->name('users.profile');
+    Route::post('profile', [ProfileController::class, 'updateProfile'])->name('users.profile.update');
+    Route::put('profile/password', [ProfileController::class, 'resetPassword'])->name('users.password.reset');
+    Route::get('profile/activities', [ProfileController::class, 'activities'])->name('users.profile.activities');
+    Route::get('profile/login-activities', [ProfileController::class, 'loginActivities'])->name('users.profile.login-activities');
 
     /*
     |--------------------------------------------------------------------------

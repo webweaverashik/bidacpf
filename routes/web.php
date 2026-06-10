@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\User\ProfileController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
@@ -30,9 +29,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Dashboard main view
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // User Profile
-    Route::get('profile', [ProfileController::class, 'profile'])->name('users.profile');
 
     // Logout routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

@@ -21,9 +21,12 @@ class UpdateUserRequest extends FormRequest
             'name'        => ['required', 'string', 'max:255'],
             'designation' => ['nullable', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255', "unique:users,email,{$userId}"],
-            'mobile_number' => ['nullable', 'string', 'max:20'], // Password is optional on update — only validated if filled
+            'mobile_number' => ['nullable', 'string', 'size:11', 'regex:/^01[3-9]\d{8}$/'],
+            // Password is optional on update — only validated when filled.
             'password'      => ['nullable', 'confirmed', Password::min(8)->letters()->numbers()],
             'role'          => ['required', 'string', 'in:' . implode(',', $validRoles)],
+            'photo_url'     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:100'],
+            'remove_photo'  => ['nullable', 'in:0,1'],
         ];
     }
 
@@ -31,6 +34,14 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'mobile_number' => 'mobile number',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'mobile_number.regex' => 'Please enter a valid 11-digit Bangladeshi mobile number.',
+            'photo_url.max'       => 'Image size must be less than 100KB.',
         ];
     }
 }
