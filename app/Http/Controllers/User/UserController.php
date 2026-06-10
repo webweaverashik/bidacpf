@@ -156,7 +156,7 @@ class UserController extends Controller
             }
 
             // --- Actions column ---
-            $actionsHtml = '<div class="d-flex justify-content-end flex-shrink-0">';
+            $actionsHtml = '<div class="d-flex justify-content-center flex-shrink-0">';
             if ($isDeleted) {
                 $actionsHtml .= '
                     <button type="button" title="Recover User" data-bs-toggle="tooltip"
