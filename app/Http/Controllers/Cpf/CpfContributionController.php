@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contribution\StoreContributionBatchRequest;
 use App\Models\Cpf\CpfContributionBatch;
 use App\Services\ContributionService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -24,7 +25,7 @@ class CpfContributionController extends Controller
 
     public function store(StoreContributionBatchRequest $request): RedirectResponse
     {
-        $date  = \Carbon\Carbon::parse($request->validated('contribution_month'));
+        $date  = Carbon::parse($request->validated('contribution_month'));
         $batch = $this->contributionService->generateBatch(
             month: $date->month,
             year: $date->year,
