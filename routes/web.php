@@ -6,45 +6,79 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
-routes/
-├── web.php              # Main entry point (minimal)
-├── auth.php             # Authentication routes (guest)
-├── modules.php          # Module-specific routes
+|--------------------------------------------------------------------------
+| Web Routes (Core Entry Point)
+|--------------------------------------------------------------------------
+|
+| Kept deliberately minimal. Only the public auth entry, the dashboard and
+| a few core/session routes live here. Everything else is split out and
+| loaded from bootstrap/app.php via the `then:` closure:
+|
+| routes/
+| ├── web.php          # This file — public + core authenticated routes
+| ├── auth.php         # Guest auth routes (forgot / reset password)
+| ├── modules.php      # Loader for the application modules below
+| └── modules/         # One file per feature module
+|     ├── employees.php
+|     ├── employee-salary.php
+|     ├── cpf-contributions.php
+|     ├── cpf-ledger.php
+|     ├── cpf-advances.php
+|     ├── bank-interest.php
+|     ├── reports.php
+|     ├── settings.php
+|     ├── users.php
+|     ├── profile.php
+|     └── audit-logs.php
 */
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Public Routes
 |--------------------------------------------------------------------------
-| Minimal entry point - only core routes here
-| Other routes are loaded via bootstrap/app.php
+| Login screen and authentication submit. Reachable without a session.
 */
-
-// Public routes
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
-// Authenticated core routes
+/*
+|--------------------------------------------------------------------------
+| Authenticated Core Routes
+|--------------------------------------------------------------------------
+| Dashboard, logout and the cache-clear helper. Guarded by `auth` and the
+| single-session `isLoggedIn` middleware.
+*/
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
-    // Dashboard main view
+    // Dashboard main view.
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Logout routes
+    // Logout (POST performs logout; GET bounces back — used by stray links).
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', fn() => redirect()->back())->name('logout.get');
 
-    // Cache clearing
+    // Clear application/server cache (AJAX helper).
     Route::get('clear-cache', function () {
         clearServerCache();
         return response()->json(['success' => true]);
     })->name('clear.cache');
 });
 
-// Guest logout redirect (handles /logout when not authenticated)
+/*
+|--------------------------------------------------------------------------
+| Guest Logout Fallback
+|--------------------------------------------------------------------------
+| Handles GET /logout when there is no active session — send guests to the
+| login screen instead of bouncing back.
+*/
 Route::get('/logout', fn() => redirect()->route('login'));
 
-// Testing mail server (remove in production)
+/*
+|--------------------------------------------------------------------------
+| Mail Test (DEV ONLY)
+|--------------------------------------------------------------------------
+| Quick mailer smoke-test. REMOVE before deploying to production.
+*/
 Route::get('/send-test-email', function () {
     Mail::raw('This is a test email!', function ($message) {
         $message->to('test@example.com')->subject('Test Email');
