@@ -29,7 +29,7 @@ class EmployeeFactory extends Factory
         $stepId = PayScaleStep::query()->inRandomOrder()->value('id');
 
         return [
-            'cpf_account_no'    => 'PRA/K/' . fake()->unique()->numberBetween(1000, 9999) . '/' . fake()->numberBetween(10, 99),
+            'cpf_account_no'    => 'BIDA/CPF/' . fake()->unique()->numberBetween(1000, 9999) . '/' . fake()->numberBetween(10, 99),
             'name'              => fake()->name(),
             'designation'       => fake()->randomElement([
                 'Investment Officer',

@@ -27,7 +27,7 @@ class EmployeeSeeder extends Seeder
     /**
      * Number of demo employees to generate.
      */
-    private const EMPLOYEE_COUNT = 40;
+    private const EMPLOYEE_COUNT = 60;
 
     public function __construct(private LedgerService $ledgerService)
     {}
