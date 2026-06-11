@@ -40,14 +40,14 @@ class SettingSeeder extends Seeder
                 'description' => 'Maximum Advance Recovery Installments',
             ],
 
-            [
-                'key'         => 'interest_distribution_months',
-                'value'       => json_encode([
-                    'June',
-                    'December',
-                ]),
-                'description' => 'Bank interest distribution months',
-            ],
+            // [
+            //     'key'         => 'interest_distribution_months',
+            //     'value'       => json_encode([
+            //         'June',
+            //         'December',
+            //     ]),
+            //     'description' => 'Bank interest distribution months',
+            // ],
         ];
 
         foreach ($settings as $setting) {

@@ -6,7 +6,6 @@ var BidaCpfSetting = (function () {
       var config = window.BidaCpfSettingConfig || {};
       var form;
       var submitButton;
-      var MAX_MONTHS = 2;
 
       var numericFields = [
             { name: "employee_contribution_rate", label: "Employee contribution rate", min: 0, max: 100, integer: false },
@@ -33,35 +32,6 @@ var BidaCpfSetting = (function () {
             var fb = feedbackFor(input);
             fb.textContent = "";
             fb.classList.remove("show");
-      };
-
-      var setMonthsError = function (message) {
-            var fb = document.getElementById("months_feedback");
-            fb.textContent = message;
-            fb.classList.add("show");
-      };
-
-      var clearMonthsError = function () {
-            var fb = document.getElementById("months_feedback");
-            fb.textContent = "";
-            fb.classList.remove("show");
-      };
-
-      var selectedMonths = function () {
-            return Array.prototype.slice
-                  .call(form.querySelectorAll('[name="interest_distribution_months[]"]:checked'))
-                  .map(function (el) { return el.value; });
-      };
-
-      // Disable unchecked chips once the max is reached
-      var enforceMonthLimit = function () {
-            var atLimit = selectedMonths().length >= MAX_MONTHS;
-
-            form.querySelectorAll('[name="interest_distribution_months[]"]').forEach(function (cb) {
-                  if (!cb.checked) {
-                        cb.disabled = atLimit;
-                  }
-            });
       };
 
       // ── Validation ────────────────────────────────────────────────────────
@@ -99,17 +69,6 @@ var BidaCpfSetting = (function () {
                   }
             });
 
-            var months = selectedMonths();
-            if (months.length === 0) {
-                  setMonthsError("Select at least one distribution month");
-                  valid = false;
-            } else if (months.length > MAX_MONTHS) {
-                  setMonthsError("You can select a maximum of two months");
-                  valid = false;
-            } else {
-                  clearMonthsError();
-            }
-
             return valid;
       };
 
@@ -119,10 +78,6 @@ var BidaCpfSetting = (function () {
                   var field = key.replace("settings.", "").split(".")[0];
                   var message = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
 
-                  if (field === "interest_distribution_months") {
-                        setMonthsError(message);
-                        return;
-                  }
                   var input = form.querySelector('[name="' + field + '"]');
                   if (input) {
                         setError(input, message);
@@ -137,7 +92,6 @@ var BidaCpfSetting = (function () {
             numericFields.forEach(function (cfg) {
                   payload.settings[cfg.name] = form.querySelector('[name="' + cfg.name + '"]').value.trim();
             });
-            payload.settings.interest_distribution_months = selectedMonths();
 
             return payload;
       };
@@ -200,13 +154,6 @@ var BidaCpfSetting = (function () {
                   form.querySelector('[name="' + cfg.name + '"]')
                         .addEventListener("input", function () { clearError(this); });
             });
-
-            form.querySelectorAll('[name="interest_distribution_months[]"]').forEach(function (el) {
-                  el.addEventListener("change", function () {
-                        clearMonthsError();
-                        enforceMonthLimit();
-                  });
-            });
       };
 
       // ── Public API ────────────────────────────────────────────────────────
@@ -220,7 +167,6 @@ var BidaCpfSetting = (function () {
                   }
 
                   bindEvents();
-                  enforceMonthLimit();
             }
       };
 })();

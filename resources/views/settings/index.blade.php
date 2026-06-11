@@ -26,21 +26,6 @@
 @section('content')
     @php
         $get = fn($key, $default = null) => optional($settings[$key] ?? null)->value ?? $default;
-        $allMonths = [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December',
-        ];
-        $selectedMonths = json_decode($get('interest_distribution_months', '[]'), true) ?: [];
     @endphp
 
     <div class="card">
@@ -142,24 +127,19 @@
                         </div>
                     </div>
 
-                    {{-- Interest Distribution Months (native checkbox chips — no Select2) --}}
+                    {{-- Interest Distribution — fixed, read-only --}}
                     <div class="col-md-6">
                         <div class="fv-row mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Interest Distribution Months</label>
-                            <div class="month-grid" id="kt_months">
-                                @foreach ($allMonths as $month)
-                                    <div>
-                                        <input type="checkbox" class="btn-check" name="interest_distribution_months[]"
-                                            value="{{ $month }}" id="month_{{ $loop->index }}"
-                                            @checked(in_array($month, $selectedMonths)) />
-                                        <label class="btn btn-sm btn-outline btn-outline-dashed btn-active-light-primary"
-                                            for="month_{{ $loop->index }}">{{ $month }}</label>
-                                    </div>
-                                @endforeach
+                            <label class="fw-semibold fs-6 mb-2">Interest Distribution Dates</label>
+                            <div class="d-flex align-items-center flex-wrap gap-2 mt-1">
+                                <span class="badge badge-light-primary fs-7 py-2 px-3">30 June</span>
+                                <span class="badge badge-light-primary fs-7 py-2 px-3">31 December</span>
+                                <span class="badge badge-light fs-8 py-2 px-3">Fixed</span>
                             </div>
-                            <div class="fv-feedback text-danger fs-7 mt-2" id="months_feedback"></div>
-                            <div class="form-text">Bank interest is distributed on these month-ends. Select up to two
-                                (typically June &amp; December).</div>
+                            <div class="form-text">
+                                Bank interest is credited to employee accounts proportionately at each fiscal
+                                half-year end. These dates are fixed and not configurable.
+                            </div>
                         </div>
                     </div>
                 </div>

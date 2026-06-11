@@ -20,8 +20,6 @@ class UpdateSettingRequest extends FormRequest
             'settings.advance_limit_percentage'     => ['required', 'numeric', 'min:0', 'max:100'],
             'settings.advance_interest_rate'        => ['required', 'numeric', 'min:0', 'max:100'],
             'settings.max_installments'             => ['required', 'integer', 'min:1', 'max:120'],
-            'settings.interest_distribution_months' => ['required', 'array', 'min:1'],
-            'settings.interest_distribution_months' => ['required', 'array', 'min:1', 'max:2'],
         ];
     }
 
@@ -33,7 +31,6 @@ class UpdateSettingRequest extends FormRequest
             'settings.advance_limit_percentage'     => 'advance limit percentage',
             'settings.advance_interest_rate'        => 'advance interest rate',
             'settings.max_installments'             => 'maximum installments',
-            'settings.interest_distribution_months' => 'interest distribution months',
         ];
     }
 }
