@@ -48,6 +48,7 @@ class RolePermissionSeeder extends Seeder
             // ---------------------------------------------------------------
             'cpf_advance.view',
             'cpf_advance.create',
+            'cpf_advance.submit',
             'cpf_advance.approve',
             'cpf_advance.recovery',
 
@@ -127,6 +128,7 @@ class RolePermissionSeeder extends Seeder
 
             'cpf_advance.view',
             'cpf_advance.create',
+            'cpf_advance.submit',
             'cpf_advance.recovery',
 
             'bank_interest.view',

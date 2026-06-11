@@ -15,22 +15,51 @@ return new class extends Migration
             $table->id();
             $table->string('advance_no')->unique();
             $table->foreignId('employee_id')->constrained();
+
             $table->date('application_date');
-            $table->date('approval_date')->nullable();
-            $table->unsignedBigInteger('approved_amount');
+
+            // Officer's requested amount (entered at draft). Strictly capped by
+            // the system advance limit; never customised per employee.
+            $table->unsignedBigInteger('requested_amount');
+
+            // Admin-finalised amount (may differ from requested). Null until approved.
+            $table->unsignedBigInteger('approved_amount')->nullable();
+
+            // Snapshotted policy values for this specific loan.
             $table->decimal('interest_rate', 5, 2);
 
-            $table->unsignedTinyInteger('installment_count'); // Number of installments for recovery
-            $table->unsignedBigInteger('outstanding_amount'); // The amount yet to be recovered
+            // Interest = rate% of approved principal. It is repaid as part of the
+            // installment schedule (principal-first allocation), not gifted.
+            $table->unsignedBigInteger('interest_amount')->default(0);
+            $table->boolean('interest_credited')->default(false);   // true once interest fully recovered
+            $table->timestamp('interest_credited_at')->nullable();
 
-            $table->enum('status', ['pending', 'approved', 'completed', 'cancelled']);
+            // Recovery schedule. Total repayable = approved_amount + interest_amount.
+            $table->unsignedTinyInteger('installment_count');
+            $table->unsignedBigInteger('installment_amount')->default(0);    // per-installment of the TOTAL, recalculated after each recovery
+            $table->unsignedBigInteger('principal_outstanding')->default(0); // principal yet to recover
+            $table->unsignedBigInteger('interest_outstanding')->default(0);  // interest yet to recover
+            $table->unsignedBigInteger('outstanding_amount')->default(0);    // combined = principal_outstanding + interest_outstanding
+
+            $table->enum('status', ['draft', 'submitted', 'approved', 'rejected', 'completed'])
+                ->default('draft');
+
+            $table->date('approval_date')->nullable();
+            $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('rejected_at')->nullable();
 
             $table->text('remarks')->nullable();
+            $table->text('reject_reason')->nullable();
+
             $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('submitted_by')->nullable()->constrained('users');
             $table->foreignId('approved_by')->nullable()->constrained('users');
+            $table->foreignId('rejected_by')->nullable()->constrained('users');
 
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['employee_id', 'status']);
         });
     }
 

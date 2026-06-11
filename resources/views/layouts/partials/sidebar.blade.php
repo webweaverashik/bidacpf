@@ -149,7 +149,7 @@
 
                                 @can('cpf_advance.view')
                                     <div class="menu-item">
-                                        <a class="menu-link {{ request()->routeIs('cpf-advances.index') ? 'active' : '' }}"
+                                        <a class="menu-link {{ request()->routeIs('cpf-advances.index', 'cpf-advances.create', 'cpf-advances.edit', 'cpf-advances.show') ? 'active' : '' }}"
                                             href="{{ route('cpf-advances.index') }}" id="advance_applications_link">
                                             <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                             <span class="menu-title">Advance Applications</span>

@@ -3,16 +3,19 @@ namespace App\Http\Requests\Advance;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreRecoveryRequest extends FormRequest
+class UpdateRecoveryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('cpf_advance.recovery');
+        $recovery = $this->route('recovery');
+
+        return $this->user()->can('cpf_advance.recovery') && $recovery->isEditable();
     }
 
     public function rules(): array
     {
-        $advance = $this->route('advance');
+        $recovery = $this->route('recovery');
+        $advance  = $recovery->advance;
 
         return [
             'recovery_date'     => ['required', 'date', 'before_or_equal:today'],
@@ -21,8 +24,7 @@ class StoreRecoveryRequest extends FormRequest
             'deposit_reference' => ['nullable', 'string', 'max:100'],
             'bank_name'         => ['nullable', 'string', 'max:150'],
             'remarks'           => ['nullable', 'string', 'max:1000'],
-            // Deposit slip — required on every recovery request.
-            'deposit_slip'      => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'deposit_slip'      => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }
 
@@ -38,11 +40,11 @@ class StoreRecoveryRequest extends FormRequest
 
     public function messages(): array
     {
-        $advance = $this->route('advance');
+        $recovery = $this->route('recovery');
 
         return [
             'amount.max' => 'Recovery amount cannot exceed the outstanding balance of ' .
-                number_format($advance->outstanding_amount) . '.',
+                number_format($recovery->advance->outstanding_amount) . '.',
         ];
     }
 }

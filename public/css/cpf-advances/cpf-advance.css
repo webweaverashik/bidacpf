@@ -1,0 +1,127 @@
+/*
+|--------------------------------------------------------------------------
+| CPF Advance / Loan module styles
+|--------------------------------------------------------------------------
+| Loaded via @push('page-css') on advance & recovery pages.
+*/
+
+/* ---- Tables ------------------------------------------------------------ */
+.ashik-table {
+    width: 100% !important;
+}
+
+.ashik-table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    color: var(--bs-gray-600);
+}
+
+.ashik-table tbody td {
+    vertical-align: middle;
+}
+
+.ashik-table .amount-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ---- Summary tiles on the show page ------------------------------------ */
+.adv-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.adv-summary .adv-tile {
+    border: 1px dashed var(--bs-gray-300);
+    border-radius: .65rem;
+    padding: 1rem 1.25rem;
+    background: var(--bs-gray-100);
+}
+
+.adv-summary .adv-tile .adv-tile-label {
+    font-size: .8rem;
+    color: var(--bs-gray-600);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.adv-summary .adv-tile .adv-tile-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-gray-900);
+}
+
+/* ---- Outstanding progress bar ------------------------------------------ */
+.adv-progress {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bs-gray-200);
+    overflow: hidden;
+}
+
+.adv-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--bs-success);
+}
+
+/* ---- Status timeline (recoveries / lifecycle) -------------------------- */
+.adv-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.adv-timeline:before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--bs-gray-200);
+}
+
+.adv-timeline li {
+    position: relative;
+    padding: 0 0 1.25rem 2.25rem;
+}
+
+.adv-timeline li .adv-dot {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--bs-gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 10px;
+}
+
+.adv-timeline li.is-done .adv-dot {
+    background: var(--bs-success);
+}
+
+.adv-timeline li.is-active .adv-dot {
+    background: var(--bs-primary);
+}
+
+.adv-timeline li.is-rejected .adv-dot {
+    background: var(--bs-danger);
+}
+
+/* ---- File drop hint ---------------------------------------------------- */
+.adv-file-hint {
+    font-size: .8rem;
+    color: var(--bs-gray-500);
+}

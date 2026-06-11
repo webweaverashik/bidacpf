@@ -7,31 +7,31 @@ use App\Services\AdvanceService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class StoreAdvanceRequest extends FormRequest
+class UpdateAdvanceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('cpf_advance.create');
+        $advance = $this->route('advance');
+
+        return $this->user()->can('cpf_advance.create') && $advance->isEditable();
     }
 
     public function rules(): array
     {
         return [
-            'employee_id'       => ['required', 'integer', 'exists:employees,id'],
             'application_date'  => ['required', 'date', 'before_or_equal:today'],
             'requested_amount'  => ['required', 'integer', 'min:1'],
             'interest_rate'     => ['required', 'numeric', 'min:0', 'max:100'],
             'installment_count' => ['required', 'integer', 'min:1', 'max:' . Setting::maxInstallments()],
             'remarks'           => ['nullable', 'string', 'max:1000'],
-            // Scanned loan application — required on every advance request.
-            'application'       => ['required', 'file', 'mimes:pdf', 'max:5120'],
+            // Optional on edit — keep the existing file if none uploaded.
+            'application'       => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'employee_id'       => 'employee',
             'application_date'  => 'application date',
             'requested_amount'  => 'advance amount',
             'interest_rate'     => 'interest rate',
@@ -40,29 +40,6 @@ class StoreAdvanceRequest extends FormRequest
         ];
     }
 
-    /**
-     * Default rate/installments from settings if the officer left them blank.
-     */
-    protected function prepareForValidation(): void
-    {
-        $merge = [];
-
-        if (! $this->filled('interest_rate')) {
-            $merge['interest_rate'] = Setting::advanceInterestRate();
-        }
-
-        if (! $this->filled('installment_count')) {
-            $merge['installment_count'] = Setting::maxInstallments();
-        }
-
-        if ($merge) {
-            $this->merge($merge);
-        }
-    }
-
-    /**
-     * Enforce the system advance limit (cannot exceed % of current balance).
-     */
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
@@ -70,7 +47,8 @@ class StoreAdvanceRequest extends FormRequest
                 return;
             }
 
-            $employee = Employee::find($this->input('employee_id'));
+            $advance  = $this->route('advance');
+            $employee = Employee::find($advance->employee_id);
 
             if (! $employee) {
                 return;
@@ -82,8 +60,7 @@ class StoreAdvanceRequest extends FormRequest
                 $validator->errors()->add(
                     'requested_amount',
                     'The advance amount exceeds the maximum eligible limit of ' .
-                    number_format($eligible) . ' (' . Setting::advanceLimitPercentage() .
-                    '% of the current CPF balance).'
+                    number_format($eligible) . '.'
                 );
             }
         });
