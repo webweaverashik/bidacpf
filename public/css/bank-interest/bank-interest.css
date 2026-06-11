@@ -1,0 +1,67 @@
+/*
+|--------------------------------------------------------------------------
+| Bank Interest Distribution module styles
+|--------------------------------------------------------------------------
+| Loaded via @push('page-css') on the index / distribute / show pages.
+*/
+
+/* ---- Tables ------------------------------------------------------------ */
+.ashik-table {
+    width: 100% !important;
+}
+
+.ashik-table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    color: var(--bs-gray-600);
+}
+
+.ashik-table tbody td {
+    vertical-align: middle;
+}
+
+.ashik-table .amount-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ashik-table tfoot td {
+    font-variant-numeric: tabular-nums;
+    background: var(--bs-gray-100);
+}
+
+/* ---- Summary tiles on the show page ------------------------------------ */
+.int-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.int-summary .int-tile {
+    border: 1px dashed var(--bs-gray-300);
+    border-radius: .65rem;
+    padding: 1rem 1.25rem;
+    background: var(--bs-gray-100);
+}
+
+.int-summary .int-tile .int-tile-label {
+    font-size: .8rem;
+    color: var(--bs-gray-600);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.int-summary .int-tile .int-tile-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-gray-900);
+}
+
+/* ---- Quick cut-off date chips ------------------------------------------ */
+#bi_quick_dates .btn {
+    font-variant-numeric: tabular-nums;
+}

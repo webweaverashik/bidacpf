@@ -13,6 +13,7 @@ class LedgerService
     |--------------------------------------------------------------------------
     | - Create a ledger entry (with running balance auto-calculated)
     | - Get current balance for an employee
+    | - Get balance as of a given cut-off date
     | - Get opening balance for a fiscal year
     | - Provide a base query / full statement for an employee
     */
@@ -75,6 +76,28 @@ class LedgerService
     {
         return (int) CpfLedger::query()
             ->where('employee_id', $employeeId)
+            ->latest('transaction_date')
+            ->latest('id')
+            ->value('balance');
+    }
+
+    /**
+     * Balance as of a cut-off date (inclusive).
+     *
+     * Returns the running balance on the most recent ledger entry whose
+     * transaction_date is on or before $date — i.e. the member's CPF balance
+     * at the close of business on the cut-off date. Used by the bank interest
+     * distribution, which is calculated against 30-Jun / 31-Dec balances and
+     * must ignore any entries posted after the cut-off.
+     *
+     * Because advance disbursements are debits, this net balance already
+     * excludes outstanding advances, as required by the distribution rules.
+     */
+    public function balanceAsOf(int $employeeId, $date): int
+    {
+        return (int) CpfLedger::query()
+            ->where('employee_id', $employeeId)
+            ->where('transaction_date', '<=', $date)
             ->latest('transaction_date')
             ->latest('id')
             ->value('balance');

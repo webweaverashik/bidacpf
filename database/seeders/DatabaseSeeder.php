@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             EmployeeSeeder::class,
             ContributionDemoSeeder::class,
             AdvanceDemoSeeder::class,
-            InterestDemoSeeder::class,
+            // InterestDemoSeeder::class,
         ]);
     }
 }

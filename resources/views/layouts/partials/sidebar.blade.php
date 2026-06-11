@@ -197,23 +197,23 @@
 
                             <div class="menu-sub menu-sub-accordion">
 
+                                <div class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('bank-interest.index', 'bank-interest.show') ? 'active' : '' }}"
+                                        id="distribution_history_link" href="{{ route('bank-interest.index') }}">
+                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                        <span class="menu-title">Distributions</span>
+                                    </a>
+                                </div>
+
                                 @can('bank_interest.create')
                                     <div class="menu-item">
                                         <a class="menu-link {{ request()->routeIs('bank-interest.distribute') ? 'active' : '' }}"
                                             id="interest_distribution_link" href="{{ route('bank-interest.distribute') }}">
                                             <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                            <span class="menu-title">Interest Distribution</span>
+                                            <span class="menu-title">New Distribution</span>
                                         </a>
                                     </div>
                                 @endcan
-
-                                <div class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('bank-interest.index') ? 'active' : '' }}"
-                                        id="distribution_history_link" href="{{ route('bank-interest.index') }}">
-                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                        <span class="menu-title">Distribution History</span>
-                                    </a>
-                                </div>
 
                             </div>
                         </div>
