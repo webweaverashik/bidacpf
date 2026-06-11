@@ -109,7 +109,7 @@
 
                                 @can('cpf_ledger.view')
                                     <div class="menu-item">
-                                        <a class="menu-link {{ request()->routeIs('cpf-ledger.index') ? 'active' : '' }}"
+                                        <a class="menu-link {{ request()->routeIs('cpf-ledger.index', 'cpf-ledger.$id') ? 'active' : '' }}"
                                             id="cpf_ledger_link" href="{{ route('cpf-ledger.index') }}">
                                             <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                             <span class="menu-title">CPF Ledger</span>

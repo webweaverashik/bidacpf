@@ -34,7 +34,8 @@ class RolePermissionSeeder extends Seeder
             // ---------------------------------------------------------------
             'cpf_contribution.view',
             'cpf_contribution.create',
-            'cpf_contribution.submit', // was: contribution.post
+            'cpf_contribution.submit',
+            'cpf_contribution.approve', // NEW — admin approves & posts ledger
             'cpf_contribution.reverse',
 
             // ---------------------------------------------------------------
@@ -55,7 +56,7 @@ class RolePermissionSeeder extends Seeder
             // ---------------------------------------------------------------
             'bank_interest.view',
             'bank_interest.create',
-            'bank_interest.submit', // was: interest.distribute
+            'bank_interest.submit',
             'bank_interest.reverse',
 
             // ---------------------------------------------------------------

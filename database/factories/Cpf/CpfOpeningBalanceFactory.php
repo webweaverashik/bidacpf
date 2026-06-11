@@ -31,7 +31,8 @@ class CpfOpeningBalanceFactory extends Factory
 
         return [
             'employee_id'             => Employee::factory(),
-            'effective_date'          => now()->startOfYear()->format('Y-m-d'),
+            // Opening balances are pre-system snapshots and MUST predate every seeded contribution. ContributionDemoSeeder posts batches up to 6 months back, so keep this comfortably earlier than that window (using the same now() anchor).
+            'effective_date'          => now()->subMonths(18)->startOfMonth()->format('Y-m-d'),
             'self_contribution'       => $self,
             'government_contribution' => $government,
             'interest_amount'         => $interest,

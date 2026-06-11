@@ -6,13 +6,13 @@ use App\Services\ContributionService;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds several months of fully-posted CPF contribution batches.
+ * Seeds several months of fully-approved CPF contribution batches.
  *
- * Uses ContributionService end-to-end (generate + submit) so that:
+ * Uses ContributionService end-to-end (generate → submit → approve) so that:
  *   - one batch is created per month,
  *   - a contribution row is generated for every active employee,
- *   - employee + government ledger credits are posted with correct
- *     running balances.
+ *   - on approval, employee + government ledger credits are posted with
+ *     correct running balances.
  *
  * This is the realistic path — we never insert ledger rows directly.
  *
@@ -48,10 +48,14 @@ class ContributionDemoSeeder extends Seeder
                 createdBy: $adminId,
             );
 
-            // 2. Submit it — posts the ledger credits and locks the batch.
+            // 2. Submit for approval (locks the batch; no ledger yet).
             $this->contributionService->submitBatch($batch, $adminId);
+
+            // 3. Approve — posts the employee + government ledger credits and
+            //    finalises the running balances.
+            $this->contributionService->approveBatch($batch, $adminId);
         }
 
-        $this->command->info(self::MONTHS_TO_SEED . ' monthly contribution batches generated and submitted.');
+        $this->command->info(self::MONTHS_TO_SEED . ' monthly contribution batches generated, submitted and approved.');
     }
 }

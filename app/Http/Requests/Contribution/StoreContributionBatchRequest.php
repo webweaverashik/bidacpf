@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Requests\Contribution;
 
+use App\Models\Cpf\CpfContributionBatch;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreContributionBatchRequest extends FormRequest
@@ -13,19 +15,25 @@ class StoreContributionBatchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Expects "YYYY-MM" from a month picker, or a full date like "2026-07-01"
             'contribution_month' => [
                 'required',
                 'date',
-                // Prevent duplicate batch for the same month
                 function ($attribute, $value, $fail) {
-                    $month  = \Carbon\Carbon::parse($value)->startOfMonth()->toDateString();
-                    $exists = \App\Models\CpfContributionBatch::whereYear('contribution_month', \Carbon\Carbon::parse($value)->year)
-                        ->whereMonth('contribution_month', \Carbon\Carbon::parse($value)->month)
+                    $date = Carbon::parse($value);
+
+                    // Only the current month may be generated manually.
+                    if (! $date->isSameMonth(now())) {
+                        $fail('Only the current month (' . now()->format('F Y') . ') batch can be generated manually.');
+                        return;
+                    }
+
+                    // One batch per month.
+                    $exists = CpfContributionBatch::whereYear('contribution_month', $date->year)
+                        ->whereMonth('contribution_month', $date->month)
                         ->exists();
 
                     if ($exists) {
-                        $fail('A contribution batch for this month already exists.');
+                        $fail('A contribution batch for ' . $date->format('F Y') . ' already exists.');
                     }
                 },
             ],
@@ -34,8 +42,6 @@ class StoreContributionBatchRequest extends FormRequest
 
     public function attributes(): array
     {
-        return [
-            'contribution_month' => 'contribution month',
-        ];
+        return ['contribution_month' => 'contribution month'];
     }
 }

@@ -607,8 +607,9 @@
                                         @php
                                             $bStatus = $c->batch?->status?->value;
                                             $bBadge = match (strtolower($bStatus ?? '')) {
-                                                'submitted' => 'success',
                                                 'draft' => 'warning',
+                                                'submitted' => 'info',
+                                                'approved' => 'success',
                                                 'reversed' => 'danger',
                                                 default => 'secondary',
                                             };
@@ -699,19 +700,23 @@
                                     <div class="border border-dashed border-gray-300 rounded my-3 p-4 me-6 min-w-125px">
                                         <span
                                             class="fs-3 fw-bold text-gray-800 lh-1">৳{{ number_format($advance->approved_amount) }}</span><span
-                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Approved</span></div>
+                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Approved</span>
+                                    </div>
                                     <div class="border border-dashed border-success rounded my-3 p-4 me-6 min-w-125px">
                                         <span
                                             class="fs-3 fw-bold text-gray-800 lh-1">৳{{ number_format($advance->totalRecovered()) }}</span><span
-                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Recovered</span></div>
+                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Recovered</span>
+                                    </div>
                                     <div class="border border-dashed border-warning rounded my-3 p-4 me-6 min-w-125px">
                                         <span
                                             class="fs-3 fw-bold text-gray-800 lh-1">৳{{ number_format($advance->outstanding_amount) }}</span><span
-                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Outstanding</span></div>
+                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Outstanding</span>
+                                    </div>
                                     <div class="border border-dashed border-gray-300 rounded my-3 p-4 me-6 min-w-125px">
                                         <span
                                             class="fs-3 fw-bold text-gray-800 lh-1">{{ $advance->installment_count }}</span><span
-                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Installments</span></div>
+                                            class="fs-7 fw-semibold text-muted d-block lh-1 pt-2">Installments</span>
+                                    </div>
                                     <div class="border border-dashed border-gray-300 rounded my-3 p-4 me-6 min-w-125px">
                                         <span
                                             class="fs-3 fw-bold text-gray-800 lh-1">{{ $advance->interest_rate }}%</span><span

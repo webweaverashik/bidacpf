@@ -29,20 +29,40 @@ class LedgerService
     public function create(array $data): CpfLedger
     {
         return DB::transaction(function () use ($data) {
+            // Lock this employee's rows for the duration.
+            CpfLedger::where('employee_id', $data['employee_id'])->lockForUpdate()->count();
 
-            // Lock the latest row for this employee to prevent race conditions
-            // when two contributions are posted concurrently for the same person.
-            $lastBalance = (int) CpfLedger::query()
-                ->where('employee_id', $data['employee_id'])
-                ->lockForUpdate()
-                ->latest('transaction_date')
-                ->latest('id')
-                ->value('balance');
+            $entry = CpfLedger::create([ ...$data, 'balance' => 0]);
 
-            $balance = $lastBalance + (int) $data['credit'] - (int) $data['debit'];
+            $this->recalculateFrom($data['employee_id'], $data['transaction_date']);
 
-            return CpfLedger::create([ ...$data, 'balance' => $balance]);
+            return $entry->refresh();
         });
+    }
+
+    /**
+     * Recompute running balances from a given date forward, in (date, id) order.
+     * In-order appends touch only the new row; a back-dated insert repairs every
+     * later row so the column always equals the true cumulative net.
+     */
+    private function recalculateFrom(int $employeeId, $fromDate): void
+    {
+        $running = (int) CpfLedger::query()
+            ->where('employee_id', $employeeId)
+            ->where('transaction_date', '<', $fromDate)
+            ->latest('transaction_date')->latest('id')
+            ->value('balance');
+
+        CpfLedger::query()
+            ->where('employee_id', $employeeId)
+            ->where('transaction_date', '>=', $fromDate)
+            ->orderBy('transaction_date')->orderBy('id')
+            ->each(function ($row) use (&$running) {
+                $running += (int) $row->credit - (int) $row->debit;
+                if ((int) $row->balance !== $running) {
+                    $row->update(['balance' => $running]);
+                }
+            });
     }
 
     /**

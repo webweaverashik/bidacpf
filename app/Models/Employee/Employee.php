@@ -29,7 +29,6 @@ class Employee extends BaseModel
     protected ?string $auditLogName = 'employee_crud';
     protected ?string $auditLabel   = 'Employee';
     // no $auditAttributes → logs all fillable, same as the old logFillable()
-    
 
     protected $fillable = [
         'cpf_account_no',
@@ -204,6 +203,7 @@ class Employee extends BaseModel
     public function currentBalance(): int
     {
         return (int) $this->ledgers()
+            ->latest('transaction_date')
             ->latest('id')
             ->value('balance');
     }
