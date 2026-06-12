@@ -30,16 +30,16 @@
 
             <!--begin::Navbar-->
             <div class="app-navbar flex-shrink-0">
-                <!--begin::Search-->
+                <!--begin::Role Name-->
                 <div class="app-navbar-item ms-1 ms-md-4">
                     <span class="badge badge-lg badge-info fs-5">
                         {{ ucfirst(auth()->user()->getRoleNames()->first()) }}
                     </span>
                 </div>
-                <!--end::Search-->
+                <!--end::Role Name-->
 
                 <!--begin::Notifications-->
-                {{-- <div class="app-navbar-item ms-1 ms-md-4">
+                <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Menu- wrapper-->
                     <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
@@ -573,7 +573,7 @@
                     <!--end::Menu-->
 
                     <!--end::Menu wrapper-->
-                </div> --}}
+                </div>
                 <!--end::Notifications-->
 
                 <!--begin::Clear Cache-->
