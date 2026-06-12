@@ -13,26 +13,6 @@
     ])
 @endsection
 
-@php
-    // Valid cut-off dates only: 30 June / 31 December, most recent first,
-    // never in the future. Covers the current and previous few years.
-    $cutoffs = [];
-    $currentYear = (int) now()->year;
-    for ($y = $currentYear; $y >= $currentYear - 4; $y--) {
-        foreach ([['m' => 12, 'd' => 31, 'lbl' => '31 December'], ['m' => 6, 'd' => 30, 'lbl' => '30 June']] as $cd) {
-            $date = \Carbon\Carbon::create($y, $cd['m'], $cd['d']);
-            if ($date->isFuture()) {
-                continue;
-            }
-            $cutoffs[] = [
-                'value' => $date->toDateString(),
-                'label' => $cd['lbl'] . ' ' . $y,
-                'fy' => \App\Support\FiscalYearService::fromDate($date),
-            ];
-        }
-    }
-@endphp
-
 @section('content')
     <div class="row">
         <div class="col-lg-8 offset-lg-2">
@@ -59,20 +39,32 @@
                             </div>
                         </div>
 
-                        {{-- Cut-off date (constrained to 30 Jun / 31 Dec) --}}
+                        {{-- Cut-off date (constrained to 30 Jun / 31 Dec; FY 2025-26 onward) --}}
                         <div class="row mb-7">
                             <label class="col-lg-4 col-form-label required fw-semibold fs-6">Cut-off Date</label>
                             <div class="col-lg-8">
                                 <select name="distribution_date" id="bi_distribution_date"
-                                    class="form-select form-select-solid">
+                                    class="form-select form-select-solid" data-control="select2" data-hide-search="true">
                                     <option value="" data-fy="">Select cut-off date…</option>
                                     @foreach ($cutoffs as $c)
-                                        <option value="{{ $c['value'] }}" data-fy="{{ $c['fy'] }}">
-                                            {{ $c['label'] }}</option>
+                                        <option value="{{ $c['value'] }}" data-fy="{{ $c['fy'] }}"
+                                            @disabled($c['taken'])>
+                                            {{ $c['label'] }}@if ($c['taken'])
+                                                — already created
+                                            @endif
+                                        </option>
                                     @endforeach
                                 </select>
-                                <div class="form-text">Only the bi-annual cut-offs (30 June / 31 December) can be selected.
+                                <div class="form-text">
+                                    Bi-annual cut-offs (30 June / 31 December) from FY 2025-26 onward. Dates that
+                                    already have a batch are disabled.
                                 </div>
+                                @if (empty($cutoffs) || collect($cutoffs)->every(fn($c) => $c['taken']))
+                                    <div class="text-warning fs-7 mt-2">
+                                        <i class="ki-outline ki-information fs-6 me-1"></i>
+                                        No cut-off date is currently available for a new distribution.
+                                    </div>
+                                @endif
                             </div>
                         </div>
 

@@ -159,10 +159,32 @@ var BidaInterestShow = (function () {
         });
     };
 
+    // ---- Export (xlsx / csv / pdf), honouring current search ------------
+    var buildExportUrl = function (format) {
+        var p = new URLSearchParams();
+        p.set("format", format);
+        var term = datatable ? datatable.search() : "";
+        if (term) { p.set("search[value]", term); }
+        return cfg.exportUrl + "?" + p.toString();
+    };
+
+    var handleExport = function () {
+        if (!cfg.exportUrl) { return; }
+        document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]').forEach(function (item) {
+            item.addEventListener("click", function (e) {
+                e.preventDefault();
+                var format = this.getAttribute("data-row-export");
+                toastr.info("Preparing your " + format.toUpperCase() + " download…");
+                window.location.href = buildExportUrl(format);
+            });
+        });
+    };
+
     return {
         init: function (config) {
             cfg = config || {};
             initTable();
+            handleExport();
             bindActions();
             bindReject();
         }

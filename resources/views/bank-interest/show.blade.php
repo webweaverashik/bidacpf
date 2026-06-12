@@ -151,9 +151,25 @@
                 </div>
             </div>
             <div class="card-toolbar">
-                <span class="text-muted fs-7">
+                <span class="text-muted fs-7 me-4 d-none d-md-inline">
                     Formula: (Member Balance ÷ Fund Balance) × Interest Received
                 </span>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
+                        data-kt-menu-placement="bottom-end">
+                        <i class="ki-outline ki-exit-up fs-2"></i>Export
+                    </button>
+                    <div id="kt_table_report_dropdown_menu"
+                        class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                        data-kt-menu="true">
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="xlsx">Export
+                                as Excel</a></div>
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3"
+                                data-row-export="csv">Export as CSV</a></div>
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3"
+                                data-row-export="pdf">Export as PDF</a></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -231,6 +247,7 @@
             tableId: 'bida_dist_table',
             searchId: 'bi_dist_search',
             distUrl: "{{ route('bank-interest.distributions', $batch) }}",
+            exportUrl: "{{ route('bank-interest.distributions.export', $batch) }}",
             csrf: "{{ csrf_token() }}",
             actions: {
                 regenerate: {

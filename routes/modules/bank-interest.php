@@ -51,6 +51,7 @@ Route::put('bank-interest/{batch}/reverse', [BankInterestController::class, 'rev
 
 // ---- Detail (wildcard — keep LAST among bank-interest GETs) -------------
 Route::middleware('can:bank_interest.view')->group(function () {
+    Route::get('bank-interest/{batch}/distributions/export', [BankInterestController::class, 'exportDistributions'])->name('bank-interest.distributions.export');
     Route::get('bank-interest/{batch}/distributions', [BankInterestController::class, 'distributions'])->name('bank-interest.distributions');
     Route::get('bank-interest/{batch}', [BankInterestController::class, 'show'])->name('bank-interest.show');
 });

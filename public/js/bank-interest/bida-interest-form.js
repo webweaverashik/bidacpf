@@ -3,11 +3,14 @@
 // =========================================================================
 // BidaInterestForm — create-batch form.
 //
-// The cut-off date is a constrained <select> (30 Jun / 31 Dec only); the
-// fiscal year auto-fills from the selected option's data-fy. Submission is a
-// single, robust path (button click and Enter both route through it) with no
-// FormValidation dependency, so the submit can never be silently disabled by
-// a plugin-init error. Driven by BidaInterestFormConfig:
+// Cut-off date is a constrained <select> (30 Jun / 31 Dec, FY 2025-26+). The
+// fiscal year auto-fills whenever the selection changes. The fiscal year is
+// derived from the selected option's VALUE (the Y-m-d date) using the same
+// July-boundary rule as FiscalYearService, falling back to that even if the
+// option's data-fy is missing — so the sync can't silently no-op.
+//
+// Submission is a single robust path (button click and Enter), with no
+// FormValidation dependency. Driven by BidaInterestFormConfig:
 //   { formId, submitId, dateId, fiscalYearId, storeUrl, csrf }
 // =========================================================================
 var BidaInterestForm = (function () {
@@ -22,10 +25,10 @@ var BidaInterestForm = (function () {
         return el ? String(el.value).trim() : "";
     };
 
-    // Mirror FiscalYearService::fromDate (July boundary) as a fallback.
+    // Mirror FiscalYearService::fromDate (July boundary): YYYY-YYYY.
     var fiscalYearFromDate = function (dateStr) {
         if (!dateStr) { return ""; }
-        var p = dateStr.split("-");
+        var p = String(dateStr).split("-");
         var y = parseInt(p[0], 10), m = parseInt(p[1], 10);
         if (isNaN(y) || isNaN(m)) { return ""; }
         return m >= 7 ? (y + "-" + (y + 1)) : ((y - 1) + "-" + y);
@@ -35,9 +38,13 @@ var BidaInterestForm = (function () {
         var sel = document.getElementById(cfg.dateId);
         var fy = document.getElementById(cfg.fiscalYearId);
         if (!sel || !fy) { return; }
-        var opt = sel.options[sel.selectedIndex];
-        var dataFy = opt ? opt.getAttribute("data-fy") : "";
-        fy.value = dataFy || fiscalYearFromDate(sel.value);
+
+        var opt = sel.options[sel.selectedIndex] || null;
+        var value = sel.value || (opt ? opt.value : "");
+        var dataFy = opt ? (opt.getAttribute("data-fy") || "") : "";
+
+        // Prefer the server-provided data-fy; otherwise compute from the date.
+        fy.value = dataFy || fiscalYearFromDate(value);
     };
 
     var validate = function () {
@@ -118,8 +125,16 @@ var BidaInterestForm = (function () {
 
             var sel = document.getElementById(cfg.dateId);
             if (sel) {
-                sel.addEventListener("change", syncFiscalYear);
-                syncFiscalYear(); // in case the browser restored a selection
+                // Select2 dispatches its change through jQuery — a vanilla
+                // addEventListener('change') never sees it. Bind via jQuery when
+                // available so both Select2 and plain selects are covered.
+                if (window.jQuery) {
+                    window.jQuery(sel).on("change", syncFiscalYear);
+                } else {
+                    sel.addEventListener("change", syncFiscalYear);
+                    sel.addEventListener("input", syncFiscalYear);
+                }
+                syncFiscalYear(); // reflect any pre-selected value on load
             }
 
             // Single submission path — covers button click and Enter key.

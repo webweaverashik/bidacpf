@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Interest;
 
 use App\Enums\BatchStatus;
 use App\Exports\InterestBatchesExport;
+use App\Exports\InterestDistributionsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Interest\StoreInterestBatchRequest;
 use App\Models\Interest\BankInterestBatch;
@@ -35,12 +36,38 @@ class BankInterestController extends Controller
 
     public function distribute(): View
     {
-        $defaults = [
-            'fiscal_year' => FiscalYearService::current(),
-            'today'       => now()->toDateString(),
-        ];
+        // Dates that already have a batch (one batch per cut-off date).
+        $taken = BankInterestBatch::pluck('distribution_date')
+            ->map(fn($d) => $d->toDateString())
+            ->all();
 
-        return view('bank-interest.distribute', compact('defaults'));
+        // Bi-annual cut-offs (31 Dec / 30 Jun) from the start of FY 2025-26
+        // (01 Jul 2025) up to today, newest first. Future dates excluded.
+        $minDate = \Carbon\Carbon::create(2025, 7, 1);
+        $today   = today();
+        $cutoffs = [];
+
+        for ($y = (int) $today->year + 1; $y >= 2025; $y--) {
+            foreach ([['m' => 12, 'd' => 31, 'lbl' => '31 December'], ['m' => 6, 'd' => 30, 'lbl' => '30 June']] as $cd) {
+                $date = \Carbon\Carbon::create($y, $cd['m'], $cd['d']);
+                if ($date->lt($minDate) || $date->gt($today)) {
+                    continue;
+                }
+
+                $value     = $date->toDateString();
+                $cutoffs[] = [
+                    'value' => $value,
+                    'label' => $cd['lbl'] . ' ' . $y,
+                    'fy'    => FiscalYearService::fromDate($date),
+                    'taken' => in_array($value, $taken, true),
+                ];
+            }
+        }
+
+        // Newest first.
+        usort($cutoffs, fn($a, $b) => strcmp($b['value'], $a['value']));
+
+        return view('bank-interest.distribute', compact('cutoffs'));
     }
 
     public function store(StoreInterestBatchRequest $request): JsonResponse | RedirectResponse
@@ -141,6 +168,47 @@ class BankInterestController extends Controller
         ]);
     }
 
+    /**
+     * Export a single batch's per-member distribution (xlsx / csv / pdf),
+     * honouring the table's current search term.
+     */
+    public function exportDistributions(Request $request, BankInterestBatch $batch)
+    {
+        $query = $batch->distributions()
+            ->join('employees', 'bank_interest_distributions.employee_id', '=', 'employees.id')
+            ->select(
+                'bank_interest_distributions.*',
+                'employees.name as emp_name',
+                'employees.designation as emp_designation',
+                'employees.cpf_account_no as emp_acc'
+            );
+
+        if ($search = $request->input('search.value')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('employees.name', 'like', "%{$search}%")
+                    ->orWhere('employees.cpf_account_no', 'like', "%{$search}%")
+                    ->orWhere('employees.designation', 'like', "%{$search}%");
+            });
+        }
+
+        $rows = $query
+            ->orderByDesc('bank_interest_distributions.interest_amount')
+            ->orderBy('bank_interest_distributions.id')
+            ->get();
+
+        $filename = 'interest-distribution-' . $batch->distribution_date->format('Ymd') . '-' . now()->format('His');
+
+        return match ($request->input('format', 'xlsx')) {
+            'csv'   => Excel::download(new InterestDistributionsExport($batch, $rows), "$filename.csv", ExcelFormat::CSV),
+            'pdf'   => Pdf::loadView('exports.bank-interest.distributions-pdf', [
+                'batch'       => $batch,
+                'rows'        => $rows,
+                'generatedAt' => now(),
+            ])->setPaper('a4', 'landscape')->download("$filename.pdf"),
+            default => Excel::download(new InterestDistributionsExport($batch, $rows), "$filename.xlsx"),
+        };
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Workflow transitions (AJAX — JSON, with redirect fallback)
@@ -168,7 +236,13 @@ class BankInterestController extends Controller
     {
         $request->validate(['remarks' => ['nullable', 'string', 'max:1000']]);
 
-        return $this->run($request, fn() => $this->interestService->rejectBatch($batch, $request->input('remarks')),
+        // Strip any HTML and trim before storing/displaying.
+        $remarks = $request->filled('remarks')
+            ? trim(strip_tags((string) $request->input('remarks')))
+            : null;
+        $remarks = $remarks === '' ? null : $remarks;
+
+        return $this->run($request, fn() => $this->interestService->rejectBatch($batch, $remarks),
             'Distribution sent back to the CPF Officer for correction.', 'warning');
     }
 
