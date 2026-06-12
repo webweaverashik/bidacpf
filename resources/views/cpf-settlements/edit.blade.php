@@ -9,7 +9,7 @@
 @section('header-title')
     @include('cpf-settlements.partials.page-header', [
         'heading' => 'Edit Settlement',
-        'crumbs' => ['CPF Operation', 'Final Settlement', $settlement->settlement_no, 'Edit'],
+        'crumbs' => ['Final Settlement', $settlement->settlement_no, 'Edit'],
     ])
 @endsection
 
@@ -18,7 +18,9 @@
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><h2>Edit Draft — {{ $settlement->settlement_no }}</h2></div>
+                    <div class="card-title">
+                        <h2>Edit Draft — {{ $settlement->settlement_no }}</h2>
+                    </div>
                 </div>
 
                 <form id="bida_settlement_form" class="form" enctype="multipart/form-data">
@@ -27,7 +29,7 @@
                         <div class="row mb-7">
                             <label class="col-lg-4 col-form-label fw-semibold fs-6">Member</label>
                             <div class="col-lg-8">
-                                <input type="text" class="form-control form-control-solid" readonly
+                                <input type="text" class="form-control" readonly
                                     value="{{ $settlement->employee->name }} ({{ $settlement->employee->cpf_account_no }})" />
                             </div>
                         </div>
@@ -36,7 +38,7 @@
                         <div class="row mb-7">
                             <label class="col-lg-4 col-form-label required fw-semibold fs-6">Type</label>
                             <div class="col-lg-8">
-                                <select name="settlement_type" id="stl_type" class="form-select form-select-solid"
+                                <select name="settlement_type" id="stl_type" class="form-select"
                                     data-control="select2" data-hide-search="true">
                                     @foreach ($types as $value => $label)
                                         <option value="{{ $value }}" @selected($settlement->settlement_type->value === $value)>
@@ -52,7 +54,7 @@
                             <label class="col-lg-4 col-form-label required fw-semibold fs-6">Application Date</label>
                             <div class="col-lg-8">
                                 <input type="text" name="application_date" id="stl_application_date"
-                                    class="form-control form-control-solid"
+                                    class="form-control"
                                     value="{{ $settlement->application_date->format('Y-m-d') }}" />
                             </div>
                         </div>
@@ -62,7 +64,7 @@
                             <label class="col-lg-4 col-form-label required fw-semibold fs-6">Settlement Date</label>
                             <div class="col-lg-8">
                                 <input type="text" name="settlement_date" id="stl_settlement_date"
-                                    class="form-control form-control-solid"
+                                    class="form-control"
                                     value="{{ $settlement->settlement_date->format('Y-m-d') }}" />
                             </div>
                         </div>
@@ -74,12 +76,12 @@
                             </label>
                             <div class="col-lg-8">
                                 <input type="text" name="payee_name" id="stl_payee_name"
-                                    class="form-control form-control-solid mb-3" value="{{ $settlement->payee_name }}"
+                                    class="form-control mb-3" value="{{ $settlement->payee_name }}"
                                     placeholder="Defaults to the member" />
                                 <input type="text" name="payee_relation" id="stl_payee_relation"
-                                    class="form-control form-control-solid mb-3" value="{{ $settlement->payee_relation }}"
+                                    class="form-control mb-3" value="{{ $settlement->payee_relation }}"
                                     placeholder="Relation (e.g. Self, Spouse, Son)" />
-                                <textarea name="payee_detail" class="form-control form-control-solid" rows="2"
+                                <textarea name="payee_detail" class="form-control" rows="2"
                                     placeholder="Address / bank account / notes (optional)">{{ $settlement->payee_detail }}</textarea>
                                 <div class="form-text" id="stl_payee_hint">
                                     Leave blank to pay the member. For a deceased member, name the nominee.
@@ -95,12 +97,13 @@
                                     <div class="mb-2">
                                         <a href="{{ $settlement->firstAttachment()->url }}" target="_blank"
                                             class="text-hover-primary fw-semibold">
-                                            <i class="ki-outline ki-file fs-4 me-1"></i>{{ $settlement->firstAttachment()->file_name }}
+                                            <i
+                                                class="ki-outline ki-file fs-4 me-1"></i>{{ $settlement->firstAttachment()->file_name }}
                                         </a>
                                     </div>
                                 @endif
                                 <input type="file" name="document" id="stl_document"
-                                    class="form-control form-control-solid" accept="application/pdf" />
+                                    class="form-control" accept="application/pdf" />
                                 <div class="form-text">Upload a new PDF only to replace the current document.</div>
                             </div>
                         </div>
@@ -109,8 +112,7 @@
                         <div class="row mb-2">
                             <label class="col-lg-4 col-form-label fw-semibold fs-6">Remarks</label>
                             <div class="col-lg-8">
-                                <textarea name="remarks" class="form-control form-control-solid" rows="3"
-                                    placeholder="Optional notes">{{ $settlement->remarks }}</textarea>
+                                <textarea name="remarks" class="form-control" rows="3" placeholder="Optional notes">{{ $settlement->remarks }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -133,7 +135,9 @@
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><h2>Payout Preview</h2></div>
+                    <div class="card-title">
+                        <h2>Payout Preview</h2>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="stl-preview" id="stl_preview">
@@ -151,7 +155,7 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-warning d-flex align-items-center mt-5 stl-warn" id="stl_eligibility_warn">
+                    <div class="alert alert-warning align-items-center mt-5 d-none" id="stl_eligibility_warn">
                         <i class="ki-outline ki-information fs-2 text-warning me-3"></i>
                         <span id="stl_eligibility_text"></span>
                     </div>

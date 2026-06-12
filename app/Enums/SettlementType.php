@@ -32,9 +32,9 @@ enum SettlementType: string {
     public function badgeClass(): string
     {
         return match ($this) {
-            self::RETIREMENT  => 'badge badge-light-primary',
-            self::RESIGNATION => 'badge badge-light-info',
-            self::DECEASED    => 'badge badge-light-dark',
+            self::RETIREMENT  => 'badge rounded-pill badge-primary',
+            self::RESIGNATION => 'badge rounded-pill badge-info',
+            self::DECEASED    => 'badge rounded-pill badge-warning',
         };
     }
 

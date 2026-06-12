@@ -9,7 +9,7 @@
 @section('header-title')
     @include('cpf-settlements.partials.page-header', [
         'heading' => 'Settlement Detail',
-        'crumbs' => ['CPF Operation', 'Final Settlement', $settlement->settlement_no],
+        'crumbs' => ['Final Settlement', $settlement->settlement_no],
     ])
 @endsection
 
@@ -20,7 +20,8 @@
                 <h2 class="mb-1">{{ $settlement->settlement_no }}</h2>
                 <div class="text-muted fs-7">
                     {{ $settlement->employee->name }} ({{ $settlement->employee->cpf_account_no }})
-                    · <span class="{{ $settlement->settlement_type->badgeClass() }}">{{ $settlement->settlement_type->label() }}</span>
+                    · <span
+                        class="{{ $settlement->settlement_type->badgeClass() }}">{{ $settlement->settlement_type->label() }}</span>
                     · Settlement {{ $settlement->settlement_date->format('d M Y') }}
                 </div>
             </div>
@@ -88,7 +89,8 @@
                         <div class="text-muted fs-8 text-uppercase">Supporting Document</div>
                         <a href="{{ $settlement->firstAttachment()->url }}" target="_blank"
                             class="fw-semibold text-hover-primary">
-                            <i class="ki-outline ki-file-down fs-4 me-1"></i>{{ $settlement->firstAttachment()->file_name }}
+                            <i
+                                class="ki-outline ki-file-down fs-4 me-1"></i>{{ $settlement->firstAttachment()->file_name }}
                         </a>
                         <div class="text-muted fs-8">{{ $settlement->firstAttachment()->formatted_size }}</div>
                     </div>
@@ -135,20 +137,27 @@
             @if ($settlement->reject_reason)
                 <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-4 mb-4">
                     <i class="ki-outline ki-information fs-2 text-danger me-3"></i>
-                    <div class="fs-7"><span class="fw-bold">Rejection reason:</span> {{ $settlement->reject_reason }}</div>
+                    <div class="fs-7"><span class="fw-bold">Rejection reason:</span> {{ $settlement->reject_reason }}
+                    </div>
                 </div>
             @endif
 
             {{-- ===================== Workflow action bar ===================== --}}
             <div class="d-flex flex-wrap gap-3 mt-6">
                 <a href="{{ route('cpf-settlements.index') }}" class="btn btn-light btn-active-light-primary">
-                    <i class="ki-outline ki-arrow-left fs-3"></i>Back to list
+                    <i class="ki-duotone ki-arrow-left fs-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>Back to list
                 </a>
 
                 @can('cpf_settlement.create')
                     @if ($settlement->isEditable())
                         <a href="{{ route('cpf-settlements.edit', $settlement) }}" class="btn btn-light-primary">
-                            <i class="ki-outline ki-pencil fs-3"></i>Edit
+                            <i class="ki-duotone ki-pencil fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Edit
                         </a>
                     @endif
                 @endcan
@@ -156,7 +165,10 @@
                 @can('cpf_settlement.submit')
                     @if ($settlement->canSubmit())
                         <button type="button" class="btn btn-primary" data-stl-action="submit">
-                            <i class="ki-outline ki-send fs-3"></i>Submit for Approval
+                            <i class="ki-duotone ki-send fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Submit for Approval
                         </button>
                     @endif
                 @endcan
@@ -164,11 +176,17 @@
                 @can('cpf_settlement.approve')
                     @if ($settlement->canApprove())
                         <button type="button" class="btn btn-success" data-stl-action="approve">
-                            <i class="ki-outline ki-check-circle fs-3"></i>Approve &amp; Post Closing Entry
+                            <i class="ki-duotone ki-check-circle fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Approve &amp; Post Closing Entry
                         </button>
                         <button type="button" class="btn btn-light-danger" data-bs-toggle="modal"
                             data-bs-target="#stl_reject_modal">
-                            <i class="ki-outline ki-cross-circle fs-3"></i>Reject
+                            <i class="ki-duotone ki-cross-circle fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Reject
                         </button>
                     @endif
                 @endcan
@@ -176,7 +194,13 @@
                 @can('cpf_settlement.create')
                     @if ($settlement->canDelete())
                         <button type="button" class="btn btn-light-danger ms-auto" data-stl-action="delete">
-                            <i class="ki-outline ki-trash fs-3"></i>Delete Draft
+                            <i class="ki-duotone ki-trash fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                                <span class="path4"></span>
+                                <span class="path5"></span>
+                            </i>Delete Draft
                         </button>
                     @endif
                 @endcan
@@ -193,7 +217,10 @@
                         <div class="modal-header">
                             <h2 class="fw-bold">Reject Settlement</h2>
                             <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                                <i class="ki-outline ki-cross fs-1"></i>
+                                <i class="ki-duotone ki-cross fs-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
                             </div>
                         </div>
                         <div class="modal-body">
@@ -208,7 +235,10 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                             <button type="button" class="btn btn-danger" data-stl-action="reject-confirm">
-                                <i class="ki-outline ki-cross-circle fs-3"></i>Send Back
+                                <i class="ki-dutone ki-cross-circle fs-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>Send Back
                             </button>
                         </div>
                     </div>

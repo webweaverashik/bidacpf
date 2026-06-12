@@ -40,8 +40,14 @@ var BidaSettlementForm = (function () {
 
     var showWarning = function (text) {
         var box = $id(cfg.preview.warnId), txt = $id(cfg.preview.warnTextId);
-        if (txt) { txt.textContent = text; }
-        if (box) { box.style.display = text ? "flex" : "none"; }
+        if (txt) { txt.textContent = text || ""; }
+        if (box) {
+            // Toggle classes, NOT inline display: Bootstrap's `d-flex` is
+            // `display:flex !important`, which an inline style="display:none"
+            // cannot override. So the box would never hide.
+            box.classList.toggle("d-none", !text);
+            box.classList.toggle("d-flex", !!text);
+        }
         blocked = !!text;
     };
 
