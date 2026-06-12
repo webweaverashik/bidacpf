@@ -26,7 +26,11 @@
                 <form id="bida_interest_form" class="form">
                     <div class="card-body">
                         <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6">
-                            <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
+                            <i class="ki-duotone ki-information-5 fs-2tx text-primary me-4">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
                             <div class="d-flex flex-stack flex-grow-1">
                                 <div class="fw-semibold">
                                     <div class="fs-6 text-gray-700">
@@ -61,7 +65,11 @@
                                 </div>
                                 @if (empty($cutoffs) || collect($cutoffs)->every(fn($c) => $c['taken']))
                                     <div class="text-warning fs-7 mt-2">
-                                        <i class="ki-outline ki-information fs-6 me-1"></i>
+                                        <i class="ki-duotone ki-information fs-6 me-1">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
                                         No cut-off date is currently available for a new distribution.
                                     </div>
                                 @endif
@@ -104,7 +112,8 @@
                             class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                         <button type="submit" class="btn btn-primary" id="bida_interest_submit">
                             <span class="indicator-label">
-                                <i class="ki-outline ki-calculator fs-3"></i>Generate Distribution
+                                <i class="ki-outline ki-finance-calculator fs-3">
+                                </i>Generate Distribution
                             </span>
                             <span class="indicator-progress">
                                 Computing… <span class="spinner-border spinner-border-sm align-middle ms-2"></span>

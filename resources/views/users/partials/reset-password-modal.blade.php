@@ -6,7 +6,10 @@
             <div class="modal-header" id="kt_modal_edit_password_header">
                 <h2 class="fw-bold" id="kt_modal_edit_password_title">Password Reset</h2>
                 <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-password-modal-action="close">
-                    <i class="ki-outline ki-cross fs-1"></i>
+                    <i class="ki-duotone ki-cross fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                 </div>
             </div>
 

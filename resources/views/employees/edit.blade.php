@@ -75,7 +75,7 @@
                             <div class="col-md-5">
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">CPF Account No.</label>
-                                    <input type="text" name="cpf_account_no" class="form-control form-control-solid"
+                                    <input type="text" name="cpf_account_no" class="form-control"
                                         value="{{ old('cpf_account_no', $employee->cpf_account_no) }}"
                                         placeholder="e.g. PRA/K/1234/25" />
                                 </div>
@@ -83,7 +83,7 @@
                             <div class="col-md-7">
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Full Name</label>
-                                    <input type="text" name="name" class="form-control form-control-solid"
+                                    <input type="text" name="name" class="form-control"
                                         value="{{ old('name', $employee->name) }}" placeholder="Enter employee full name" />
                                 </div>
                             </div>
@@ -92,7 +92,7 @@
                         {{-- Designation --}}
                         <div class="fv-row mb-7">
                             <label class="required fw-semibold fs-6 mb-2">Designation</label>
-                            <input type="text" name="designation" class="form-control form-control-solid"
+                            <input type="text" name="designation" class="form-control"
                                 value="{{ old('designation', $employee->designation) }}"
                                 placeholder="e.g. Assistant Director, Investment Officer" />
                         </div>
@@ -105,7 +105,7 @@
                                         Email
                                         <span class="text-muted">(optional)</span>
                                     </label>
-                                    <input type="email" name="email" class="form-control form-control-solid"
+                                    <input type="email" name="email" class="form-control"
                                         value="{{ old('email', $employee->email) }}" placeholder="Enter email address" />
                                 </div>
                             </div>
@@ -116,7 +116,7 @@
                                         <span class="text-muted">(optional)</span>
                                     </label>
                                     <input type="text" name="mobile_number" maxlength="20"
-                                        class="form-control form-control-solid"
+                                        class="form-control"
                                         value="{{ old('mobile_number', $employee->mobile_number) }}"
                                         placeholder="e.g. 01712345678" />
                                 </div>
@@ -129,7 +129,7 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Joining Date</label>
                                     <input name="joining_date" id="joining_date_input"
-                                        class="form-control form-control-solid" placeholder="Select joining date"
+                                        class="form-control" placeholder="Select joining date"
                                         value="{{ old('joining_date', $employee->joining_date?->format('Y-m-d')) }}"
                                         autocomplete="off" />
                                 </div>
@@ -141,7 +141,7 @@
                                         <span class="text-muted">(optional)</span>
                                     </label>
                                     <input name="retirement_date" id="retirement_date_input"
-                                        class="form-control form-control-solid" placeholder="Select retirement date"
+                                        class="form-control" placeholder="Select retirement date"
                                         value="{{ old('retirement_date', $employee->retirement_date?->format('Y-m-d')) }}"
                                         autocomplete="off" />
                                 </div>
@@ -153,7 +153,7 @@
                             <label class="required fw-semibold fs-6 mb-2">Status</label>
                             <div class="d-flex gap-6 flex-wrap mt-1">
                                 @foreach (\App\Enums\EmployeeStatus::cases() as $case)
-                                    <div class="form-check form-check-custom form-check-solid">
+                                    <div class="form-check form-check-custom">
                                         <input class="form-check-input" type="radio" name="status"
                                             value="{{ $case->value }}" id="status_{{ $case->value }}"
                                             {{ old('status', $employee->status->value) === $case->value ? 'checked' : '' }} />
@@ -243,7 +243,7 @@
                             {{-- Admin sees the full pay scale dropdown --}}
                             <div class="fv-row mb-7" id="pay_scale_row">
                                 <label class="required fw-semibold fs-6 mb-2">Pay Scale</label>
-                                <select name="pay_scale_id" id="pay_scale_select" class="form-select form-select-solid"
+                                <select name="pay_scale_id" id="pay_scale_select" class="form-select"
                                     data-control="select2" data-placeholder="Select a pay scale" data-hide-search="true">
                                     <option></option>
                                     @foreach ($payScales as $scale)
@@ -291,7 +291,7 @@
                                     <label class="{{ $canChangeGradeSalary ? 'required' : '' }} fw-semibold fs-6 mb-2">
                                         Grade
                                     </label>
-                                    <select name="grade" id="grade_select" class="form-select form-select-solid"
+                                    <select name="grade" id="grade_select" class="form-select"
                                         data-control="select2" data-placeholder="Select a grade" data-hide-search="true"
                                         {{ !$canChangeGradeSalary ? 'disabled' : '' }}>
                                         <option></option>
@@ -310,7 +310,7 @@
                                         Basic Salary
                                     </label>
                                     <select name="pay_scale_step_id" id="basic_salary_select"
-                                        class="form-select form-select-solid"
+                                        class="form-select"
                                         data-placeholder="{{ $canChangeGradeSalary ? 'Select grade first' : ($canChangePayScale ? 'Select pay scale first' : 'No permission') }}"
                                         {{ !$canChangeGradeSalary ? 'disabled' : '' }}>
                                         <option></option>

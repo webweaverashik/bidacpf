@@ -32,14 +32,16 @@
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <h3 class="fw-bold text-gray-900 fs-3 m-0">
-                    <i class="ki-outline ki-setting-3 fs-3 me-2 text-primary"></i>
-                    CPF System Settings
+                    <span class="d-inline-flex align-items-center">
+                        <i class="ki-outline ki-setting-3 fs-2x me-2 text-primary"></i>
+                        CPF System Settings
+                    </span>
                 </h3>
             </div>
         </div>
 
         <div class="card-body py-10">
-            <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-4 mb-8">
+            <div class="notice d-flex align-items-center bg-light-info rounded border-info border border-dashed p-4 mb-8">
                 <i class="ki-outline ki-information-5 fs-2tx text-info me-3"></i>
                 <div class="fw-semibold fs-7 text-gray-700">
                     Contribution rates, advance limits, and interest distribution. Changes apply to
@@ -57,7 +59,7 @@
                             <label class="required fw-semibold fs-6 mb-2">Employee Contribution Rate</label>
                             <div class="input-group">
                                 <input type="number" step="0.01" min="0" max="100"
-                                    name="employee_contribution_rate" class="form-control form-control-solid"
+                                    name="employee_contribution_rate" class="form-control"
                                     value="{{ $get('employee_contribution_rate', 10) }}" />
                                 <span class="input-group-text">%</span>
                             </div>
@@ -72,7 +74,7 @@
                             <label class="required fw-semibold fs-6 mb-2">Government Contribution Rate</label>
                             <div class="input-group">
                                 <input type="number" step="0.01" min="0" max="100"
-                                    name="government_contribution_rate" class="form-control form-control-solid"
+                                    name="government_contribution_rate" class="form-control"
                                     value="{{ $get('government_contribution_rate', 8.33) }}" />
                                 <span class="input-group-text">%</span>
                             </div>
@@ -89,7 +91,7 @@
                             <label class="required fw-semibold fs-6 mb-2">Advance Limit</label>
                             <div class="input-group">
                                 <input type="number" step="0.01" min="0" max="100"
-                                    name="advance_limit_percentage" class="form-control form-control-solid"
+                                    name="advance_limit_percentage" class="form-control"
                                     value="{{ $get('advance_limit_percentage', 80) }}" />
                                 <span class="input-group-text">%</span>
                             </div>
@@ -104,7 +106,7 @@
                             <label class="required fw-semibold fs-6 mb-2">Advance Interest Rate</label>
                             <div class="input-group">
                                 <input type="number" step="0.01" min="0" max="100"
-                                    name="advance_interest_rate" class="form-control form-control-solid"
+                                    name="advance_interest_rate" class="form-control"
                                     value="{{ $get('advance_interest_rate', 5) }}" />
                                 <span class="input-group-text">%</span>
                             </div>
@@ -121,7 +123,7 @@
                         <div class="fv-row mb-7">
                             <label class="required fw-semibold fs-6 mb-2">Maximum Installments</label>
                             <input type="number" step="1" min="1" max="120" name="max_installments"
-                                class="form-control form-control-solid" value="{{ $get('max_installments', 48) }}" />
+                                class="form-control" value="{{ $get('max_installments', 48) }}" />
                             <div class="fv-feedback text-danger fs-7 mt-2"></div>
                             <div class="form-text">Maximum number of installments for advance recovery.</div>
                         </div>
@@ -132,9 +134,8 @@
                         <div class="fv-row mb-7">
                             <label class="fw-semibold fs-6 mb-2">Interest Distribution Dates</label>
                             <div class="d-flex align-items-center flex-wrap gap-2 mt-1">
-                                <span class="badge badge-light-primary fs-7 py-2 px-3">30 June</span>
-                                <span class="badge badge-light-primary fs-7 py-2 px-3">31 December</span>
-                                <span class="badge badge-light fs-8 py-2 px-3">Fixed</span>
+                                <span class="badge badge-primary fs-7 py-2 px-3">30 June</span>
+                                <span class="badge badge-info fs-7 py-2 px-3">31 December</span>
                             </div>
                             <div class="form-text">
                                 Bank interest is credited to employee accounts proportionately at each fiscal
@@ -150,7 +151,6 @@
                 <div class="d-flex justify-content-end">
                     <button type="button" id="btn_save_settings" class="btn btn-primary">
                         <span class="indicator-label">
-                            <i class="ki-outline ki-check fs-4 me-1"></i>
                             Save Changes
                         </span>
                         <span class="indicator-progress">

@@ -6,7 +6,10 @@
             <div class="modal-header" id="kt_modal_edit_user_header">
                 <h2 class="fw-bold" id="kt_modal_edit_user_title">Update User</h2>
                 <div class="btn btn-icon btn-sm btn-active-icon-primary" data-edit-users-modal-action="close">
-                    <i class="ki-outline ki-cross fs-1"></i>
+                    <i class="ki-duotone ki-cross fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                 </div>
             </div>
 
@@ -60,7 +63,7 @@
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="edit_role_admin">
-                                                <i class="ki-outline ki-shield-tick fs-2x me-3"></i>
+                                                <i class="las la-user-secret fs-2x me-3"></i>
                                                 <span class="text-gray-900 fw-bold fs-6">Admin</span>
                                             </label>
                                         </div>
@@ -70,7 +73,7 @@
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="edit_role_officer">
-                                                <i class="ki-outline ki-user-tick fs-2x me-3"></i>
+                                                <i class="las la-user-ninja fs-2x me-3"></i>
                                                 <span class="text-gray-900 fw-bold fs-6">CPF Officer</span>
                                             </label>
                                         </div>
@@ -80,7 +83,7 @@
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="edit_role_auditor">
-                                                <i class="ki-outline ki-eye fs-2x me-3"></i>
+                                                <i class="las la-user fs-2x me-3"></i>
                                                 <span class="text-gray-900 fw-bold fs-6">Auditor</span>
                                             </label>
                                         </div>
@@ -120,8 +123,10 @@
                             </div>
                         </div>
 
-                        <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4">
+                        <div
+                            class="notice d-flex align-items-center bg-light-primary rounded border-primary border border-dashed p-4">
                             <i class="ki-outline ki-information-5 fs-2tx text-primary me-3"></i>
+
                             <div class="fw-semibold fs-7 text-gray-700">
                                 To change this user's password, use the <strong>Reset Password</strong> action on the
                                 list.

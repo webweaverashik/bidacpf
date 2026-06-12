@@ -35,7 +35,10 @@
             <!--begin::Card title-->
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                     <input type="text" data-kt-user-table-filter="search"
                         class="form-control form-control-solid w-250px w-md-350px ps-13" placeholder="Search user" />
                 </div>
@@ -58,7 +61,10 @@
                     <!--begin::Filter-->
                     <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-filter fs-2"></i>Filter
+                        <i class="ki-duotone ki-filter fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Filter
                     </button>
                     <!--begin::Menu-->
                     <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true"
@@ -92,7 +98,10 @@
 
                     @can('user.create')
                         <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_user">
-                            <i class="ki-outline ki-plus fs-2"></i>New User
+                            <i class="ki-duotone ki-plus fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>New User
                         </a>
                     @endcan
                 </div>

@@ -3,7 +3,7 @@
 @section('title', 'Record Recovery')
 
 @section('header-title')
-    @include('cpf-advances.partials.page-header', ['heading' => 'Record Recovery', 'crumbs' => ['CPF Operation', 'CPF Advance/Loan', 'Recovery Posting', 'New']])
+    @include('cpf-advances.partials.page-header', ['heading' => 'Record Recovery', 'crumbs' => ['CPF Advance/Loan', 'Recovery Posting', 'New']])
 @endsection
 
 @section('content')

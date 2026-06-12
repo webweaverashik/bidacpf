@@ -88,7 +88,10 @@
 
             @if ($batch->remarks)
                 <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-4 mb-6">
-                    <i class="ki-outline ki-information fs-2 text-warning me-3"></i>
+                    <i class="ki-duotone ki-information fs-2 text-warning me-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                     <div class="fs-7"><span class="fw-bold">Remarks:</span> {{ $batch->remarks }}</div>
                 </div>
             @endif
@@ -96,13 +99,17 @@
             {{-- ===================== Workflow action bar ===================== --}}
             <div class="d-flex flex-wrap gap-3">
                 <a href="{{ route('bank-interest.index') }}" class="btn btn-light btn-active-light-primary">
-                    <i class="ki-outline ki-arrow-left fs-3"></i>Back to list
+                    <i class="ki-duotone ki-arrow-left fs-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span></i>Back to list
                 </a>
 
                 @can('bank_interest.create')
                     @if ($batch->isEditable())
                         <button type="button" class="btn btn-light-primary" data-bi-action="regenerate">
-                            <i class="ki-outline ki-arrows-circle fs-3"></i>Recalculate
+                            <i class="ki-duotone ki-arrows-circle fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span></i>Recalculate
                         </button>
                     @endif
                 @endcan
@@ -110,7 +117,9 @@
                 @can('bank_interest.submit')
                     @if ($batch->canBeSubmitted())
                         <button type="button" class="btn btn-primary" data-bi-action="submit">
-                            <i class="ki-outline ki-send fs-3"></i>Submit for Approval
+                            <i class="ki-duotone ki-send fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span></i>Submit for Approval
                         </button>
                     @endif
                 @endcan
@@ -118,13 +127,18 @@
                 @can('bank_interest.approve')
                     @if ($batch->canBeApproved())
                         <button type="button" class="btn btn-success" data-bi-action="approve">
-                            <i class="ki-outline ki-check-circle fs-3"></i>Approve &amp; Post Ledger
+                            <i class="ki-duotone ki-check-circle fs-3"> <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Approve &amp; Post Ledger
                         </button>
                     @endif
                     @if ($batch->canBeRejected())
                         <button type="button" class="btn btn-light-danger" data-bs-toggle="modal"
                             data-bs-target="#bi_reject_modal">
-                            <i class="ki-outline ki-cross-circle fs-3"></i>Reject
+                            <i class="ki-duotone ki-cross-circle fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Reject
                         </button>
                     @endif
                 @endcan
@@ -132,7 +146,10 @@
                 @can('bank_interest.reverse')
                     @if ($batch->canBeReversed())
                         <button type="button" class="btn btn-light-danger" data-bi-action="reverse">
-                            <i class="ki-outline ki-arrow-circle-left fs-3"></i>Reverse
+                            <i class="ki-duotone ki-arrow-circle-left fs-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Reverse
                         </button>
                     @endif
                 @endcan
@@ -145,24 +162,31 @@
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                     <input type="text" id="bi_dist_search" class="form-control form-control-solid w-md-300px ps-12"
                         placeholder="Search members">
                 </div>
             </div>
             <div class="card-toolbar">
                 <span class="text-muted fs-7 me-4 d-none d-md-inline">
-                    Formula: (Member Balance ÷ Fund Balance) × Interest Received
+                    Formula: (Employee CPF Balance ÷ Total CPF Balance) × Bank Interest
                 </span>
                 <div class="dropdown">
                     <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        <i class="ki-duotone ki-exit-up fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Export
                     </button>
                     <div id="kt_table_report_dropdown_menu"
                         class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                         data-kt-menu="true">
-                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="xlsx">Export
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3"
+                                data-row-export="xlsx">Export
                                 as Excel</a></div>
                         <div class="menu-item px-3"><a href="#" class="menu-link px-3"
                                 data-row-export="csv">Export as CSV</a></div>
@@ -212,7 +236,10 @@
                         <div class="modal-header">
                             <h2 class="fw-bold">Reject Distribution</h2>
                             <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                                <i class="ki-outline ki-cross fs-1"></i>
+                                <i class="ki-duotone ki-cross fs-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
                             </div>
                         </div>
                         <div class="modal-body">
@@ -227,7 +254,9 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                             <button type="button" class="btn btn-danger" data-bi-action="reject-confirm">
-                                <i class="ki-outline ki-cross-circle fs-3"></i>Send Back
+                                <i class="ki-duotone ki-cross-circle fs-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span></i>Send Back
                             </button>
                         </div>
                     </div>

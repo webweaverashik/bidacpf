@@ -415,7 +415,10 @@
                             <!--begin::Card title (search)-->
                             <div class="card-title">
                                 <div class="d-flex align-items-center position-relative my-1">
-                                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
                                     <input type="text" data-kt-ledger-filter="search"
                                         class="form-control form-control-solid w-md-300px ps-12"
                                         placeholder="Search ledger">
@@ -428,7 +431,10 @@
                                 <!--begin::Filter-->
                                 <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                                     data-kt-menu-placement="bottom-end">
-                                    <i class="ki-outline ki-filter fs-2"></i>Filter
+                                    <i class="ki-duotone ki-filter fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>Filter
                                 </button>
                                 <!--begin::Filter menu-->
                                 <div id="kt_ledger_filter_menu" class="menu menu-sub menu-sub-dropdown w-300px w-md-325px"
@@ -495,7 +501,10 @@
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                                             data-kt-menu-placement="bottom-end">
-                                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                                            <i class="ki-duotone ki-exit-up fs-2">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                            </i>Export
                                         </button>
                                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                                             data-kt-menu="true">
@@ -921,7 +930,10 @@
                         <div class="card-header border-0 pt-6">
                             <div class="card-title">
                                 <div class="d-flex align-items-center position-relative my-1">
-                                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
                                     <input type="text" data-kt-activity-filter="search"
                                         class="form-control form-control-solid w-md-300px ps-12"
                                         placeholder="Search activity">
@@ -930,8 +942,10 @@
                             <div class="card-toolbar">
                                 <span class="badge badge-light-primary fs-7 me-3">{{ $activityCount }} records</span>
                                 <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
-                                    data-kt-menu-placement="bottom-end"><i
-                                        class="ki-outline ki-filter fs-2"></i>Filter</button>
+                                    data-kt-menu-placement="bottom-end"><i class="ki-duotone ki-filter fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>Filter</button>
                                 <div id="kt_activity_filter_menu"
                                     class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                                     <div class="px-7 py-5">

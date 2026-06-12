@@ -54,25 +54,40 @@
             <div class="card-toolbar">
                 @if ($batch->isEditable() && $canEdit)
                     <button type="button" class="btn btn-light-warning me-3" data-batch-action="regenerate">
-                        <i class="ki-outline ki-arrows-circle fs-3"></i>Regenerate
+                        <i class="ki-duotone ki-arrows-circle fs-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Regenerate
                     </button>
                 @endif
                 @if ($batch->canBeSubmitted() && $canSubmit)
                     <button type="button" class="btn btn-primary" data-batch-action="submit">
-                        <i class="ki-outline ki-send fs-3"></i>Submit for Approval
+                        <i class="ki-duotone ki-send fs-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Submit for Approval
                     </button>
                 @endif
                 @if ($batch->canBeApproved() && $canApprove)
                     <button type="button" class="btn btn-light-danger me-3" data-batch-action="reject">
-                        <i class="ki-outline ki-arrow-circle-left fs-3"></i>Send Back
+                        <i class="ki-duotone ki-arrow-circle-left fs-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Send Back
                     </button>
                     <button type="button" class="btn btn-success" data-batch-action="approve">
-                        <i class="ki-outline ki-check-circle fs-3"></i>Approve &amp; Post Ledger
+                        <i class="ki-duotone ki-check-circle fs-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Approve &amp; Post Ledger
                     </button>
                 @endif
                 @if ($batch->canBeReversed() && $canReverse)
                     <button type="button" class="btn btn-light-danger" data-batch-action="reverse">
-                        <i class="ki-outline ki-cross-circle fs-3"></i>Reverse Batch
+                        <i class="ki-duotone ki-cross-circle fs-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Reverse Batch
                     </button>
                 @endif
             </div>
@@ -142,7 +157,10 @@
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                     <input type="text" data-contribution-rows-filter="search"
                         class="form-control form-control-solid w-md-350px ps-12" placeholder="Search employees">
                 </div>
@@ -152,14 +170,18 @@
                 <div class="dropdown">
                     <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        <i class="ki-duotone ki-exit-up fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span></i>Export
                     </button>
                     <div id="kt_table_report_dropdown_menu"
                         class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                         data-kt-menu="true">
-                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="copy">Copy
+                                to
                                 clipboard</a></div>
-                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="excel">Export
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3"
+                                data-row-export="excel">Export
                                 as Excel</a></div>
                         <div class="menu-item px-3"><a href="#" class="menu-link px-3"
                                 data-row-export="csv">Export as CSV</a></div>

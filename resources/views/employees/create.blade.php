@@ -121,13 +121,13 @@
                                         <div class="fv-row mb-7">
                                             <label class="required fw-semibold fs-6 mb-2">CPF Account No.</label>
                                             <input type="text" name="cpf_account_no"
-                                                class="form-control form-control-solid" placeholder="e.g. CPF/2026/001" />
+                                                class="form-control" placeholder="e.g. CPF/2026/001" />
                                         </div>
                                     </div>
                                     <div class="col-md-7">
                                         <div class="fv-row mb-7">
                                             <label class="required fw-semibold fs-6 mb-2">Full Name</label>
-                                            <input type="text" name="name" class="form-control form-control-solid"
+                                            <input type="text" name="name" class="form-control"
                                                 placeholder="Enter employee full name" />
                                         </div>
                                     </div>
@@ -136,7 +136,7 @@
                                 {{-- Designation --}}
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Designation</label>
-                                    <input type="text" name="designation" class="form-control form-control-solid"
+                                    <input type="text" name="designation" class="form-control"
                                         placeholder="e.g. Assistant Director, Investment Officer" />
                                 </div>
 
@@ -147,7 +147,7 @@
                                             <label class="fw-semibold fs-6 mb-2">
                                                 Email <span class="text-muted">(optional)</span>
                                             </label>
-                                            <input type="email" name="email" class="form-control form-control-solid"
+                                            <input type="email" name="email" class="form-control"
                                                 placeholder="Enter email address" />
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@
                                                 Mobile Number <span class="text-muted">(optional)</span>
                                             </label>
                                             <input type="text" name="mobile_number" maxlength="20"
-                                                class="form-control form-control-solid" placeholder="e.g. 01712345678" />
+                                                class="form-control" placeholder="e.g. 01712345678" />
                                         </div>
                                     </div>
                                 </div>
@@ -168,7 +168,7 @@
                                         <div class="fv-row mb-7">
                                             <label class="required fw-semibold fs-6 mb-2">Joining Date</label>
                                             <input name="joining_date" id="joining_date_input"
-                                                class="form-control form-control-solid" placeholder="Select joining date"
+                                                class="form-control" placeholder="Select joining date"
                                                 autocomplete="off" />
                                         </div>
                                     </div>
@@ -178,7 +178,7 @@
                                                 Retirement Date <span class="text-muted">(optional)</span>
                                             </label>
                                             <input name="retirement_date" id="retirement_date_input"
-                                                class="form-control form-control-solid"
+                                                class="form-control"
                                                 placeholder="Select retirement date" autocomplete="off" />
                                         </div>
                                     </div>
@@ -271,7 +271,7 @@
                                     <div class="fv-row mb-7" id="pay_scale_row">
                                         <label class="required fw-semibold fs-6 mb-2">Pay Scale</label>
                                         <select name="pay_scale_id" id="pay_scale_select"
-                                            class="form-select form-select-solid" data-control="select2"
+                                            class="form-select" data-control="select2"
                                             data-placeholder="Select a pay scale" data-hide-search="false">
                                             <option></option>
                                             @foreach ($payScales as $ps)
@@ -293,7 +293,7 @@
                                 {{-- Grade --}}
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Grade</label>
-                                    <select name="grade" id="grade_select" class="form-select form-select-solid"
+                                    <select name="grade" id="grade_select" class="form-select"
                                         data-control="select2" data-placeholder="Select a grade" data-hide-search="true"
                                         {{ $payScales->count() > 1 && !$defaultPayScale ? 'disabled' : '' }}>
                                         <option></option>
@@ -307,7 +307,7 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Basic Salary</label>
                                     <select name="pay_scale_step_id" id="basic_salary_select"
-                                        class="form-select form-select-solid" data-placeholder="Select grade first"
+                                        class="form-select" data-placeholder="Select grade first"
                                         disabled>
                                         <option></option>
                                     </select>
@@ -334,7 +334,7 @@
                             </div>
                         </div>
 
-                        <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4 mb-8">
+                        <div class="notice d-flex align-items-center bg-light-primary rounded border-primary border border-dashed p-4 mb-8">
                             <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
                             <div class="fw-semibold">
                                 <div class="fs-6 text-gray-700">
@@ -351,10 +351,10 @@
                                         <i class="ki-outline ki-people fs-5 me-1 text-success"></i>
                                         Employee (Own) Contribution
                                     </label>
-                                    <div class="input-group input-group-solid">
+                                    <div class="input-group">
                                         <span class="input-group-text fw-bold">৳</span>
                                         <input type="number" name="opening_employee_contribution"
-                                            class="form-control form-control-solid" min="0" value="0" />
+                                            class="form-control" min="0" value="0" />
                                     </div>
                                 </div>
                             </div>
@@ -364,10 +364,10 @@
                                         <i class="ki-outline ki-bank fs-5 me-1 text-info"></i>
                                         Government Contribution
                                     </label>
-                                    <div class="input-group input-group-solid">
+                                    <div class="input-group">
                                         <span class="input-group-text fw-bold">৳</span>
                                         <input type="number" name="opening_government_contribution"
-                                            class="form-control form-control-solid" min="0" value="0" />
+                                            class="form-control" min="0" value="0" />
                                     </div>
                                 </div>
                             </div>
@@ -380,10 +380,10 @@
                                         <i class="ki-outline ki-chart-line-up fs-5 me-1 text-warning"></i>
                                         Bank Interest
                                     </label>
-                                    <div class="input-group input-group-solid">
+                                    <div class="input-group">
                                         <span class="input-group-text fw-bold">৳</span>
                                         <input type="number" name="opening_bank_interest"
-                                            class="form-control form-control-solid" min="0" value="0" />
+                                            class="form-control" min="0" value="0" />
                                     </div>
                                 </div>
                             </div>
@@ -393,10 +393,10 @@
                                         <i class="ki-outline ki-arrow-down fs-5 me-1 text-danger"></i>
                                         Outstanding Advance (Loan)
                                     </label>
-                                    <div class="input-group input-group-solid">
+                                    <div class="input-group">
                                         <span class="input-group-text fw-bold">৳</span>
                                         <input type="number" name="opening_advance_balance"
-                                            class="form-control form-control-solid" min="0" value="0" />
+                                            class="form-control" min="0" value="0" />
                                     </div>
                                 </div>
                             </div>
@@ -407,7 +407,7 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Effective Date</label>
                                     <input name="opening_effective_date" id="opening_effective_date_input"
-                                        class="form-control form-control-solid" placeholder="Balance as of date"
+                                        class="form-control" placeholder="Balance as of date"
                                         autocomplete="off" />
                                     <div class="form-text">Date from which these balances apply.</div>
                                 </div>

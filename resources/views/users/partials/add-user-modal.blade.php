@@ -57,7 +57,7 @@
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="add_role_admin">
-                                                <i class="ki-outline ki-shield-tick fs-2x me-3"></i>
+                                                <i class="las la-user-secret fs-2x me-3"></i>
                                                 <span class="text-gray-900 fw-bold fs-6">Admin</span>
                                             </label>
                                         </div>
@@ -67,7 +67,7 @@
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="add_role_officer">
-                                                <i class="ki-outline ki-user-tick fs-2x me-3"></i>
+                                                <i class="las la-user-ninja fs-2x me-3"></i>
                                                 <span class="text-gray-900 fw-bold fs-6">CPF Officer</span>
                                             </label>
                                         </div>
@@ -77,7 +77,7 @@
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="add_role_auditor">
-                                                <i class="ki-outline ki-eye fs-2x me-3"></i>
+                                                <i class="las la-user fs-2x me-3"></i>
                                                 <span class="text-gray-900 fw-bold fs-6">Auditor</span>
                                             </label>
                                         </div>
@@ -89,21 +89,21 @@
                             <div class="col-lg-6">
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Name</label>
-                                    <input type="text" name="name" class="form-control form-control-solid"
+                                    <input type="text" name="name" class="form-control"
                                         placeholder="Write full name" />
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="fv-row mb-7">
                                     <label class="fw-semibold fs-6 mb-2">Designation</label>
-                                    <input type="text" name="designation" class="form-control form-control-solid"
+                                    <input type="text" name="designation" class="form-control"
                                         placeholder="e.g. Assistant Director" />
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Email</label>
-                                    <input type="email" name="email" class="form-control form-control-solid"
+                                    <input type="email" name="email" class="form-control"
                                         placeholder="name@bida.gov.bd" />
                                 </div>
                             </div>
@@ -111,7 +111,7 @@
                                 <div class="fv-row mb-7">
                                     <label class="fw-semibold fs-6 mb-2">Mobile No.</label>
                                     <input type="text" name="mobile_number"
-                                        class="form-control form-control-solid" placeholder="e.g. 01812345678"
+                                        class="form-control" placeholder="e.g. 01812345678"
                                         maxlength="11" />
                                 </div>
                             </div>
@@ -120,7 +120,7 @@
                                     <label class="required fw-semibold fs-6 mb-2">Password</label>
                                     <div class="input-group">
                                         <input type="password" name="password" id="add_password"
-                                            class="form-control form-control-solid" placeholder="Enter password"
+                                            class="form-control" placeholder="Enter password"
                                             autocomplete="new-password" />
                                         <span class="input-group-text toggle-password" data-target="add_password"
                                             style="cursor:pointer;">
@@ -133,7 +133,7 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Confirm Password</label>
                                     <input type="password" name="password_confirmation"
-                                        class="form-control form-control-solid" placeholder="Re-enter password"
+                                        class="form-control" placeholder="Re-enter password"
                                         autocomplete="new-password" />
                                 </div>
                             </div>

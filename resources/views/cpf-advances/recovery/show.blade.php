@@ -3,7 +3,7 @@
 @section('title', $recovery->recovery_no)
 
 @section('header-title')
-    @include('cpf-advances.partials.page-header', ['heading' => $recovery->recovery_no, 'crumbs' => ['CPF Operation', 'CPF Advance/Loan', 'Recovery Posting', 'Detail']])
+    @include('cpf-advances.partials.page-header', ['heading' => $recovery->recovery_no, 'crumbs' => ['CPF Advance/Loan', 'Recovery Posting', 'Detail']])
 @endsection
 
 @section('content')

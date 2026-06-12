@@ -59,9 +59,11 @@
             <div class="card-title">
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-employees-table-filter="search" class="form-control form-control-solid w-md-350px ps-12"
-                        placeholder="Search in employees">
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i> <input type="text" data-employees-table-filter="search"
+                        class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in employees">
                 </div>
                 <!--end::Search-->
 
@@ -77,7 +79,10 @@
                 <!--begin::Filter-->
                 <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                     data-kt-menu-placement="bottom-end">
-                    <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                    <i class="ki-duotone ki-filter fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>Filter</button>
                 <!--begin::Menu 1-->
                 <div class="menu menu-sub menu-sub-dropdown w-350px" data-kt-menu="true">
                     <!--begin::Header-->
@@ -130,7 +135,10 @@
                     <div class="dropdown">
                         <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                            <i class="ki-duotone ki-exit-up fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Export
                         </button>
 
                         <!--begin::Menu-->

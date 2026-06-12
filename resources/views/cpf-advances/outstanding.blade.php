@@ -8,7 +8,10 @@
 @section('title', 'Outstanding Advances')
 
 @section('header-title')
-    @include('cpf-advances.partials.page-header', ['heading' => 'Outstanding Advances', 'crumbs' => ['CPF Operation', 'CPF Advance/Loan', 'Outstanding Advances']])
+    @include('cpf-advances.partials.page-header', [
+        'heading' => 'Outstanding Advances',
+        'crumbs' => ['CPF Advance/Loan', 'Outstanding Advances'],
+    ])
 @endsection
 
 @section('content')
@@ -16,7 +19,10 @@
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                     <input type="text" data-outstanding-table-filter="search"
                         class="form-control form-control-solid w-md-350px ps-12" placeholder="Search advances">
                 </div>
@@ -26,14 +32,20 @@
                 <div class="dropdown me-3">
                     <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        <i class="ki-duotone ki-exit-up fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Export
                     </button>
                     <div id="kt_table_report_dropdown_menu"
                         class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                         data-kt-menu="true">
-                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="xlsx">Export as Excel</a></div>
-                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a></div>
-                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a></div>
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="xlsx">Export
+                                as Excel</a></div>
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="csv">Export as
+                                CSV</a></div>
+                        <div class="menu-item px-3"><a href="#" class="menu-link px-3" data-row-export="pdf">Export as
+                                PDF</a></div>
                     </div>
                 </div>
 
@@ -42,7 +54,8 @@
         </div>
 
         <div class="card-body py-4">
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ashik-table" id="bida_outstanding_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ashik-table"
+                id="bida_outstanding_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">#</th>
@@ -73,17 +86,44 @@
             exportUrl: "{{ route('cpf-advances.outstanding.export') }}",
             filterPrefix: 'outstanding',
             filters: [],
-            order: [[4, 'desc']],
+            order: [
+                [4, 'desc']
+            ],
             pageLength: 10,
-            columns: [
-                { data: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'advance_no' },
-                { data: 'employee' },
-                { data: 'approved', className: 'text-end' },
-                { data: 'outstanding', className: 'text-end' },
-                { data: 'installment', className: 'text-end' },
-                { data: 'progress', orderable: false, searchable: false },
-                { data: 'actions', orderable: false, searchable: false, className: 'text-end' }
+            columns: [{
+                    data: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'advance_no'
+                },
+                {
+                    data: 'employee'
+                },
+                {
+                    data: 'approved',
+                    className: 'text-end'
+                },
+                {
+                    data: 'outstanding',
+                    className: 'text-end'
+                },
+                {
+                    data: 'installment',
+                    className: 'text-end'
+                },
+                {
+                    data: 'progress',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-end'
+                }
             ]
         };
     </script>

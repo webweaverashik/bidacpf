@@ -41,7 +41,9 @@
             </div>
             <div class="card-toolbar">
                 <a href="{{ route('audit-logs.index') }}" class="btn btn-light-primary">
-                    <i class="ki-outline ki-arrow-left fs-2"></i>Back to Audit Logs
+                    <i class="ki-duotone ki-arrow-left fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span></i>Back to Audit Logs
                 </a>
             </div>
         </div>

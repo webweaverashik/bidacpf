@@ -33,7 +33,10 @@
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
                     <input type="text" data-contributions-table-filter="search"
                         class="form-control form-control-solid w-md-350px ps-12" placeholder="Search batches">
                 </div>
@@ -43,7 +46,10 @@
             <div class="card-toolbar">
                 <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                     data-kt-menu-placement="bottom-end">
-                    <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                    <i class="ki-duotone ki-filter fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>Filter</button>
                 <div class="menu menu-sub menu-sub-dropdown w-350px" data-kt-menu="true">
                     <div class="px-7 py-5">
                         <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
@@ -85,7 +91,10 @@
                     <div class="dropdown">
                         <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                            <i class="ki-duotone ki-exit-up fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Export
                         </button>
                         <div id="kt_table_report_dropdown_menu"
                             class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
@@ -104,7 +113,10 @@
                     @can('cpf_contribution.create')
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                             data-bs-target="#kt_modal_generate_batch">
-                            <i class="ki-outline ki-plus fs-2"></i>Generate Batch
+                            <i class="ki-duotone ki-plus fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>Generate Batch
                         </button>
                     @endcan
                 </div>
@@ -179,7 +191,10 @@
                         <div class="modal-header">
                             <h2 class="fw-bold">Generate Contribution Batch</h2>
                             <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                                <i class="ki-outline ki-cross fs-1"></i>
+                                <i class="ki-duotone ki-cross fs-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
                             </div>
                         </div>
 
@@ -190,7 +205,14 @@
                                 submitting for approval.
                             </div>
                             <div class="d-flex align-items-center bg-light-primary rounded p-4">
-                                <i class="ki-outline ki-calendar-8 fs-2x text-primary me-4"></i>
+                                <i class="ki-duotone ki-calendar-8 fs-2x text-primary me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                    <span class="path5"></span>
+                                    <span class="path6"></span>
+                                </i>
                                 <div>
                                     <div class="fs-5 fw-bold text-gray-900">{{ now()->format('F Y') }}</div>
                                     <div class="text-muted fs-7">Only the current month can be generated manually.</div>
