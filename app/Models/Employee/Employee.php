@@ -5,6 +5,7 @@ use App\Enums\EmployeeStatus;
 use App\Models\BaseModel;
 use App\Models\Cpf\CpfAdvance;
 use App\Models\Cpf\CpfContribution;
+use App\Models\Cpf\CpfFinalSettlement;
 use App\Models\Cpf\CpfLedger;
 use App\Models\Cpf\CpfOpeningBalance;
 use App\Models\Interest\BankInterestDistribution;
@@ -214,5 +215,14 @@ class Employee extends BaseModel
     public function contributions()
     {
         return $this->hasMany(CpfContribution::class);
+    }
+
+    /**
+     * Final Settlement
+     */
+
+    public function finalSettlements()
+    {
+        return $this->hasMany(CpfFinalSettlement::class);
     }
 }

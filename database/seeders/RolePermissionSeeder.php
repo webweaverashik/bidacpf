@@ -53,6 +53,14 @@ class RolePermissionSeeder extends Seeder
             'cpf_advance.recovery',
 
             // ---------------------------------------------------------------
+            // CPF Final Settlement
+            // ---------------------------------------------------------------
+            'cpf_settlement.view',
+            'cpf_settlement.create',
+            'cpf_settlement.submit',
+            'cpf_settlement.approve',
+
+            // ---------------------------------------------------------------
             // Bank Interest Distribution
             // ---------------------------------------------------------------
             'bank_interest.view',
@@ -132,6 +140,10 @@ class RolePermissionSeeder extends Seeder
             'cpf_advance.submit',
             'cpf_advance.recovery',
 
+            'cpf_settlement.view',
+            'cpf_settlement.create',
+            'cpf_settlement.submit',
+
             'bank_interest.view',
             'bank_interest.create',
             'bank_interest.submit',
@@ -151,6 +163,8 @@ class RolePermissionSeeder extends Seeder
             'cpf_ledger.view',
 
             'cpf_advance.view',
+
+            'cpf_settlement.view',
 
             'bank_interest.view',
 

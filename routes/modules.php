@@ -49,6 +49,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     require __DIR__ . '/modules/cpf-contributions.php';
     require __DIR__ . '/modules/cpf-ledger.php';
     require __DIR__ . '/modules/cpf-advances.php';
+    require __DIR__ . '/modules/cpf-settlements.php';   // ← add this
     require __DIR__ . '/modules/bank-interest.php';
     require __DIR__ . '/modules/reports.php';
     require __DIR__ . '/modules/settings.php';

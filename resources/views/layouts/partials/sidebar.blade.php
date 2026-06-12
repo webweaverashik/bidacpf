@@ -182,6 +182,46 @@
                     @endcanany
                     <!--end::CPF Advance/Loan-->
 
+                    <!--begin::Final Settlement-->
+                    @canany(['cpf_settlement.view', 'cpf_settlement.create', 'cpf_settlement.approve'])
+                        <div data-kt-menu-trigger="click"
+                            class="menu-item menu-accordion {{ request()->routeIs('cpf-settlements.*') ? 'here show' : '' }}"
+                            id="cpf_settlement_menu">
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-exit-right-corner fs-2"></i>
+                                </span>
+                                <span class="menu-title">Final Settlement</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+
+                            <div class="menu-sub menu-sub-accordion">
+
+                                @can('cpf_settlement.view')
+                                    <div class="menu-item">
+                                        <a class="menu-link {{ request()->routeIs('cpf-settlements.index', 'cpf-settlements.show') ? 'active' : '' }}"
+                                            href="{{ route('cpf-settlements.index') }}" id="settlements_link">
+                                            <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                            <span class="menu-title">Settlements</span>
+                                        </a>
+                                    </div>
+                                @endcan
+
+                                @can('cpf_settlement.create')
+                                    <div class="menu-item">
+                                        <a class="menu-link {{ request()->routeIs('cpf-settlements.create', 'cpf-settlements.edit') ? 'active' : '' }}"
+                                            href="{{ route('cpf-settlements.create') }}" id="new_settlement_link">
+                                            <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                            <span class="menu-title">New Settlement</span>
+                                        </a>
+                                    </div>
+                                @endcan
+
+                            </div>
+                        </div>
+                    @endcanany
+                    <!--end::Final Settlement-->
+
                     <!--begin::Interest Management-->
                     @can('bank_interest.view')
                         <div data-kt-menu-trigger="click"
