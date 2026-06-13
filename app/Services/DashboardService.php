@@ -230,8 +230,9 @@ class DashboardService
     */
 
     /**
-     * All FY-scoped chart series for one fiscal year, shaped for ApexCharts.
-     * A single narrowed ledger read backs the three series to keep load light.
+     * Every fiscal-year-scoped figure for one fiscal year, shaped for ApexCharts
+     * and the FY-scoped stat tiles. A single narrowed ledger read backs all of the
+     * monthly series and FY totals, so changing the fiscal year is one query.
      *
      * @return array{
      *   fiscal_year:string,
@@ -239,7 +240,10 @@ class DashboardService
      *   fund_growth:array<int,int>,
      *   employee_contribution:array<int,int>,
      *   government_contribution:array<int,int>,
-     *   composition:array{labels:array<int,string>,values:array<int,int>}
+     *   composition:array{labels:array<int,string>,values:array<int,int>},
+     *   comparison:array{contributions:array<int,int>,recoveries:array<int,int>,disbursed:array<int,int>},
+     *   interest:array<int,int>,
+     *   stats:array{contributions:int,recovered:int,loans_taken_amount:int,loans_taken_count:int,interest_distributed:int}
      * }
      */
     public function chartData(string $fiscalYear): array
@@ -251,15 +255,19 @@ class DashboardService
         $monthKey = [];
         $cursor   = $start->copy();
         for ($i = 0; $i < 12; $i++) {
-            $labels[$i]            = $cursor->format('M Y');
+            $labels[$i]                       = $cursor->format('M Y');
             $monthKey[$cursor->format('Y-m')] = $i;
             $cursor->addMonth();
         }
 
-        $employee = array_fill(0, 12, 0);
-        $govt     = array_fill(0, 12, 0);
-        $net      = array_fill(0, 12, 0);   // monthly (credit - debit) for the growth line
-        $composition = [];                   // credit total keyed by transaction type value
+        $employee    = array_fill(0, 12, 0); // employee contribution credit
+        $govt        = array_fill(0, 12, 0); // government contribution credit
+        $recovery    = array_fill(0, 12, 0); // advance recovery credit
+        $disbursed   = array_fill(0, 12, 0); // advance disbursement debit (loans taken)
+        $interest    = array_fill(0, 12, 0); // bank interest credit
+        $net         = array_fill(0, 12, 0); // monthly (credit - debit) for the growth line
+        $composition = [];                   // credit total keyed by transaction type label
+        $loansCount  = 0;                    // # of disbursement postings in the FY
 
         $rows = CpfLedger::query()
             ->whereBetween('transaction_date', [$start, $end])
@@ -270,21 +278,42 @@ class DashboardService
             if (! isset($monthKey[$key])) {
                 continue;
             }
-            $idx = $monthKey[$key];
+            $idx    = $monthKey[$key];
+            $credit = (int) $row->credit;
+            $debit  = (int) $row->debit;
+            $type   = $row->transaction_type;
 
-            $net[$idx] += (int) $row->credit - (int) $row->debit;
+            $net[$idx] += $credit - $debit;
 
-            $type = $row->transaction_type;
-            if ($type === LedgerTransactionType::EMPLOYEE_CONTRIBUTION) {
-                $employee[$idx] += (int) $row->credit;
-            } elseif ($type === LedgerTransactionType::GOVERNMENT_CONTRIBUTION) {
-                $govt[$idx] += (int) $row->credit;
+            switch ($type) {
+                case LedgerTransactionType::EMPLOYEE_CONTRIBUTION:
+                    $employee[$idx] += $credit;
+                    break;
+                case LedgerTransactionType::GOVERNMENT_CONTRIBUTION:
+                    $govt[$idx] += $credit;
+                    break;
+                case LedgerTransactionType::ADVANCE_RECOVERY:
+                    $recovery[$idx] += $credit;
+                    break;
+                case LedgerTransactionType::BANK_INTEREST:
+                    $interest[$idx] += $credit;
+                    break;
+                case LedgerTransactionType::ADVANCE_DISBURSEMENT:
+                    $disbursed[$idx] += $debit;
+                    $loansCount++;
+                    break;
             }
 
-            if ((int) $row->credit > 0) {
-                $label = $type->label();
-                $composition[$label] = ($composition[$label] ?? 0) + (int) $row->credit;
+            if ($credit > 0) {
+                $label               = $type->label();
+                $composition[$label] = ($composition[$label] ?? 0) + $credit;
             }
+        }
+
+        // Contributions (employee + government) per month.
+        $contributions = [];
+        for ($i = 0; $i < 12; $i++) {
+            $contributions[$i] = $employee[$i] + $govt[$i];
         }
 
         // Fund-growth line = opening fund at FY start + cumulative monthly net.
@@ -293,11 +322,11 @@ class DashboardService
             ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) AS net')
             ->value('net');
 
-        $fundGrowth = [];
-        $running    = $opening;
+        $fundGrowth  = [];
+        $running     = $opening;
         foreach ($net as $idx => $monthNet) {
-            $running         += $monthNet;
-            $fundGrowth[$idx] = $running;
+            $running          += $monthNet;
+            $fundGrowth[$idx]  = $running;
         }
 
         arsort($composition);
@@ -311,6 +340,19 @@ class DashboardService
             'composition'             => [
                 'labels' => array_keys($composition),
                 'values' => array_values($composition),
+            ],
+            'comparison'              => [
+                'contributions' => array_values($contributions),
+                'recoveries'    => array_values($recovery),
+                'disbursed'     => array_values($disbursed),
+            ],
+            'interest'                => array_values($interest),
+            'stats'                   => [
+                'contributions'        => array_sum($contributions),
+                'recovered'            => array_sum($recovery),
+                'loans_taken_amount'   => array_sum($disbursed),
+                'loans_taken_count'    => $loansCount,
+                'interest_distributed' => array_sum($interest),
             ],
         ];
     }
@@ -461,7 +503,7 @@ class DashboardService
             ->where('outstanding_amount', '>', 0)
             ->with([
                 'employee:id,name,cpf_account_no',
-                'recoveries' => fn ($q) => $q
+                'recoveries' => fn($q) => $q
                     ->where('status', RecoveryStatus::APPROVED)
                     ->orderBy('recovery_date'),
             ])
@@ -473,8 +515,8 @@ class DashboardService
                     return null;
                 }
 
-                $count    = (int) $advance->installment_count;
-                // Carbon 3 returns a signed float; we want whole completed months.
+                $count = (int) $advance->installment_count;
+                                                                                             // Carbon 3 returns a signed float; we want whole completed months.
                 $elapsed  = (int) floor(abs($advance->approval_date->diffInMonths($today))); // first due next month
                 $expected = min($elapsed, $count);
 
@@ -485,15 +527,15 @@ class DashboardService
                 // Gap detection: distinct payment months vs the span they cover.
                 $hasGap = false;
                 $months = $recoveries
-                    ->map(fn ($r) => $r->recovery_date->format('Y-m'))
+                    ->map(fn($r) => $r->recovery_date->format('Y-m'))
                     ->unique()
                     ->sort()
                     ->values();
 
                 if ($months->count() >= 2) {
-                    $first = Carbon::parse($months->first() . '-01');
-                    $last  = Carbon::parse($months->last() . '-01');
-                    $span  = (int) round($first->diffInMonths($last)) + 1;
+                    $first  = Carbon::parse($months->first() . '-01');
+                    $last   = Carbon::parse($months->last() . '-01');
+                    $span   = (int) round($first->diffInMonths($last)) + 1;
                     $hasGap = $months->count() < $span;
                 }
 

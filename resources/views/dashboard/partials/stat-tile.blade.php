@@ -10,12 +10,14 @@
        $subtitle string   optional small caption under the value
 --}}
 @php
-    $money    = $money ?? false;
-    $color    = $color ?? 'primary';
-    $link     = $link ?? null;
+    $money = $money ?? false;
+    $color = $color ?? 'primary';
+    $link = $link ?? null;
     $linkText = $linkText ?? 'View details';
     $subtitle = $subtitle ?? null;
-    $prefix   = $money ? '৳ ' : '';
+    $statKey = $statKey ?? null;
+    $subStatKey = $subStatKey ?? null;
+    $prefix = $money ? '৳ ' : '';
 @endphp
 <div class="card card-flush h-100 bida-stat-card">
     <div class="card-body d-flex flex-column justify-content-between p-6">
@@ -27,13 +29,16 @@
             </div>
             <div class="d-flex flex-column">
                 <span class="fs-2hx fw-bold text-gray-900 lh-1 bida-countup" data-bida-value="{{ (int) $value }}"
-                    data-bida-money="{{ $money ? 1 : 0 }}">{{ $prefix }}{{ number_format((int) $value) }}</span>
+                    data-bida-money="{{ $money ? 1 : 0 }}"
+                    @if ($statKey) data-bida-stat="{{ $statKey }}" @endif>{{ $prefix }}{{ number_format((int) $value) }}</span>
                 <span class="fs-7 fw-semibold text-gray-500 mt-2">{{ $label }}</span>
             </div>
         </div>
 
         @if ($subtitle)
-            <div class="fs-8 text-muted mt-3">{{ $subtitle }}</div>
+            <div class="fs-8 text-muted mt-3"
+                @if ($subStatKey) data-bida-substat="{{ $subStatKey }}" @endif>{{ $subtitle }}
+            </div>
         @endif
 
         @if ($link)

@@ -12,6 +12,8 @@
             'employeeContribution' => $chart['employee_contribution'],
             'governmentContribution' => $chart['government_contribution'],
             'composition' => $chart['composition'],
+            'comparison' => $chart['comparison'],
+            'interest' => $chart['interest'],
             'advancePortfolio' => [
                 'labels' => $advancePortfolio['labels'],
                 'values' => $advancePortfolio['values'],

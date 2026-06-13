@@ -43,3 +43,125 @@
 .bida-stat-card .fs-2hx {
     word-break: break-word;
 }
+
+/* =========================================================================
+   Chart / List toggle (underline tabs, in the chart card header)
+   ========================================================================= */
+
+.bida-view-toggle {
+    display: inline-flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.bida-view-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    padding: .25rem 0 .55rem;
+    border: 0;
+    background: transparent;
+    color: var(--bs-gray-500);
+    font-weight: 600;
+    font-size: .85rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color .15s ease;
+}
+
+.bida-view-btn:hover {
+    color: var(--bs-gray-700);
+}
+
+.bida-view-btn.active {
+    color: var(--bs-primary);
+}
+
+/* Animated active underline. */
+.bida-view-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--bs-primary);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform .2s ease;
+}
+
+.bida-view-btn.active::after {
+    transform: scaleX(1);
+}
+
+.bida-view-btn i {
+    transition: transform .15s ease;
+}
+
+.bida-view-btn.active i {
+    transform: scale(1.05);
+}
+
+/* Pane fade-in when toggled. */
+.bida-view-pane {
+    animation: bidaFadeIn .2s ease;
+}
+
+@keyframes bidaFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* List view inside a chart card scrolls instead of stretching the card. */
+.bida-chart-list-pane {
+    overflow-y: auto;
+}
+
+.bida-chart-list table {
+    margin-bottom: 0;
+}
+
+.bida-chart-list thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bs-card-bg, var(--bs-body-bg));
+    z-index: 1;
+}
+
+/* =========================================================================
+   Empty states (charts + list views)
+   ========================================================================= */
+
+.bida-chart-wrap {
+    width: 100%;
+}
+
+/* Overlay sits on top of the (hidden) chart canvas and is centered. */
+.bida-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: bidaFadeIn .2s ease;
+}
+
+.bida-empty-inner {
+    max-width: 260px;
+}
+
+/* Hide the zeroed canvas behind the overlay without collapsing its height. */
+.bida-chart-hidden {
+    visibility: hidden;
+}

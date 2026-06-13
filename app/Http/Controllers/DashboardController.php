@@ -19,20 +19,22 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
-        $fy   = FiscalYearService::current();
+        $user  = auth()->user();
+        $fy    = FiscalYearService::current();
+        $chart = $this->dashboard->chartData($fy);
 
         // Shared payload — every role sees these.
         $common = [
             'fiscalYears'         => $this->dashboard->availableFiscalYears(),
             'currentFy'           => $fy,
+            // Point-in-time "as of today" figures (do not change with the FY switch).
             'stats'               => [
-                'members'       => $this->dashboard->totalActiveMembers(),
-                'fund'          => $this->dashboard->totalFundBalance(),
-                'outstanding'   => $this->dashboard->totalOutstandingAdvances(),
-                'contributions' => $this->dashboard->contributionsForFy($fy),
+                'members'     => $this->dashboard->totalActiveMembers(),
+                'fund'        => $this->dashboard->totalFundBalance(),
+                'outstanding' => $this->dashboard->totalOutstandingAdvances(),
             ],
-            'chart'               => $this->dashboard->chartData($fy),
+            // FY-scoped chart series + FY stat figures (repaint on the FY switch).
+            'chart'               => $chart,
             'advancePortfolio'    => $this->dashboard->advancePortfolio(),
             'membersByGrade'      => $this->dashboard->membersByGrade(),
             'recentTransactions'  => $this->dashboard->recentTransactions(),

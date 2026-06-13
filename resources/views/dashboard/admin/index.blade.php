@@ -28,16 +28,13 @@
     @include('dashboard.partials.charts')
 
     <div class="row g-5 g-xl-8 mb-5 mb-xl-8">
-        <div class="col-xl-8">
+        <div class="col-12">
             @include('dashboard.partials.chart-card', [
                 'id' => 'bida_chart_members_grade',
                 'title' => 'Members by Grade',
                 'subtitle' => 'Active CPF members across pay-scale grades',
                 'height' => 320,
             ])
-        </div>
-        <div class="col-xl-4">
-            @include('dashboard.partials.quick-links')
         </div>
     </div>
 
