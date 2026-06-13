@@ -28,7 +28,6 @@ class StoreEmployeeRequest extends FormRequest
             'opening_employee_contribution'   => ['required', 'integer', 'min:0'],
             'opening_government_contribution' => ['required', 'integer', 'min:0'],
             'opening_bank_interest'           => ['required', 'integer', 'min:0'],
-            'opening_advance_balance'         => ['required', 'integer', 'min:0'],
             'opening_effective_date'          => ['required', 'date'],
         ];
     }
@@ -44,26 +43,8 @@ class StoreEmployeeRequest extends FormRequest
             'opening_employee_contribution'   => 'employee contribution (opening)',
             'opening_government_contribution' => 'government contribution (opening)',
             'opening_bank_interest'           => 'bank interest (opening)',
-            'opening_advance_balance'         => 'advance balance (opening)',
             'opening_effective_date'          => 'effective date (opening)',
         ];
-    }
-
-    public function withValidator($validator): void
-    {
-        $validator->after(function ($validator) {
-            $self     = (int) $this->input('opening_employee_contribution', 0);
-            $govt     = (int) $this->input('opening_government_contribution', 0);
-            $interest = (int) $this->input('opening_bank_interest', 0);
-            $advance  = (int) $this->input('opening_advance_balance', 0);
-
-            if (($self + $govt + $interest - $advance) < 0) {
-                $validator->errors()->add(
-                    'opening_advance_balance',
-                    'The opening advance balance cannot exceed total opening contributions and interest (net balance would be negative).'
-                );
-            }
-        });
     }
 
     public function messages(): array
@@ -72,7 +53,6 @@ class StoreEmployeeRequest extends FormRequest
             'opening_employee_contribution.min'   => 'Employee contribution cannot be negative.',
             'opening_government_contribution.min' => 'Government contribution cannot be negative.',
             'opening_bank_interest.min'           => 'Bank interest cannot be negative.',
-            'opening_advance_balance.min'         => 'Advance balance cannot be negative.',
         ];
     }
 }

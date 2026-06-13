@@ -402,8 +402,7 @@ class EmployeeController extends Controller
             $self     = (int) $request->validated('opening_employee_contribution');
             $govt     = (int) $request->validated('opening_government_contribution');
             $interest = (int) $request->validated('opening_bank_interest');
-            $advance  = (int) $request->validated('opening_advance_balance');
-            $net      = $self + $govt + $interest - $advance;
+            $net      = $self + $govt + $interest;
 
             $openingBalance = CpfOpeningBalance::create([
                 'employee_id'             => $employee->id,
@@ -411,7 +410,7 @@ class EmployeeController extends Controller
                 'self_contribution'       => $self,
                 'government_contribution' => $govt,
                 'interest_amount'         => $interest,
-                'outstanding_advance'     => $advance,
+                'outstanding_advance'     => 0,
                 'net_balance'             => $net,
                 'remarks'                 => 'Opening balance captured at employee onboarding.',
             ]);

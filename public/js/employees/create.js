@@ -273,13 +273,6 @@ var BidaEmployeeCreate = (function () {
                                           greaterThan: { min: 0, inclusive: true, message: "Cannot be negative" }
                                     }
                               },
-                              opening_advance_balance: {
-                                    validators: {
-                                          notEmpty: { message: "Advance balance is required" },
-                                          integer: { message: "Must be a whole number" },
-                                          greaterThan: { min: 0, inclusive: true, message: "Cannot be negative" }
-                                    }
-                              },
                               opening_effective_date: {
                                     validators: {
                                           notEmpty: { message: "Effective date is required" }
@@ -307,7 +300,7 @@ var BidaEmployeeCreate = (function () {
                   "email", "mobile_number", "joining_date", "retirement_date",
                   "pay_scale_step_id", "pay_scale_id",
                   "opening_employee_contribution", "opening_government_contribution",
-                  "opening_bank_interest", "opening_advance_balance",
+                  "opening_bank_interest",
                   "opening_effective_date"
             ];
 
@@ -594,8 +587,7 @@ var BidaEmployeeCreate = (function () {
                   var own = parseInt(form.querySelector('[name="opening_employee_contribution"]').value) || 0;
                   var govt = parseInt(form.querySelector('[name="opening_government_contribution"]').value) || 0;
                   var interest = parseInt(form.querySelector('[name="opening_bank_interest"]').value) || 0;
-                  var advance = parseInt(form.querySelector('[name="opening_advance_balance"]').value) || 0;
-                  var net = own + govt + interest - advance;
+                  var net = own + govt + interest;
 
                   display.textContent = "\u09F3\u00A0" + net.toLocaleString("en-IN");
 
@@ -613,7 +605,7 @@ var BidaEmployeeCreate = (function () {
             };
 
             ["opening_employee_contribution", "opening_government_contribution",
-                  "opening_bank_interest", "opening_advance_balance"
+                  "opening_bank_interest"
             ].forEach(function (name) {
                   var el = form.querySelector('[name="' + name + '"]');
                   if (el) el.addEventListener("input", compute);
