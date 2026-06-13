@@ -11,7 +11,8 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-5 mb-xl-8 gap-3">
         <div>
             <h2 class="fs-2 fw-bold text-gray-900 mb-1">Welcome back, {{ auth()->user()->name }}</h2>
-            <span class="text-muted fs-7">The BIDA CPF system at a glance — as of {{ now()->format('d M Y') }}.</span>
+            <span class="text-muted fs-7">Your CPF work list and the system at a glance — as of
+                {{ now()->format('d M Y') }}.</span>
         </div>
         @include('dashboard.partials.fy-selector')
     </div>
@@ -19,10 +20,12 @@
 
     @include('dashboard.partials.stats-grid')
 
+    @include('dashboard.partials.current-month-batch')
+
     @include('dashboard.partials.tiles-strip', [
-        'title' => 'Action Required',
-        'items' => $pendingApprovals,
-        'emptyText' => 'No items are awaiting your approval.',
+        'title' => 'My Work',
+        'items' => $worklist,
+        'emptyText' => 'You have no pending drafts.',
     ])
 
     @include('dashboard.partials.charts')
@@ -48,17 +51,8 @@
     </div>
 
     <div class="row g-5 g-xl-8 mb-5 mb-xl-8">
-        <div class="col-xl-8">
-            @include('dashboard.partials.recent-transactions')
-        </div>
-        <div class="col-xl-4">
-            @include('dashboard.partials.recent-logins')
-        </div>
-    </div>
-
-    <div class="row g-5 g-xl-8 mb-5 mb-xl-8">
         <div class="col-12">
-            @include('dashboard.partials.recent-audit')
+            @include('dashboard.partials.recent-transactions')
         </div>
     </div>
 @endsection

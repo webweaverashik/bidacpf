@@ -50,8 +50,11 @@ Route::post('/login', [AuthController::class, 'login']);
 | single-session `isLoggedIn` middleware.
 */
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
-    // Dashboard main view.
+// Dashboard main view.
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// Dashboard chart data (AJAX) — fiscal-year selector.
+    Route::get('/dashboard/charts', [DashboardController::class, 'charts'])->name('dashboard.charts');
 
     // Logout (POST performs logout; GET bounces back — used by stray links).
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

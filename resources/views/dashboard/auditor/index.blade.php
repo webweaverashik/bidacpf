@@ -11,7 +11,8 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-5 mb-xl-8 gap-3">
         <div>
             <h2 class="fs-2 fw-bold text-gray-900 mb-1">Welcome back, {{ auth()->user()->name }}</h2>
-            <span class="text-muted fs-7">The BIDA CPF system at a glance — as of {{ now()->format('d M Y') }}.</span>
+            <span class="text-muted fs-7">A read-only overview of the BIDA CPF system — as of
+                {{ now()->format('d M Y') }}.</span>
         </div>
         @include('dashboard.partials.fy-selector')
     </div>
@@ -19,25 +20,16 @@
 
     @include('dashboard.partials.stats-grid')
 
-    @include('dashboard.partials.tiles-strip', [
-        'title' => 'Action Required',
-        'items' => $pendingApprovals,
-        'emptyText' => 'No items are awaiting your approval.',
-    ])
-
     @include('dashboard.partials.charts')
 
     <div class="row g-5 g-xl-8 mb-5 mb-xl-8">
-        <div class="col-xl-8">
+        <div class="col-12">
             @include('dashboard.partials.chart-card', [
                 'id' => 'bida_chart_members_grade',
                 'title' => 'Members by Grade',
                 'subtitle' => 'Active CPF members across pay-scale grades',
                 'height' => 320,
             ])
-        </div>
-        <div class="col-xl-4">
-            @include('dashboard.partials.quick-links')
         </div>
     </div>
 
@@ -52,13 +44,7 @@
             @include('dashboard.partials.recent-transactions')
         </div>
         <div class="col-xl-4">
-            @include('dashboard.partials.recent-logins')
-        </div>
-    </div>
-
-    <div class="row g-5 g-xl-8 mb-5 mb-xl-8">
-        <div class="col-12">
-            @include('dashboard.partials.recent-audit')
+            @include('dashboard.partials.recent-advances')
         </div>
     </div>
 @endsection
