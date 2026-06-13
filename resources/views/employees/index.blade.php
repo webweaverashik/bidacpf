@@ -179,7 +179,7 @@
                         <th>Grade</th>
                         <th class="text-end">Basic Salary (Tk)</th>
                         <th class="text-end">Current Balance (Tk)</th>
-                        <th>Status</th>
+                        <th>Service Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>

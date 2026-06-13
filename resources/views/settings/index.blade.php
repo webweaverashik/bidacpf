@@ -24,6 +24,8 @@
 @endsection
 
 @section('content')
+    @include('settings.partials.hero')
+
     @php
         $get = fn($key, $default = null) => optional($settings[$key] ?? null)->value ?? $default;
     @endphp
