@@ -23,7 +23,6 @@ class UpdateEmployeeRequest extends FormRequest
             'joining_date'      => ['required', 'date'],
             'retirement_date'   => ['nullable', 'date', 'after:joining_date'],
             'pay_scale_step_id' => ['required', 'integer', 'exists:pay_scale_steps,id'],
-            'status'            => ['required', 'in:active,retired,resigned,deceased'],
         ];
     }
 
@@ -31,7 +30,6 @@ class UpdateEmployeeRequest extends FormRequest
     {
         return [
             'cpf_account_no'    => 'CPF account number',
-            'status'            => 'employment status',
             'pay_scale_step_id' => 'basic salary',
             'joining_date'      => 'joining date',
             'retirement_date'   => 'retirement date',

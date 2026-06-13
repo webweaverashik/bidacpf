@@ -148,23 +148,6 @@
                             </div>
                         </div>
 
-                        {{-- Status --}}
-                        <div class="fv-row mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Status</label>
-                            <div class="d-flex gap-6 flex-wrap mt-1">
-                                @foreach (\App\Enums\EmployeeStatus::cases() as $case)
-                                    <div class="form-check form-check-custom">
-                                        <input class="form-check-input" type="radio" name="status"
-                                            value="{{ $case->value }}" id="status_{{ $case->value }}"
-                                            {{ old('status', $employee->status->value) === $case->value ? 'checked' : '' }} />
-                                        <label class="form-check-label fw-medium" for="status_{{ $case->value }}">
-                                            {{ $case->label() }}
-                                        </label>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
                         {{-- ============================================================ --}}
                         {{--  Pay Scale Section                                            --}}
                         {{-- ============================================================ --}}

@@ -58,11 +58,6 @@ var BidaEmployeeEdit = (function () {
                         validators: {
                               notEmpty: { message: "Joining date is required" }
                         }
-                  },
-                  status: {
-                        validators: {
-                              notEmpty: { message: "Status is required" }
-                        }
                   }
             };
 
@@ -115,12 +110,6 @@ var BidaEmployeeEdit = (function () {
                         fd.append(name, el.value || "");
                   }
             });
-
-            // Status radio
-            var checkedStatus = form.querySelector('[name="status"]:checked');
-            if (checkedStatus) {
-                  fd.append("status", checkedStatus.value);
-            }
 
             // pay_scale_step_id — use the visible select when grade/salary is editable
             // (either originally OR after the Admin switched to an active scale),

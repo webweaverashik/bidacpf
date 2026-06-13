@@ -223,11 +223,6 @@ var BidaEmployeeCreate = (function () {
                               notEmpty: { message: "Please select a grade then a basic salary" }
                         }
                   },
-                  status: {
-                        validators: {
-                              notEmpty: { message: "Status is required" }
-                        }
-                  }
             };
 
             // Add pay_scale_id field validation only in multi-scale mode.
@@ -310,7 +305,7 @@ var BidaEmployeeCreate = (function () {
             var scalarFields = [
                   "_token", "cpf_account_no", "name", "designation",
                   "email", "mobile_number", "joining_date", "retirement_date",
-                  "pay_scale_step_id", "pay_scale_id", "status",
+                  "pay_scale_step_id", "pay_scale_id",
                   "opening_employee_contribution", "opening_government_contribution",
                   "opening_bank_interest", "opening_advance_balance",
                   "opening_effective_date"
@@ -320,10 +315,6 @@ var BidaEmployeeCreate = (function () {
                   var el = form.querySelector('[name="' + name + '"]');
                   if (el) fd.append(name, el.value || "");
             });
-
-            // Status radio — ensure checked value overrides scalar pass.
-            var checkedStatus = form.querySelector('[name="status"]:checked');
-            if (checkedStatus) fd.set("status", checkedStatus.value);
 
             // Photo — only real files (size > 0).
             var photoInput = document.getElementById("photo_file_input");
@@ -638,7 +629,7 @@ var BidaEmployeeCreate = (function () {
             var step1Keys = [
                   "cpf_account_no", "name", "designation", "email",
                   "mobile_number", "joining_date", "retirement_date",
-                  "pay_scale_step_id", "pay_scale_id", "status", "photo"
+                  "pay_scale_step_id", "pay_scale_id", "photo"
             ];
             var goStep1 = false;
 

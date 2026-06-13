@@ -15,7 +15,7 @@ enum AdvanceStatus: string {
     {
         return match ($this) {
             self::DRAFT     => 'Draft',
-            self::SUBMITTED => 'Pending Approval',
+            self::SUBMITTED => 'Pending',
             self::APPROVED  => 'Approved',
             self::REJECTED  => 'Rejected',
             self::COMPLETED => 'Completed',

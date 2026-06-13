@@ -2,6 +2,7 @@
 namespace App\Models\Employee;
 
 use App\Enums\EmployeeStatus;
+use App\Enums\SettlementStatus;
 use App\Models\BaseModel;
 use App\Models\Cpf\CpfAdvance;
 use App\Models\Cpf\CpfContribution;
@@ -224,5 +225,24 @@ class Employee extends BaseModel
     public function finalSettlements()
     {
         return $this->hasMany(CpfFinalSettlement::class);
+    }
+
+    /**
+     * Whether this member has an APPROVED final settlement — i.e. the account
+     * has been closed and the record is retained for history only. Such members
+     * are read-only everywhere (no edit / toggle / delete / new postings).
+     *
+     * Uses an already-loaded relation when present to avoid an extra query.
+     */
+    public function isFinallySettled(): bool
+    {
+        if ($this->relationLoaded('finalSettlements')) {
+            return $this->finalSettlements
+                ->contains(fn($s) => $s->status === SettlementStatus::APPROVED);
+        }
+
+        return $this->finalSettlements()
+            ->where('status', SettlementStatus::APPROVED)
+            ->exists();
     }
 }

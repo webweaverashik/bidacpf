@@ -147,6 +147,12 @@ class CpfAdvance extends BaseModel
         return $this->status->canDelete();
     }
 
+    /** True once the loan is fully settled — either flipped to COMPLETED or repaid to zero. */
+    public function isCompleted(): bool
+    {
+        return $this->status === AdvanceStatus::COMPLETED || $this->isFullyRepaid();
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Business helpers

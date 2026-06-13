@@ -14,6 +14,20 @@ var BidaEmployeeShow = (function () {
             document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
       const hasDT = () => typeof $ !== "undefined" && $.fn && $.fn.DataTable;
 
+      // ---- compact the DataTables length (page-size) select ----------------
+      // Mirrors the employee index page: query the well-known #<tableId>_length
+      // wrapper, add the Metronic solid styling, and force width:auto inline so
+      // the select sizes to its content instead of filling the whole column.
+      const styleLength = function (tableId) {
+            if (!tableId) return;
+            const sel = document.querySelector("#" + tableId + "_length select");
+            if (!sel) return;
+            sel.classList.add("form-select", "form-select-sm", "form-select-solid");
+            sel.style.width = "auto";
+            sel.style.minWidth = "80px";
+            sel.style.display = "inline-block";
+      };
+
       // ---- feedback helpers --------------------------------------------------
       const notifySuccess = (msg) => {
             if (typeof toastr !== "undefined") toastr.success(msg);
@@ -83,7 +97,7 @@ var BidaEmployeeShow = (function () {
                                                 data.is_active ? "Employee activated." : "Employee deactivated."
                                           );
                                     } else {
-                                          notifyError("Could not update activation status.");
+                                          notifyError(data && data.message ? data.message : "Could not update activation status.");
                                     }
                               })
                               .catch(() => notifyError("Something went wrong. Please try again."));
@@ -177,25 +191,24 @@ var BidaEmployeeShow = (function () {
       };
 
       // ---- DataTables DOM layout —————————————————————————————————————————
-      // Places the table first, then a bottom bar:
-      //   left  → length menu (l)
-      //   right → info (i) + pagination (p)
-      // The built-in search box is omitted; each table uses a custom
-      // Metronic search input wired up separately.
+      // Matches the employee index page: table, then a bottom bar with the
+      // length menu + record count on the left and pagination on the right.
+      // The built-in search box is omitted; each table uses a custom Metronic
+      // search input wired up separately.
       const BOTTOM_DOM =
-            "<'row'<'col-12'tr>>" +
-            "<'row align-items-center mt-3'" +
-            "<'col-sm-12 col-md-4'l>" +
-            "<'col-sm-12 col-md-4 text-center'i>" +
-            "<'col-sm-12 col-md-4 d-flex justify-content-md-end justify-content-center'p>" +
-            ">";
+            "<'table-responsive'tr>" +
+            "<'row align-items-center mt-4'" +
+            "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-start'" +
+            "<'me-4'l>i>" +
+            "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-end'p>>";
 
       // ---- generic DataTable initialiser ------------------------------------
       const baseTable = function (sel, opts) {
             if (!hasDT()) return null;
             const el = document.querySelector(sel);
             if (!el || $.fn.DataTable.isDataTable(sel)) return null;
-            return $(sel).DataTable(
+
+            const dt = $(sel).DataTable(
                   Object.assign(
                         {
                               lengthChange: true,
@@ -209,6 +222,9 @@ var BidaEmployeeShow = (function () {
                         opts || {}
                   )
             );
+
+            styleLength(el.id);
+            return dt;
       };
 
       const initStaticTables = function () {
@@ -386,6 +402,9 @@ var BidaEmployeeShow = (function () {
                         }
                   },
             });
+
+            // Compact the length select once the controls are rendered.
+            styleLength("kt_employee_activity_table");
 
             // filter dropdown selects (Select2 kept inside the menu)
             const eventSel = document.getElementById("kt_activity_filter_event");

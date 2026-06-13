@@ -21,36 +21,19 @@
         <!--end::Separator-->
         <!--begin::Breadcrumb-->
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
-            <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">
-                    Employee Info
-                </a>
+                <a href="#" class="text-muted text-hover-primary">Employee Info</a>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
-            <li class="breadcrumb-item text-muted">
-                All Employees
-            </li>
-            <!--end::Item-->
+            <li class="breadcrumb-item text-muted">All Employees</li>
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
 
 @section('content')
-    @php
-        // Preloading permissions checking
-        $canDeactivate = auth()->user()->can('employee.deactivate');
-        $canEdit = auth()->user()->can('employee.update');
-        $canDelete = auth()->user()->can('employee.delete');
-    @endphp
-
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -62,15 +45,11 @@
                     <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
                         <span class="path1"></span>
                         <span class="path2"></span>
-                    </i> <input type="text" data-employees-table-filter="search"
+                    </i>
+                    <input type="text" data-employees-table-filter="search"
                         class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in employees">
                 </div>
                 <!--end::Search-->
-
-                <!--begin::Export hidden buttons-->
-                <div id="kt_hidden_export_buttons" class="d-none"></div>
-                <!--end::Export buttons-->
-
             </div>
             <!--end::Card title-->
 
@@ -82,7 +61,8 @@
                     <i class="ki-duotone ki-filter fs-2">
                         <span class="path1"></span>
                         <span class="path2"></span>
-                    </i>Filter</button>
+                    </i>Filter
+                </button>
                 <!--begin::Menu 1-->
                 <div class="menu menu-sub menu-sub-dropdown w-350px" data-kt-menu="true">
                     <!--begin::Header-->
@@ -98,21 +78,39 @@
                         <div class="row">
                             <div class="col-12 mb-5">
                                 <label class="form-label fs-6 fw-semibold">Employee Grade:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="false" data-hide-search="true">
+                                <select class="form-select form-select-solid fw-bold" data-employees-table-filter="grade"
+                                    data-kt-select2="true" data-placeholder="Select grade" data-allow-clear="true"
+                                    data-hide-search="true" data-dropdown-parent="#kt_app_body">
                                     <option></option>
                                     @foreach (range(1, 20) as $grade)
-                                        <option value="grade_{{ $grade }}">{{ $grade }}</option>
+                                        <option value="{{ $grade }}">Grade {{ $grade }}</option>
                                     @endforeach
                                 </select>
                             </div>
+
                             <div class="col-12 mb-5">
-                                <label class="form-label fs-6 fw-semibold">Employee Status:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="false" data-hide-search="true">
+                                <label class="form-label fs-6 fw-semibold">Activation:</label>
+                                <select class="form-select form-select-solid fw-bold"
+                                    data-employees-table-filter="active_status" data-kt-select2="true"
+                                    data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
+                                    data-dropdown-parent="#kt_app_body">
                                     <option></option>
-                                    <option value="Active">Active</option>
-                                    <option value="Inactive">Inactive</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 mb-5">
+                                <label class="form-label fs-6 fw-semibold">Service Status:</label>
+                                <select class="form-select form-select-solid fw-bold"
+                                    data-employees-table-filter="service_status" data-kt-select2="true"
+                                    data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
+                                    data-dropdown-parent="#kt_app_body">
+                                    <option></option>
+                                    <option value="active">Active</option>
+                                    <option value="retired">Retired</option>
+                                    <option value="resigned">Resigned</option>
+                                    <option value="deceased">Deceased</option>
                                 </select>
                             </div>
                         </div>
@@ -120,7 +118,7 @@
                         <div class="d-flex justify-content-end">
                             <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                 data-kt-menu-dismiss="true" data-employees-table-filter="reset">Reset</button>
-                            <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
+                            <button type="button" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
                                 data-employees-table-filter="filter">Apply</button>
                         </div>
                         <!--end::Actions-->
@@ -129,55 +127,44 @@
                 </div>
                 <!--end::Menu 1-->
 
-                <!--begin::Toolbar-->
-                <div class="d-flex justify-content-end" data-employees-table-filter="base">
-                    <!--begin::Export dropdown-->
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                            data-kt-menu-placement="bottom-end">
-                            <i class="ki-duotone ki-exit-up fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>Export
-                        </button>
-
-                        <!--begin::Menu-->
-                        <div id="kt_table_report_dropdown_menu"
-                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-                            data-kt-menu="true">
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                    clipboard</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
-                            </div>
-                            <!--end::Menu item-->
+                <!--begin::Export dropdown-->
+                <div class="dropdown d-inline-block me-3">
+                    <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
+                        data-kt-menu-placement="bottom-end">
+                        <i class="ki-duotone ki-exit-up fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>Export
+                    </button>
+                    <!--begin::Menu-->
+                    <div id="kt_employee_export_menu"
+                        class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                        data-kt-menu="true">
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-row-export="xlsx">Export as Excel</a>
                         </div>
-                        <!--end::Menu-->
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                        </div>
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                        </div>
                     </div>
-                    <!--end::Export dropdown-->
-
-                    @can('employee.create')
-                        <!--begin::Add Employee-->
-                        <a href="{{ route('employees.create') }}" class="btn btn-primary">
-                            <i class="ki-outline ki-plus fs-2"></i>New Employee</a>
-                        <!--end::Add Employee-->
-                    @endcan
-                    <!--end::Filter-->
+                    <!--end::Menu-->
                 </div>
-                <!--end::Toolbar-->
+                <!--end::Export dropdown-->
+
+                @can('employee.create')
+                    <!--begin::Add Employee-->
+                    <a href="{{ route('employees.create') }}" class="btn btn-primary">
+                        <i class="ki-outline ki-plus fs-2"></i>New Employee</a>
+                    <!--end::Add Employee-->
+                @endcan
             </div>
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
+
         <!--begin::Card body-->
         <div class="card-body py-4">
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ashik-table" id="bida_employee_table">
@@ -190,52 +177,13 @@
                         <th>Mobile</th>
                         <th>Joining Date</th>
                         <th>Grade</th>
-                        <th class="d-none">Grade (filter)</th>
-                        <th>Basic Salary (Tk)</th>
-                        <th>Current Balance (Tk)</th>
+                        <th class="text-end">Basic Salary (Tk)</th>
+                        <th class="text-end">Current Balance (Tk)</th>
                         <th>Status</th>
-                        <th class="not-export">Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="text-gray-800 fw-semibold">
-                    @foreach ($employees as $employee)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <a href="{{ route('employees.show', $employee->id) }}"
-                                    class="text-gray-800 text-hover-primary" title="View Employee Details"
-                                    target="_blank">
-                                    {{ $employee->cpf_account_no }}
-                                </a>
-                            </td>
-                            <td>{{ $employee->name }}</td>
-                            <td>{{ $employee->designation }}</td>
-                            <td>{{ $employee->mobile_number }}</td>
-                            <td>{{ $employee->joining_date?->format('d M Y') }}</td>
-                            <td>{{ $employee->grade }}</td>
-                            <td class="d-none">grade_{{ $employee->grade }}</td>
-                            <td>{{ $employee->current_basic_salary }}</td>
-                            <td>{{ $employee->currentBalance() }}</td>
-                            <td>
-                                @if ($employee->is_active)
-                                    <span class="badge badge-light-success">Active</span>
-                                @else
-                                    <span class="badge badge-light-danger">Inactive</span>
-                                @endif
-                            </td>
-                            <td>
-                                <a href="{{ route('employees.show', $employee->id) }}" target="_blank"
-                                    title="View Employee" class="btn btn-icon text-hover-primary w-30px h-30px">
-                                    <i class="ki-outline ki-eye fs-2"></i>
-                                </a>
-                                <a href="{{ route('employees.edit', $employee->id) }}" title="Edit Employee"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px">
-                                    <i class="ki-outline ki-pencil fs-2"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
+                <tbody class="text-gray-800 fw-semibold"></tbody>
             </table>
         </div>
         <!--end::Card body-->
@@ -249,9 +197,8 @@
 
 @push('page-js')
     <script>
-        const routeDeleteEmployee = "{{ route('employees.destroy', ':id') }}";
-        const routeEmployeeShow = "{{ route('employees.show', ':id') }}";
-        const routeToggleActive = "{{ route('employees.toggleActive') }}";
+        const routeEmployeesData = "{{ route('employees.data') }}";
+        const routeEmployeesExport = "{{ route('employees.export') }}";
     </script>
     <script src="{{ asset('js/employees/index.js') }}"></script>
 @endpush

@@ -49,6 +49,12 @@ Route::get('employees/{employee}/activities', [EmployeeController::class, 'activ
     ->middleware('can:employee.view')
     ->name('employees.activities');
 
+// ---- Server-side DataTable feed + filter-aware exports -------------------
+Route::middleware('can:employee.view')->group(function () {
+    Route::get('employees/data', [EmployeeController::class, 'data'])->name('employees.data');
+    Route::get('employees/export', [EmployeeController::class, 'export'])->name('employees.export');
+});
+
 // ---- Listing -------------------------------------------------------------
 Route::middleware('can:employee.view')->group(function () {
     Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');

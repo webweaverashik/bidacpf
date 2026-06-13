@@ -183,23 +183,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                {{-- Status --}}
-                                <div class="fv-row mb-7">
-                                    <label class="required fw-semibold fs-6 mb-2">Employment Status</label>
-                                    <div class="d-flex gap-6 flex-wrap mt-1">
-                                        @foreach (['active' => 'Active', 'retired' => 'Retired', 'resigned' => 'Resigned', 'deceased' => 'Deceased'] as $val => $label)
-                                            <div class="form-check form-check-custom form-check-solid">
-                                                <input class="form-check-input" type="radio" name="status"
-                                                    value="{{ $val }}" id="status_{{ $val }}"
-                                                    {{ $val === 'active' ? 'checked' : '' }} />
-                                                <label class="form-check-label fw-medium"
-                                                    for="status_{{ $val }}">{{ $label }}</label>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-
                             </div>
                             {{-- ── end Left Column ──────────────────────── --}}
 

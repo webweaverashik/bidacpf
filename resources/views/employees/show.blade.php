@@ -33,6 +33,18 @@
             'retired', 'resigned', 'deceased', 'inactive' => 'danger',
             default => 'secondary',
         };
+
+        // Finally-settled members are read-only: no edit / toggle / delete / new postings.
+        $isSettled = $employee->isFinallySettled();
+
+        // The approved settlement backing the read-only state (for the "View settlement" link).
+        $settledRecord = $isSettled
+            ? $employee
+                ->finalSettlements()
+                ->where('status', \App\Enums\SettlementStatus::APPROVED)
+                ->latest('id')
+                ->first()
+            : null;
     @endphp
 
     <!--begin::Layout-->
@@ -80,6 +92,25 @@
                                 class="fs-2hx fw-bold text-primary lh-1 mt-1">৳{{ number_format($currentBalance) }}</span>
                         </div>
                     </div>
+
+                    @if ($isSettled)
+                        <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed mb-7 p-5">
+                            <i class="ki-outline ki-lock-2 fs-2 text-danger me-3"></i>
+                            <div class="d-flex flex-column flex-grow-1">
+                                <span class="fw-bold text-gray-900">Account finally settled</span>
+                                <span class="fs-7 text-gray-600">This record is read-only and retained for history. Editing,
+                                    status changes, deletion and new postings are disabled.</span>
+                                @if ($settledRecord)
+                                    @can('cpf_settlement.view')
+                                        <a href="{{ route('cpf-settlements.show', $settledRecord) }}"
+                                            class="btn btn-sm btn-light-danger align-self-start mt-3">
+                                            <i class="ki-outline ki-eye fs-4"></i> View settlement
+                                        </a>
+                                    @endcan
+                                @endif
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="separator separator-dashed mb-7"></div>
 
@@ -172,7 +203,8 @@
         <div class="flex-lg-row-fluid ms-lg-10">
             <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
                 <li class="nav-item"><a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                        href="#kt_emp_tab_overview"><i class="ki-outline ki-profile-circle fs-3 me-2"></i> Overview</a></li>
+                        href="#kt_emp_tab_overview"><i class="ki-outline ki-profile-circle fs-3 me-2"></i> Overview</a>
+                </li>
                 <li class="nav-item"><a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
                         href="#kt_emp_tab_ledger"><i class="ki-outline ki-book fs-3 me-2"></i> Ledger</a></li>
                 <li class="nav-item"><a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
@@ -187,67 +219,80 @@
                 </li>
                 <li class="nav-item"><a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
                         href="#kt_emp_tab_activity"><i class="ki-outline ki-time fs-3 me-2"></i> Activity</a></li>
-                <li class="nav-item ms-auto">
-                    <a href="#" class="btn btn-primary ps-7" data-kt-menu-trigger="click"
-                        data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
-                        Actions <i class="ki-outline ki-down fs-2 me-0"></i>
-                    </a>
-                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold py-4 w-250px fs-6"
-                        data-kt-menu="true">
-                        @can('employee.update')
-                            <div class="menu-item px-5">
-                                <a href="{{ route('employees.edit', $employee) }}" class="menu-link px-5"><i
-                                        class="ki-outline ki-pencil fs-3 me-2"></i> Edit Employee</a>
-                            </div>
-                        @endcan
-                        @can('employee.update')
-                            <div class="menu-item px-5">
-                                <a href="#"
-                                    class="menu-link px-5 {{ $employee->is_active ? 'text-hover-warning' : 'text-hover-success' }}"
-                                    data-kt-employee-action="toggle-active">
-                                    <i class="bi {{ $employee->is_active ? 'bi-person-slash' : 'bi-person-check' }} fs-3 me-2"
-                                        data-kt-employee-icon="toggle"></i>
-                                    <span
-                                        data-kt-employee-label="toggle">{{ $employee->is_active ? 'Deactivate Employee' : 'Activate Employee' }}</span>
-                                </a>
-                            </div>
-                        @endcan
-                        @canany(['cpf_advance.create', 'cpf_advance.view', 'bank_interest.create', 'bank_interest.view'])
-                            <div class="separator my-3"></div>
-                            <div class="menu-item px-5">
-                                <div class="menu-content text-muted px-2 fs-7 text-uppercase">Quick Links</div>
-                            </div>
-                            @can('cpf_advance.create')
-                                <div class="menu-item px-5"><a href="{{ route('cpf-advances.create') }}"
-                                        class="menu-link px-5"><i class="ki-outline ki-handcart fs-3 me-2"></i> New CPF
-                                        Advance</a></div>
-                            @endcan
-                            @can('cpf_advance.view')
-                                <div class="menu-item px-5"><a href="{{ route('cpf-advances.index') }}"
-                                        class="menu-link px-5"><i class="ki-outline ki-document fs-3 me-2"></i> All CPF
-                                        Advances</a></div>
-                            @endcan
-                            @can('bank_interest.create')
-                                <div class="menu-item px-5"><a href="{{ route('bank-interest.distribute') }}"
-                                        class="menu-link px-5"><i class="ki-outline ki-bank fs-3 me-2"></i> Bank Interest
-                                        Distribution</a></div>
-                            @endcan
-                            @can('bank_interest.view')
-                                <div class="menu-item px-5"><a href="{{ route('bank-interest.index') }}"
-                                        class="menu-link px-5"><i class="ki-outline ki-chart-pie-simple fs-3 me-2"></i> Interest
-                                        Distributions</a></div>
-                            @endcan
-                        @endcanany
-                        @can('employee.delete')
-                            <div class="separator my-3"></div>
-                            <div class="menu-item px-5">
-                                <a href="#" class="menu-link px-5 text-hover-danger"
-                                    data-kt-employee-action="delete"><i class="ki-outline ki-trash fs-3 me-2"></i> Delete
-                                    Employee</a>
-                            </div>
-                        @endcan
-                    </div>
-                </li>
+                @if (!$isSettled)
+                    <li class="nav-item ms-auto">
+                        <a href="#" class="btn btn-primary ps-7" data-kt-menu-trigger="click"
+                            data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+                            Actions <i class="ki-outline ki-down fs-2 me-0"></i>
+                        </a>
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold py-4 w-250px fs-6"
+                            data-kt-menu="true">
+                            @if (!$isSettled)
+                                @can('employee.update')
+                                    <div class="menu-item px-5">
+                                        <a href="{{ route('employees.edit', $employee) }}" class="menu-link px-5"><i
+                                                class="ki-outline ki-pencil fs-3 me-2"></i> Edit Employee</a>
+                                    </div>
+                                @endcan
+                                @can('employee.update')
+                                    <div class="menu-item px-5">
+                                        <a href="#"
+                                            class="menu-link px-5 {{ $employee->is_active ? 'text-hover-warning' : 'text-hover-success' }}"
+                                            data-kt-employee-action="toggle-active">
+                                            <i class="bi {{ $employee->is_active ? 'bi-person-slash' : 'bi-person-check' }} fs-3 me-2"
+                                                data-kt-employee-icon="toggle"></i>
+                                            <span
+                                                data-kt-employee-label="toggle">{{ $employee->is_active ? 'Deactivate Employee' : 'Activate Employee' }}</span>
+                                        </a>
+                                    </div>
+                                @endcan
+                            @endif
+                            @canany(['cpf_advance.create', 'cpf_advance.view', 'bank_interest.create',
+                                'bank_interest.view'])
+                                <div class="separator my-3"></div>
+                                <div class="menu-item px-5">
+                                    <div class="menu-content text-muted px-2 fs-7 text-uppercase">Quick Links</div>
+                                </div>
+                                @can('cpf_advance.create')
+                                    @if (!$isSettled)
+                                        <div class="menu-item px-5"><a href="{{ route('cpf-advances.create') }}"
+                                                class="menu-link px-5"><i class="ki-outline ki-handcart fs-3 me-2"></i> New CPF
+                                                Advance</a></div>
+                                    @endif
+                                @endcan
+                                @can('cpf_advance.view')
+                                    <div class="menu-item px-5"><a href="{{ route('cpf-advances.index') }}"
+                                            class="menu-link px-5"><i class="ki-outline ki-document fs-3 me-2"></i> All CPF
+                                            Advances</a></div>
+                                @endcan
+                                @can('bank_interest.create')
+                                    @if (!$isSettled)
+                                        <div class="menu-item px-5"><a href="{{ route('bank-interest.distribute') }}"
+                                                class="menu-link px-5"><i class="ki-outline ki-bank fs-3 me-2"></i> Bank Interest
+                                                Distribution</a></div>
+                                    @endif
+                                @endcan
+                                @can('bank_interest.view')
+                                    <div class="menu-item px-5"><a href="{{ route('bank-interest.index') }}"
+                                            class="menu-link px-5"><i class="ki-outline ki-chart-pie-simple fs-3 me-2"></i>
+                                            Interest
+                                            Distributions</a></div>
+                                @endcan
+                            @endcanany
+                            @if (!$isSettled)
+                                @can('employee.delete')
+                                    <div class="separator my-3"></div>
+                                    <div class="menu-item px-5">
+                                        <a href="#" class="menu-link px-5 text-hover-danger"
+                                            data-kt-employee-action="delete"><i class="ki-outline ki-trash fs-3 me-2"></i>
+                                            Delete
+                                            Employee</a>
+                                    </div>
+                                @endcan
+                            @endif
+                        </div>
+                    </li>
+                @endif
 
             </ul>
 
@@ -666,28 +711,22 @@
                                     class="ki-outline ki-document fs-3"></i> All Advances</a>
                         @endcan
                         @can('cpf_advance.create')
-                            <a href="{{ route('cpf-advances.create') }}" class="btn btn-sm btn-light-primary"><i
-                                    class="ki-outline ki-plus fs-3"></i> New Advance</a>
+                            @if (!$isSettled)
+                                <a href="{{ route('cpf-advances.create') }}" class="btn btn-sm btn-light-primary"><i
+                                        class="ki-outline ki-plus fs-3"></i> New Advance</a>
+                            @endif
                         @endcan
                     </div>
 
                     @forelse ($employee->advances as $advance)
-                        @php
-                            $aStatus = $advance->status?->value;
-                            $aBadge = match (strtolower($aStatus ?? '')) {
-                                'approved', 'disbursed' => 'primary',
-                                'completed' => 'success',
-                                'pending' => 'warning',
-                                'rejected', 'cancelled' => 'danger',
-                                default => 'secondary',
-                            };
-                        @endphp
                         <div class="card mb-6 mb-xl-9">
                             <div class="card-header border-0">
                                 <div class="card-title">
                                     <h3>{{ $advance->advance_no }}</h3>
                                     <span
-                                        class="badge badge-light-{{ $aBadge }} ms-3">{{ $aStatus ? \Illuminate\Support\Str::headline($aStatus) : '-' }}</span>
+                                        class="{{ $advance->status?->badgeClass() ?? 'badge badge-light-secondary' }} ms-3">
+                                        {{ $advance->status?->label() ?? '-' }}
+                                    </span>
                                 </div>
                                 <div class="card-toolbar">
                                     @can('cpf_advance.view')
@@ -696,7 +735,7 @@
                                             Details</a>
                                     @endcan
                                     @can('cpf_advance.recovery')
-                                        @if (!$advance->isCompleted())
+                                        @if (!$advance->isCompleted() && !$isSettled)
                                             <a href="{{ route('cpf-advances.recovery.create', $advance) }}"
                                                 class="btn btn-sm btn-light-primary"><i class="ki-outline ki-plus fs-4"></i>
                                                 Add Recovery</a>
@@ -747,24 +786,46 @@
                                     <thead>
                                         <tr class="fw-bold fs-7 text-uppercase text-muted gs-0">
                                             <th class="w-30px">#</th>
+                                            <th>Recovery No.</th>
                                             <th>Date</th>
                                             <th class="text-end">Amount</th>
+                                            <th>Status</th>
                                             <th>Remarks</th>
                                             <th>By</th>
+                                            <th class="text-end">View</th>
                                         </tr>
                                     </thead>
                                     <tbody class="text-gray-700">
                                         @forelse ($advance->recoveries->sortBy('recovery_date') as $j => $rec)
                                             <tr>
                                                 <td>{{ $j + 1 }}</td>
+                                                <td>
+                                                    <a href="{{ route('cpf-advances.recovery.show', [$advance, $rec]) }}"
+                                                        class="text-gray-800 text-hover-primary fw-bold">{{ $rec->recovery_no }}</a>
+                                                </td>
                                                 <td>{{ optional($rec->recovery_date)->format('d-M-Y') }}</td>
                                                 <td class="text-end text-success">৳{{ number_format($rec->amount) }}</td>
+                                                <td>
+                                                    <span
+                                                        class="{{ $rec->status?->badgeClass() ?? 'badge badge-light-secondary' }}">
+                                                        {{ $rec->status?->label() ?? '-' }}
+                                                    </span>
+                                                </td>
                                                 <td class="text-gray-600">{{ $rec->remarks ?: '-' }}</td>
                                                 <td class="text-gray-600">{{ $rec->creator?->name ?? 'System' }}</td>
+                                                <td class="text-end">
+                                                    @can('cpf_advance.view')
+                                                        <a href="{{ route('cpf-advances.recovery.show', [$advance, $rec]) }}"
+                                                            class="btn btn-icon btn-light btn-active-light-primary w-30px h-30px"
+                                                            title="View recovery">
+                                                            <i class="ki-outline ki-eye fs-3"></i>
+                                                        </a>
+                                                    @endcan
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted py-5">No recoveries
+                                                <td colspan="8" class="text-center text-muted py-5">No recoveries
                                                     posted yet.</td>
                                             </tr>
                                         @endforelse
@@ -798,9 +859,11 @@
                                             class="ki-outline ki-chart-pie-simple fs-3"></i> All Distributions</a>
                                 @endcan
                                 @can('bank_interest.create')
-                                    <a href="{{ route('bank-interest.distribute') }}"
-                                        class="btn btn-sm btn-light-primary"><i class="ki-outline ki-plus fs-3"></i> New
-                                        Distribution</a>
+                                    @if (!$isSettled)
+                                        <a href="{{ route('bank-interest.distribute') }}"
+                                            class="btn btn-sm btn-light-primary"><i class="ki-outline ki-plus fs-3"></i> New
+                                            Distribution</a>
+                                    @endif
                                 @endcan
                             </div>
                         </div>

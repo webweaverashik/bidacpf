@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Models\Cpf\CpfLedger;
 use App\Support\FiscalYearService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class LedgerService
@@ -42,12 +43,34 @@ class LedgerService
     }
 
     /**
+     * Public re-computation entry point. Recomputes an employee's running
+     * balances from $fromDate (or from their earliest entry when omitted).
+     * Useful for repairing historical rows after a balance-logic fix.
+     */
+    public function recalculate(int $employeeId, $fromDate = null): void
+    {
+        $fromDate = $fromDate
+            ? Carbon::parse($fromDate)->toDateString()
+            : CpfLedger::where('employee_id', $employeeId)->min('transaction_date');
+
+        if ($fromDate) {
+            $this->recalculateFrom($employeeId, $fromDate);
+        }
+    }
+
+    /**
      * Recompute running balances from a given date forward, in (date, id) order.
      * In-order appends touch only the new row; a back-dated insert repairs every
      * later row so the column always equals the true cumulative net.
      */
     private function recalculateFrom(int $employeeId, $fromDate): void
     {
+        // transaction_date is a DATE column; normalise the cut-off to a date
+        // string so a same-day entry posted with a datetime (e.g. now()) is not
+        // excluded by a "midnight < 14:32:05" comparison — which was leaving
+        // advance-disbursement rows stuck at their placeholder balance of 0.
+        $fromDate = Carbon::parse($fromDate)->toDateString();
+
         $running = (int) CpfLedger::query()
             ->where('employee_id', $employeeId)
             ->where('transaction_date', '<', $fromDate)

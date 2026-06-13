@@ -1,7 +1,11 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
+use App\Enums\LedgerTransactionType;
+use App\Enums\SettlementStatus;
+use App\Enums\SourceType;
 use App\Exports\EmployeeLedgerExport;
+use App\Exports\EmployeesExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Employee\UpdateEmployeeRequest;
@@ -13,6 +17,7 @@ use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;
 use App\Models\Employee\PayScale;
 use App\Models\Employee\PayScaleStep;
+use App\Services\LedgerService;
 use App\Support\FiscalYearService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -23,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -33,13 +39,239 @@ class EmployeeController extends Controller
     /** In-request cache for foreign-key → label lookups in the activity log. */
     private array $refCache = [];
 
+    public function __construct(protected LedgerService $ledgerService)
+    {}
+
+    /**
+     * Employee listing — shell only. Rows arrive via the server-side
+     * DataTable feed (data()); exports via export().
+     */
     public function index(): View
     {
-        $employees = Employee::with('payScaleStep')
-            ->latest()
-            ->get();
+        return view('employees.index');
+    }
 
-        return view('employees.index', compact('employees'));
+    /*
+    |--------------------------------------------------------------------------
+    | Server-side DataTable feed + filter-aware exports
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * DataTables (server-side) endpoint for the employee list.
+     */
+    public function data(Request $request): JsonResponse
+    {
+        $canEdit           = (bool) $request->user()?->can('employee.update');
+        $canViewSettlement = (bool) $request->user()?->can('cpf_settlement.view');
+
+        $query           = $this->employeesQuery($request);
+        $recordsTotal    = Employee::count();
+        $recordsFiltered = (clone $query)->count();
+
+        // Ordering (column index → DB column / alias).
+        $orderMap = [
+            1 => 'employees.cpf_account_no',
+            2 => 'employees.name',
+            3 => 'employees.designation',
+            4 => 'employees.mobile_number',
+            5 => 'employees.joining_date',
+            6 => 'pay_scale_steps.grade',
+            7 => 'pay_scale_steps.basic_salary',
+            8 => 'current_balance',
+            9 => 'employees.is_active',
+        ];
+        $colIdx = (int) $request->input('order.0.column', 2);
+        $dir    = $request->input('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($orderMap[$colIdx] ?? 'employees.name', $dir);
+
+        // Pagination.
+        $start  = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        if ($length > 0) {
+            $query->offset($start)->limit($length);
+        }
+
+        $i    = $start;
+        $data = $query->get()->map(function ($e) use (&$i, $canEdit, $canViewSettlement) {
+            $i++;
+            $showUrl = route('employees.show', $e->id);
+            $editUrl = route('employees.edit', $e->id);
+            $settled = (bool) $e->is_settled;
+
+            if ($settled) {
+                $status = '<span class="badge badge-light-info">Settled</span>';
+                if ($canViewSettlement && $e->settlement_id) {
+                    $status = '<a href="' . route('cpf-settlements.show', $e->settlement_id) . '" target="_blank" '
+                        . 'class="text-hover-primary" title="View settlement">' . $status . '</a>';
+                }
+            } elseif ($e->is_active) {
+                $status = '<span class="badge badge-light-success">Active</span>';
+            } else {
+                $status = '<span class="badge badge-light-danger">Inactive</span>';
+            }
+
+            $actions = '<a href="' . $showUrl . '" target="_blank" title="View Employee" '
+                . 'class="btn btn-icon text-hover-primary w-30px h-30px"><i class="ki-outline ki-eye fs-2"></i></a>';
+
+            if ($canEdit && ! $settled) {
+                $actions .= '<a href="' . $editUrl . '" title="Edit Employee" '
+                    . 'class="btn btn-icon text-hover-primary w-30px h-30px"><i class="ki-outline ki-pencil fs-2"></i></a>';
+            } elseif ($canEdit && $settled) {
+                $actions .= '<span class="btn btn-icon w-30px h-30px text-muted disabled" '
+                    . 'title="Finally settled — locked"><i class="ki-outline ki-lock-2 fs-2"></i></span>';
+            }
+
+            return [
+                'DT_RowIndex'  => $i,
+                'account'      => '<a href="' . $showUrl . '" target="_blank" '
+                . 'class="text-gray-800 text-hover-primary fw-bold">' . e($e->cpf_account_no) . '</a>',
+                'name'         => e($e->name),
+                'designation'  => e($e->designation),
+                'mobile'       => e($e->mobile_number ?: '—'),
+                'joining_date' => $e->joining_date ? $e->joining_date->format('d M Y') : '—',
+                'grade'        => $e->ps_grade ?? '—',
+                'basic_salary' => $e->ps_basic !== null ? number_format((int) $e->ps_basic) : '—',
+                'balance'      => number_format((int) $e->current_balance),
+                'status'       => $status,
+                'actions'      => $actions,
+            ];
+        });
+
+        return response()->json([
+            'draw'            => (int) $request->input('draw'),
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Filter-aware export of the (full, unpaginated) filtered employee list.
+     */
+    public function export(Request $request): BinaryFileResponse | Response
+    {
+        $employees = $this->employeesQuery($request)->orderBy('employees.name')->get();
+        $filename  = 'employees-' . now()->format('Ymd-His');
+
+        return match ($request->input('format', 'xlsx')) {
+            'csv'   => Excel::download(new EmployeesExport($employees), "$filename.csv", ExcelFormat::CSV),
+            'pdf'   => Pdf::loadView('exports.employees.index-pdf', [
+                'employees'   => $employees,
+                'filters'     => $this->indexFilters($request),
+                'generatedAt' => now(),
+            ])->setPaper('a4', 'landscape')->download("$filename.pdf"),
+            default => Excel::download(new EmployeesExport($employees), "$filename.xlsx"),
+        };
+    }
+
+    /**
+     * Shared, filtered base query for the list feed and the exports.
+     * Attaches current_balance + is_settled via correlated subqueries.
+     */
+    private function employeesQuery(Request $request)
+    {
+        $query = Employee::query()
+            ->leftJoin('pay_scale_steps', 'employees.pay_scale_step_id', '=', 'pay_scale_steps.id')
+            ->leftJoin('pay_scales', 'pay_scale_steps.pay_scale_id', '=', 'pay_scales.id')
+            ->select([
+                'employees.id',
+                'employees.cpf_account_no',
+                'employees.name',
+                'employees.designation',
+                'employees.mobile_number',
+                'employees.email',
+                'employees.joining_date',
+                'employees.is_active',
+                'employees.status',
+                'pay_scale_steps.grade as ps_grade',
+                'pay_scale_steps.step as ps_step',
+                'pay_scale_steps.basic_salary as ps_basic',
+                'pay_scales.name as ps_name',
+            ])
+            ->selectSub($this->balanceSubQuery(), 'current_balance')
+            ->addSelect(['is_settled' => $this->settledSubQuery()])
+            ->addSelect(['settlement_id' => function ($q) {
+                $q->selectRaw('id')
+                    ->from('cpf_final_settlements')
+                    ->whereColumn('cpf_final_settlements.employee_id', 'employees.id')
+                    ->where('cpf_final_settlements.status', SettlementStatus::APPROVED->value)
+                    ->whereNull('cpf_final_settlements.deleted_at')
+                    ->latest('id')
+                    ->limit(1);
+            }]);
+
+        // Global search (DataTables sends search.value; exports send ?search=).
+        $search = $request->input('search.value', $request->input('search'));
+        if ($search !== null && $search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('employees.name', 'like', "%{$search}%")
+                    ->orWhere('employees.cpf_account_no', 'like', "%{$search}%")
+                    ->orWhere('employees.designation', 'like', "%{$search}%")
+                    ->orWhere('employees.mobile_number', 'like', "%{$search}%")
+                    ->orWhere('employees.email', 'like', "%{$search}%")
+                    ->orWhere('pay_scales.name', 'like', "%{$search}%");
+            });
+        }
+
+        // Grade filter — accepts "8" or legacy "grade_8".
+        $grade = $request->input('grade');
+        if ($grade !== null && $grade !== '') {
+            $grade = is_numeric($grade) ? (int) $grade : (int) str_replace('grade_', '', (string) $grade);
+            $query->where('pay_scale_steps.grade', $grade);
+        }
+
+        // Activation filter (is_active).
+        $active = $request->input('active_status');
+        if ($active === 'active') {
+            $query->where('employees.is_active', true);
+        } elseif ($active === 'inactive') {
+            $query->where('employees.is_active', false);
+        }
+
+        // Service status filter.
+        $service = $request->input('service_status');
+        if (in_array($service, ['active', 'retired', 'resigned', 'deceased'], true)) {
+            $query->where('employees.status', $service);
+        }
+
+        return $query;
+    }
+
+    /** Normalised filter values for the PDF chip bar. */
+    private function indexFilters(Request $request): array
+    {
+        return [
+            'search'         => trim((string) $request->input('search.value', $request->input('search', ''))),
+            'grade'          => $request->input('grade'),
+            'active_status'  => $request->input('active_status'),
+            'service_status' => $request->input('service_status'),
+        ];
+    }
+
+    /** Correlated subquery → latest running ledger balance per employee. */
+    private function balanceSubQuery(): \Closure
+    {
+        return function ($q) {
+            $q->from('cpf_ledgers')
+                ->whereColumn('cpf_ledgers.employee_id', 'employees.id')
+                ->orderByDesc('transaction_date')->orderByDesc('id')
+                ->limit(1)
+                ->select('balance');
+        };
+    }
+
+    /** Correlated subquery → 1 when the member has an APPROVED final settlement. */
+    private function settledSubQuery(): \Closure
+    {
+        return function ($q) {
+            $q->selectRaw('1')
+                ->from('cpf_final_settlements')
+                ->whereColumn('cpf_final_settlements.employee_id', 'employees.id')
+                ->where('cpf_final_settlements.status', SettlementStatus::APPROVED->value)
+                ->whereNull('cpf_final_settlements.deleted_at')
+                ->limit(1);
+        };
     }
 
     public function create(): View
@@ -136,7 +368,6 @@ class EmployeeController extends Controller
                 'joining_date'      => $request->validated('joining_date'),
                 'retirement_date'   => $request->validated('retirement_date'),
                 'pay_scale_step_id' => $request->validated('pay_scale_step_id'),
-                'status'            => $request->validated('status'),
             ]);
 
             // ── PHOTO UPLOAD ──────────────────────────────────────────────────
@@ -158,13 +389,46 @@ class EmployeeController extends Controller
                 $employee->update(['photo' => 'uploads/employees/photos/' . $filename]);
             }
 
-            // ── SALARY HISTORY — initial entry ───────────────────────────────
+// ── SALARY HISTORY — initial entry ───────────────────────────────
             EmployeeSalaryHistory::create([
                 'employee_id'       => $employee->id,
                 'pay_scale_step_id' => $employee->pay_scale_step_id,
                 'effective_date'    => $employee->created_at->toDateString(),
                 'change_type'       => 'initial',
                 'remarks'           => 'Initial pay scale step on employee creation.',
+            ]);
+
+            // ── CPF OPENING BALANCE + LEDGER ─────────────────────────────────
+            $self     = (int) $request->validated('opening_employee_contribution');
+            $govt     = (int) $request->validated('opening_government_contribution');
+            $interest = (int) $request->validated('opening_bank_interest');
+            $advance  = (int) $request->validated('opening_advance_balance');
+            $net      = $self + $govt + $interest - $advance;
+
+            $openingBalance = CpfOpeningBalance::create([
+                'employee_id'             => $employee->id,
+                'effective_date'          => $request->validated('opening_effective_date'),
+                'self_contribution'       => $self,
+                'government_contribution' => $govt,
+                'interest_amount'         => $interest,
+                'outstanding_advance'     => $advance,
+                'net_balance'             => $net,
+                'remarks'                 => 'Opening balance captured at employee onboarding.',
+            ]);
+
+            // Single OPENING_BALANCE credit posted through the ledger service so
+            // the running balance stays consistent. created_by auto-fills via
+            // HasCreatedBy during this authenticated request.
+            $this->ledgerService->create([
+                'employee_id'      => $employee->id,
+                'transaction_date' => $openingBalance->effective_date,
+                'transaction_type' => LedgerTransactionType::OPENING_BALANCE,
+                'source_type'      => SourceType::OPENING_BALANCE->value,
+                'source_id'        => $openingBalance->id,
+                'reference_no'     => null,
+                'remarks'          => 'Opening balance',
+                'credit'           => $net,
+                'debit'            => 0,
             ]);
 
             return $employee;
@@ -618,8 +882,13 @@ class EmployeeController extends Controller
     /**
      * Show the employee edit form.
      */
-    public function edit(Request $request, Employee $employee): View
+    public function edit(Request $request, Employee $employee): View | RedirectResponse
     {
+        if ($employee->isFinallySettled()) {
+            return redirect()->route('employees.show', $employee)
+                ->with('error', 'This employee has been finally settled and can no longer be edited.');
+        }
+
         $user = $request->user();
         $employee->load('payScaleStep');
 
@@ -681,6 +950,18 @@ class EmployeeController extends Controller
      */
     public function update(UpdateEmployeeRequest $request, Employee $employee): JsonResponse | RedirectResponse
     {
+        if ($employee->isFinallySettled()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This employee has been finally settled and can no longer be edited.',
+                ], 403);
+            }
+
+            return redirect()->route('employees.show', $employee)
+                ->with('error', 'This employee has been finally settled and can no longer be edited.');
+        }
+
         $this->authorizePayScaleChange($request, $employee);
 
         DB::transaction(function () use ($request, $employee) {
@@ -693,7 +974,6 @@ class EmployeeController extends Controller
                 'joining_date'      => $request->validated('joining_date'),
                 'retirement_date'   => $request->validated('retirement_date'),
                 'pay_scale_step_id' => $request->validated('pay_scale_step_id'),
-                'status'            => $request->validated('status'),
             ]);
 
             if (
@@ -814,6 +1094,11 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee): RedirectResponse
     {
+        if ($employee->isFinallySettled()) {
+            return redirect()->route('employees.show', $employee)
+                ->with('error', 'This employee has been finally settled and cannot be deleted.');
+        }
+
         // Safety guard: never delete an employee that still has a CPF balance.
         if ($employee->currentBalance() !== 0) {
             return redirect()->route('employees.show', $employee)
@@ -834,6 +1119,14 @@ class EmployeeController extends Controller
         $request->validate(['employee_id' => 'required|exists:employees,id']);
 
         $employee = Employee::findOrFail($request->employee_id);
+
+        if ($employee->isFinallySettled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This employee has been finally settled and cannot be reactivated or deactivated.',
+            ], 403);
+        }
+
         $employee->update(['is_active' => ! $employee->is_active]);
 
         return response()->json([
