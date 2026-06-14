@@ -60,7 +60,7 @@
                     <!--begin::Stat-->
                     <div class="border border-gray-300 border-dashed rounded min-w-100px py-3 px-4 me-6 mb-3">
                         <div class="d-flex align-items-center">
-                            <i class="ki-outline ki-category fs-2 text-success me-2"></i>
+                            <i class="ki-outline ki-dollar fs-2 text-success me-2"></i>
                             <div class="fs-4 fw-bold" data-kt-countup="true"
                                 data-kt-countup-value="{{ \App\Models\Auth\User::count() }}">
                                 0</div>
@@ -80,9 +80,9 @@
             <!--begin::Nav item-->
             <li class="nav-item">
                 <a class="nav-link text-active-primary py-5 me-6" id="settings_users_link"
-                    href="{{ route('users.index') }}">
+                    href="{{ route('settings.index') }}">
                     <i class="ki-outline ki-user-edit fs-4 me-2"></i>
-                    Users
+                    Settings
                 </a>
             </li>
             <!--end::Nav item-->
@@ -90,19 +90,9 @@
             <!--begin::Nav item-->
             <li class="nav-item">
                 <a class="nav-link text-active-primary py-5 me-6" id="settings_branch_link"
-                    href="{{ route('users.index') }}">
+                    href="{{ route('settings.index') }}">
                     <i class="ki-outline ki-parcel fs-4 me-2"></i>
-                    Branches
-                </a>
-            </li>
-            <!--end::Nav item-->
-
-            <!--begin::Nav item-->
-            <li class="nav-item">
-                <a class="nav-link text-active-primary py-5 me-6" id="settings_cost_type_link"
-                    href="{{ route('users.index') }}">
-                    <i class="ki-outline ki-category fs-4 me-2"></i>
-                    Cost Types
+                    Payscale
                 </a>
             </li>
             <!--end::Nav item-->
@@ -111,9 +101,9 @@
             @if (app()->environment('local'))
                 <li class="nav-item">
                     <a class="nav-link text-active-primary py-5 me-6" id="settings_bulk_admission_link"
-                        href="{{ route('users.index') }}">
+                        href="{{ route('settings.index') }}">
                         <i class="ki-outline ki-file-up fs-4 me-2"></i>
-                        Bulk Admission
+                        Employee Upload
                     </a>
                 </li>
             @endif
@@ -121,18 +111,8 @@
 
             <!--begin::Nav item-->
             <li class="nav-item">
-                <a class="nav-link text-active-primary py-5" id="settings_auto_invoice_link"
-                    href="{{ route('users.index') }}">
-                    <i class="ki-outline ki-update-file fs-4 me-2"></i>
-                    Auto Invoice
-                </a>
-            </li>
-            <!--end::Nav item-->
-
-            <!--begin::Nav item-->
-            <li class="nav-item">
                 <a class="nav-link text-active-primary py-5" id="settings_backup_link"
-                    href="{{ route('users.index') }}">
+                    href="{{ route('backup') }}">
                     <i class="ki-outline ki-data fs-4 me-2"></i>
                     DB Backup
                 </a>
