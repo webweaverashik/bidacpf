@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Event::subscribe(\App\Listeners\ScheduledTaskLogger::class);
         //
     }
 }

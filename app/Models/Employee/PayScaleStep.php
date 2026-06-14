@@ -2,9 +2,17 @@
 namespace App\Models\Employee;
 
 use App\Models\BaseModel;
+use App\Traits\LogsModelActivity;
 
 class PayScaleStep extends BaseModel
 {
+    use LogsModelActivity;
+
+    // Activity-log config — basic-salary edits / step add-remove are tracked.
+    protected ?string $auditLogName  = 'pay_scale_step';
+    protected ?string $auditLabel    = 'Pay Scale Step';
+    protected array $auditAttributes = ['pay_scale_id', 'grade', 'step', 'basic_salary'];
+
     protected $fillable = ['pay_scale_id', 'grade', 'step', 'basic_salary'];
 
     public function payScale()

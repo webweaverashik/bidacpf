@@ -1,3 +1,17 @@
+@php
+    // Hero stats — computed inline so every settings page that includes this
+    // partial (index / payscale / employee-upload / backup) shows correct numbers
+    // without each controller having to pass them in.
+    $heroUserCount = \App\Models\Auth\User::count();
+    $heroEmployeeCount = \App\Models\Employee\Employee::active()->count();
+
+    // Total CPF fund balance = SUM(credit) - SUM(debit) across every posted
+    // ledger row (single aggregate query). Mirrors DashboardService::totalFundBalance().
+    $heroCpfBalance = (int) \App\Models\Cpf\CpfLedger::query()
+        ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) AS net')
+        ->value('net');
+@endphp
+
 <!--begin::Settings Hero Card-->
 <div class="card mb-6 mb-xl-9">
     <div class="card-body pt-9 pb-0">
@@ -35,35 +49,34 @@
 
                 <!--begin::Stats-->
                 <div class="d-flex flex-wrap">
-                    <!--begin::Stat-->
+                    <!--begin::Stat (Users) -->
                     <div class="border border-gray-300 border-dashed rounded min-w-100px py-3 px-4 me-6 mb-3">
                         <div class="d-flex align-items-center">
                             <i class="ki-outline ki-user-edit fs-2 text-primary me-2"></i>
                             <div class="fs-4 fw-bold" data-kt-countup="true"
-                                data-kt-countup-value="{{ \App\Models\Auth\User::count() }}">0</div>
+                                data-kt-countup-value="{{ $heroUserCount }}">0</div>
                         </div>
                         <div class="fw-semibold fs-6 text-gray-500">Users</div>
                     </div>
                     <!--end::Stat-->
 
-                    <!--begin::Stat-->
+                    <!--begin::Stat (Employees) -->
                     <div class="border border-gray-300 border-dashed rounded min-w-100px py-3 px-4 me-6 mb-3">
                         <div class="d-flex align-items-center">
                             <i class="ki-outline ki-people fs-2 text-info me-2"></i>
                             <div class="fs-4 fw-bold" data-kt-countup="true"
-                                data-kt-countup-value="{{ \App\Models\Employee\Employee::active()->count() }}">0</div>
+                                data-kt-countup-value="{{ $heroEmployeeCount }}">0</div>
                         </div>
-                        <div class="fw-semibold fs-6 text-gray-500">Employees</div>
+                        <div class="fw-semibold fs-6 text-gray-500">Active Employees</div>
                     </div>
                     <!--end::Stat-->
 
-                    <!--begin::Stat-->
+                    <!--begin::Stat (CPF Balance) -->
                     <div class="border border-gray-300 border-dashed rounded min-w-100px py-3 px-4 me-6 mb-3">
                         <div class="d-flex align-items-center">
                             <i class="ki-outline ki-dollar fs-2 text-success me-2"></i>
-                            <div class="fs-4 fw-bold" data-kt-countup="true"
-                                data-kt-countup-value="{{ \App\Models\Auth\User::count() }}">
-                                0</div>
+                            {{-- Rendered directly (not countup): money figure with a ৳ prefix --}}
+                            <div class="fs-4 fw-bold">৳ {{ number_format($heroCpfBalance) }}</div>
                         </div>
                         <div class="fw-semibold fs-6 text-gray-500">CPF Balance</div>
                     </div>
@@ -89,8 +102,8 @@
 
             <!--begin::Nav item-->
             <li class="nav-item">
-                <a class="nav-link text-active-primary py-5 me-6" id="settings_branch_link"
-                    href="{{ route('settings.index') }}">
+                <a class="nav-link text-active-primary py-5 me-6" id="settings_payscale_link"
+                    href="{{ route('payscale.index') }}">
                     <i class="ki-outline ki-parcel fs-4 me-2"></i>
                     Payscale
                 </a>
@@ -101,7 +114,7 @@
             @if (app()->environment('local'))
                 <li class="nav-item">
                     <a class="nav-link text-active-primary py-5 me-6" id="settings_bulk_admission_link"
-                        href="{{ route('settings.index') }}">
+                        href="{{ route('employee-upload.index') }}">
                         <i class="ki-outline ki-file-up fs-4 me-2"></i>
                         Employee Upload
                     </a>
@@ -111,8 +124,7 @@
 
             <!--begin::Nav item-->
             <li class="nav-item">
-                <a class="nav-link text-active-primary py-5" id="settings_backup_link"
-                    href="{{ route('backup') }}">
+                <a class="nav-link text-active-primary py-5" id="settings_backup_link" href="{{ route('backup') }}">
                     <i class="ki-outline ki-data fs-4 me-2"></i>
                     DB Backup
                 </a>

@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Auth\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -378,7 +378,7 @@ class BackupController extends Controller
         }
 
         try {
-            $users = User::role('admin')->where('is_active', true)->get();
+            $users = User::role('Admin')->where('is_active', true)->get();
 
             if ($users->isEmpty()) {
                 \Log::info('No active admin users found to notify about backup.');

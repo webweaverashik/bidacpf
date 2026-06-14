@@ -262,7 +262,7 @@
 
                     <!--begin::Reports-->
                     @canany(['report.view'])
-                        @php($reportsOpen = request()->routeIs('reports.*') || request()->routeIs('audit-logs.*'))
+                        @php($reportsOpen = request()->routeIs('reports.*') || request()->routeIs('audit-logs.*') || request()->routeIs('scheduled-tasks.index'))
                         <div data-kt-menu-trigger="click"
                             class="menu-item menu-accordion {{ $reportsOpen ? 'here show' : '' }}">
                             <span class="menu-link">
@@ -295,6 +295,16 @@
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
                                             <span class="menu-title">Audit Logs</span>
+                                        </a>
+                                    </div>
+
+                                    <div class="menu-item">
+                                        <a class="menu-link {{ request()->routeIs('scheduled-tasks.*') ? 'active' : '' }}"
+                                            href="{{ route('scheduled-tasks.index') }}" id="scheduled_tasks_link">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Scheduled Tasks</span>
                                         </a>
                                     </div>
                                 @endrole
@@ -330,7 +340,7 @@
                     <!--begin::Settings-->
                     @can('setting.view')
                         <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"
+                            <a class="menu-link {{ request()->routeIs('settings.*', 'backup', 'employee-upload.index', 'payscale.index') ? 'active' : '' }}"
                                 href="{{ route('settings.index') }}" id="settings_link">
                                 <span class="menu-icon">
                                     <i class="ki-outline ki-setting-2 fs-2"></i>
