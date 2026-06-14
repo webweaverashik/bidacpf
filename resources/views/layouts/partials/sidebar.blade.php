@@ -261,17 +261,46 @@
                     <!--end::Interest Management-->
 
                     <!--begin::Reports-->
-                    @can('report.view')
-                        <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('reports.*') ? 'active' : '' }}"
-                                href="{{ route('reports.index') }}" id="reports_link">
+                    @canany(['report.view'])
+                        @php($reportsOpen = request()->routeIs('reports.*') || request()->routeIs('audit-logs.*'))
+                        <div data-kt-menu-trigger="click"
+                            class="menu-item menu-accordion {{ $reportsOpen ? 'here show' : '' }}">
+                            <span class="menu-link">
                                 <span class="menu-icon">
-                                    <i class="ki-outline ki-filter fs-2"></i>
+                                    <i class="ki-outline ki-chart-simple fs-2"></i>
                                 </span>
                                 <span class="menu-title">Reports</span>
-                            </a>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            <div class="menu-sub menu-sub-accordion">
+                                {{-- All reports & certificates --}}
+                                @can('report.view')
+                                    <div class="menu-item">
+                                        <a class="menu-link {{ request()->routeIs('reports.*') ? 'active' : '' }}"
+                                            href="{{ route('reports.index') }}" id="reports_link">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Reports &amp; Certificates</span>
+                                        </a>
+                                    </div>
+                                @endcan
+
+                                {{-- Audit & login logs (Admin only) --}}
+                                @role('Admin')
+                                    <div class="menu-item">
+                                        <a class="menu-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}"
+                                            href="{{ route('audit-logs.index') }}" id="audit_logs_link">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Audit Logs</span>
+                                        </a>
+                                    </div>
+                                @endrole
+                            </div>
                         </div>
-                    @endcan
+                    @endcanany
                     <!--end::Reports-->
 
                     <!--begin::Settings Section-->
@@ -311,20 +340,6 @@
                         </div>
                     @endcan
                     <!--end::Settings-->
-
-                    <!--begin::Audit Logs-->
-                    @role('Admin')
-                        <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}"
-                                href="{{ route('audit-logs.index') }}" id="audit_logs_link">
-                                <span class="menu-icon">
-                                    <i class="ki-outline ki-notepad-bookmark fs-2"></i>
-                                </span>
-                                <span class="menu-title">Audit Logs</span>
-                            </a>
-                        </div>
-                    @endrole
-                    <!--end::Audit Logs-->
 
                 </div>
                 <!--end::Menu-->

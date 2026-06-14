@@ -1,0 +1,59 @@
+/* =========================================================================
+   BIDA CPF — Reporting module
+   Styles for the single report page: parameter panel, preview pane and the
+   isolated certificate preview frame.
+   ========================================================================= */
+
+/* Empty-state blocks (no report chosen / no rows / no preview). */
+.rpt-empty {
+    border: 1px dashed var(--bs-gray-300);
+    border-radius: 0.65rem;
+    background: var(--bs-gray-100);
+}
+
+/* Parameter panel keeps a comfortable min-height so the card doesn't jump
+   when controls are swapped in/out. */
+.rpt-params {
+    min-height: 80px;
+}
+
+/* Select2 dropdowns anchored inside the panel should sit above the card. */
+.rpt-params .select2-container {
+    width: 100% !important;
+}
+
+/* ---- Preview pane ----------------------------------------------------- */
+.rpt-preview {
+    width: 100%;
+}
+
+.rpt-preview .table {
+    margin-bottom: 0;
+}
+
+/* ---- Certificate preview --------------------------------------------- */
+/* The certificate is rendered in an <iframe srcdoc> for full style isolation;
+   the "paper" wrapper gives it a document-like frame. */
+.rpt-cert-paper {
+    border: 1px solid var(--bs-gray-300);
+    border-radius: 0.5rem;
+    background: #fff;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.rpt-cert-frame {
+    display: block;
+    width: 100%;
+    height: 70vh;
+    min-height: 520px;
+    border: 0;
+    background: #fff;
+}
+
+@media (max-width: 991.98px) {
+    .rpt-cert-frame {
+        height: 60vh;
+        min-height: 420px;
+    }
+}
