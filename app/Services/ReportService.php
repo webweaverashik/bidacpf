@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Enums\AdvanceStatus;
+use App\Enums\EmployeeStatus;
 use App\Enums\LedgerTransactionType;
 use App\Enums\RecoveryStatus;
 use App\Enums\SettlementStatus;
@@ -78,24 +79,22 @@ class ReportService
 
     private function employeeDirectory(array $p): array
     {
-        $status = $p['status_employee'] ?? null;
+        $service = $p['service_status'] ?? null;
 
         $q = Employee::query()
             ->leftJoin('pay_scale_steps', 'employees.pay_scale_step_id', '=', 'pay_scale_steps.id')
             ->leftJoin('pay_scales', 'pay_scale_steps.pay_scale_id', '=', 'pay_scales.id')
             ->select([
                 'employees.id', 'employees.cpf_account_no', 'employees.name', 'employees.designation',
-                'employees.is_active',
+                'employees.status',
                 'pay_scale_steps.grade as ps_grade', 'pay_scale_steps.basic_salary as ps_basic',
                 'pay_scales.name as ps_name',
             ])
             ->selectSub($this->balanceSub(), 'current_balance')
             ->orderBy('employees.name');
 
-        if ($status === 'active') {
-            $q->where('employees.is_active', true);
-        } elseif ($status === 'inactive') {
-            $q->where('employees.is_active', false);
+        if ($service && EmployeeStatus::tryFrom($service)) {
+            $q->where('employees.status', $service);
         }
 
         $i    = 0;
@@ -109,15 +108,15 @@ class ReportService
                 $e->ps_grade ?: '—',
                 number_format((int) $e->ps_basic),
                 number_format((int) $e->current_balance),
-                $e->is_active ? 'Active' : 'Inactive',
+                $e->status?->label() ?? '—',
             ];
         })->all();
 
         return [
             'title'    => 'Employee Directory',
-            'subtitle' => $this->statusSubtitle($status, 'members'),
+            'subtitle' => $this->serviceStatusSubtitle($service),
             'meta'     => [],
-            'headings' => ['#', 'CPF A/C No.', 'Name', 'Designation', 'Pay Scale', 'Grade', 'Basic Salary (Tk)', 'Balance (Tk)', 'Status'],
+            'headings' => ['#', 'CPF A/C No.', 'Name', 'Designation', 'Pay Scale', 'Grade', 'Basic Salary (Tk)', 'Balance (Tk)', 'Service Status'],
             'aligns'   => ['center', 'left', 'left', 'left', 'left', 'center', 'num', 'num', 'center'],
             'rows'     => $rows,
             'summary'  => [['label' => 'Total Members', 'value' => count($rows), 'span' => 8]],
@@ -1026,7 +1025,23 @@ class ReportService
                 ->orderBy('id', 'desc')->get()
                 ->mapWithKeys(fn($s) => [$s->id => $s->settlement_no . ' — ' . ($s->employee?->name ?? '')])->all(),
 
-            'ledger_types' => LedgerTransactionType::options(),
+            'ledger_types' => CpfLedger::query()
+                ->getQuery() // base query → raw string values, bypassing the enum cast
+                ->select('transaction_type')->distinct()
+                ->orderBy('transaction_type')
+                ->pluck('transaction_type')
+                ->filter()
+                ->mapWithKeys(function ($value) {
+                    // Be robust whether $value arrives as a raw string or an enum.
+                    $enum = $value instanceof LedgerTransactionType
+                        ? $value
+                        : LedgerTransactionType::tryFrom((string) $value);
+                    $key = $enum?->value ?? (string) $value;
+
+                    return [$key => $enum?->label() ?? (string) $value];
+                })->all(),
+
+            'employee_statuses' => EmployeeStatus::options(),
 
             'audit_events' => Activity::query()->whereNotNull('event')->distinct()
                 ->orderBy('event')->pluck('event')
@@ -1086,6 +1101,15 @@ class ReportService
         };
 
         return "{$label} {$noun}";
+    }
+
+    private function serviceStatusSubtitle(?string $status): string
+    {
+        $label = ($status && ($e = EmployeeStatus::tryFrom($status)))
+            ? $e->label()
+            : 'All';
+
+        return "{$label} members";
     }
 
     private function periodSubtitle(?string $from, ?string $to): string

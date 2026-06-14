@@ -56,31 +56,32 @@ class ReportRegistry
     public static function paramMeta(): array
     {
         return [
-            'employee'            => ['label' => 'Employee', 'type' => 'employee', 'options' => 'employees'],
-            'employee_required'   => ['label' => 'Employee', 'type' => 'employee', 'options' => 'employees', 'required' => true],
-            'fiscal_year'         => ['label' => 'Fiscal Year', 'type' => 'fiscal_year', 'options' => 'fiscal_years'],
-            'fiscal_year_required'=> ['label' => 'Fiscal Year', 'type' => 'fiscal_year', 'options' => 'fiscal_years', 'required' => true],
-            'date_from'           => ['label' => 'From Date', 'type' => 'date_from'],
-            'date_to'             => ['label' => 'To Date', 'type' => 'date_to'],
-            'as_of'               => ['label' => 'As of Date', 'type' => 'date'],
-            'month_year'          => ['label' => 'Month', 'type' => 'month_year'],
-            'status_employee'     => ['label' => 'Status', 'type' => 'select', 'options' => [
+            'employee'                => ['label' => 'Employee', 'type' => 'employee', 'options' => 'employees'],
+            'employee_required'       => ['label' => 'Employee', 'type' => 'employee', 'options' => 'employees', 'required' => true],
+            'fiscal_year'             => ['label' => 'Fiscal Year', 'type' => 'fiscal_year', 'options' => 'fiscal_years'],
+            'fiscal_year_required'    => ['label' => 'Fiscal Year', 'type' => 'fiscal_year', 'options' => 'fiscal_years', 'required' => true],
+            'date_from'               => ['label' => 'From Date', 'type' => 'date_from'],
+            'date_to'                 => ['label' => 'To Date', 'type' => 'date_to'],
+            'as_of'                   => ['label' => 'As of Date', 'type' => 'date'],
+            'month_year'              => ['label' => 'Month', 'type' => 'month_year'],
+            'status_employee'         => ['label' => 'Status', 'type' => 'select', 'options' => [
                 'active' => 'Active', 'inactive' => 'Inactive',
             ]],
-            'status_advance'      => ['label' => 'Status', 'type' => 'select', 'options' => [
-                'draft' => 'Draft', 'submitted' => 'Pending Approval', 'approved' => 'Approved',
+            'service_status'          => ['label' => 'Service Status', 'type' => 'select', 'options' => 'employee_statuses'],
+            'status_advance'          => ['label' => 'Status', 'type' => 'select', 'options' => [
+                'draft'    => 'Draft', 'submitted'    => 'Pending Approval', 'approved' => 'Approved',
                 'rejected' => 'Rejected', 'completed' => 'Completed',
             ]],
-            'ledger_type'         => ['label' => 'Transaction Type', 'type' => 'select', 'options' => 'ledger_types'],
-            'contribution_batch'  => ['label' => 'Contribution Batch', 'type' => 'select', 'options' => 'contribution_batches'],
-            'interest_batch'      => ['label' => 'Interest Batch', 'type' => 'select', 'options' => 'interest_batches'],
+            'ledger_type'             => ['label' => 'Transaction Type', 'type' => 'select', 'options' => 'ledger_types'],
+            'contribution_batch'      => ['label' => 'Contribution Batch', 'type' => 'select', 'options' => 'contribution_batches'],
+            'interest_batch'          => ['label' => 'Interest Batch', 'type' => 'select', 'options' => 'interest_batches'],
             'interest_batch_required' => ['label' => 'Interest Batch', 'type' => 'select', 'options' => 'interest_batches', 'required' => true],
-            'advance_approved'    => ['label' => 'Advance', 'type' => 'select', 'options' => 'approved_advances', 'required' => true],
-            'advance_completed'   => ['label' => 'Advance', 'type' => 'select', 'options' => 'completed_advances', 'required' => true],
-            'settlement_standard' => ['label' => 'Settlement', 'type' => 'select', 'options' => 'settlements', 'required' => true],
-            'settlement_nominee'  => ['label' => 'Settlement', 'type' => 'select', 'options' => 'deceased_settlements', 'required' => true],
-            'audit_event'         => ['label' => 'Event', 'type' => 'select', 'options' => 'audit_events'],
-            'user'                => ['label' => 'User', 'type' => 'select', 'options' => 'users'],
+            'advance_approved'        => ['label' => 'Advance', 'type' => 'select', 'options' => 'approved_advances', 'required' => true],
+            'advance_completed'       => ['label' => 'Advance', 'type' => 'select', 'options' => 'completed_advances', 'required' => true],
+            'settlement_standard'     => ['label' => 'Settlement', 'type' => 'select', 'options' => 'settlements', 'required' => true],
+            'settlement_nominee'      => ['label' => 'Settlement', 'type' => 'select', 'options' => 'deceased_settlements', 'required' => true],
+            'audit_event'             => ['label' => 'Event', 'type' => 'select', 'options' => 'audit_events'],
+            'user'                    => ['label' => 'User', 'type' => 'select', 'options' => 'users'],
         ];
     }
 
@@ -95,17 +96,17 @@ class ReportRegistry
     {
         return [
             // ───────────────────────── Employee Reports ─────────────────────
-            'employee_directory' => [
+            'employee_directory'            => [
                 'group'   => 'employee',
                 'label'   => 'Employee Directory',
-                'desc'    => 'All CPF members with grade, basic salary, current balance and status.',
+                'desc'    => 'All CPF members with grade, basic salary, current balance and service status.',
                 'kind'    => self::KIND_SUMMARY,
                 'gate'    => 'employee.view',
-                'params'  => ['status_employee'],
+                'params'  => ['service_status'],
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'employee_salary_register' => [
+            'employee_salary_register'      => [
                 'group'   => 'employee',
                 'label'   => 'Salary & Pay-Scale Register',
                 'desc'    => 'Current grade, step and basic salary for each member as of a date.',
@@ -117,7 +118,7 @@ class ReportRegistry
             ],
 
             // ──────────────────────── Contribution Reports ──────────────────
-            'contribution_summary' => [
+            'contribution_summary'          => [
                 'group'   => 'contribution',
                 'label'   => 'Monthly Contribution Summary',
                 'desc'    => 'Per-batch totals (employee + government share) for a fiscal year.',
@@ -127,7 +128,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'contribution_register' => [
+            'contribution_register'         => [
                 'group'   => 'contribution',
                 'label'   => 'Contribution Register (Member-wise)',
                 'desc'    => 'Member-by-member contribution lines for an approved batch or fiscal year.',
@@ -139,7 +140,7 @@ class ReportRegistry
             ],
 
             // ───────────────────────── Advance Reports ──────────────────────
-            'advance_summary' => [
+            'advance_summary'               => [
                 'group'   => 'advance',
                 'label'   => 'Advance Summary',
                 'desc'    => 'All advance applications with amount, rate, installments and status.',
@@ -149,7 +150,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'outstanding_advances' => [
+            'outstanding_advances'          => [
                 'group'   => 'advance',
                 'label'   => 'Outstanding Advances',
                 'desc'    => 'Approved advances with a remaining balance, plus repayment progress.',
@@ -159,7 +160,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'advance_recovery_register' => [
+            'advance_recovery_register'     => [
                 'group'   => 'advance',
                 'label'   => 'Recovery Register',
                 'desc'    => 'Approved recovery postings (principal + interest) over a period.',
@@ -181,7 +182,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'interest_distribution_detail' => [
+            'interest_distribution_detail'  => [
                 'group'   => 'interest',
                 'label'   => 'Interest Distribution (Member-wise)',
                 'desc'    => 'Member allocations for a single interest distribution batch.',
@@ -193,7 +194,7 @@ class ReportRegistry
             ],
 
             // ──────────────────────── Management Reports ────────────────────
-            'cpf_fund_position' => [
+            'cpf_fund_position'             => [
                 'group'   => 'management',
                 'label'   => 'CPF Fund Position',
                 'desc'    => 'Fund-level totals: contributions, interest credited, advances outstanding and net fund balance as of a date.',
@@ -203,7 +204,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'portrait',
             ],
-            'member_balance_summary' => [
+            'member_balance_summary'        => [
                 'group'   => 'management',
                 'label'   => 'Member Balance Summary',
                 'desc'    => 'Current CPF balance for every member with status filter.',
@@ -213,7 +214,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'ledger_transactions' => [
+            'ledger_transactions'           => [
                 'group'   => 'management',
                 'label'   => 'Ledger Transactions',
                 'desc'    => 'Raw ledger movements across all members over a period, by type.',
@@ -225,7 +226,7 @@ class ReportRegistry
             ],
 
             // ─────────────────────── Audit & Login Reports ──────────────────
-            'activity_audit_log' => [
+            'activity_audit_log'            => [
                 'group'   => 'audit',
                 'label'   => 'Activity Audit Log',
                 'desc'    => 'System activity trail (create / update / delete) over a period.',
@@ -235,7 +236,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx', 'csv'],
                 'orient'  => 'landscape',
             ],
-            'login_activity' => [
+            'login_activity'                => [
                 'group'   => 'audit',
                 'label'   => 'Login Activity',
                 'desc'    => 'User sign-in history with IP, device and timestamp.',
@@ -247,7 +248,7 @@ class ReportRegistry
             ],
 
             // ─────────────────────────── Certificates ───────────────────────
-            'cert_annual_statement' => [
+            'cert_annual_statement'         => [
                 'group'   => 'certificate',
                 'label'   => 'Annual Statement Certificate',
                 'desc'    => 'Year-end CPF account slip: opening balance, contributions, interest and closing balance for a fiscal year.',
@@ -257,7 +258,7 @@ class ReportRegistry
                 'formats' => ['pdf', 'xlsx'],
                 'orient'  => 'portrait',
             ],
-            'cert_balance' => [
+            'cert_balance'                  => [
                 'group'   => 'certificate',
                 'label'   => 'CPF Balance Certificate',
                 'desc'    => 'Official statement of a member\'s current CPF balance as of a date.',
@@ -267,7 +268,7 @@ class ReportRegistry
                 'formats' => ['pdf'],
                 'orient'  => 'portrait',
             ],
-            'cert_advance_sanction' => [
+            'cert_advance_sanction'         => [
                 'group'   => 'certificate',
                 'label'   => 'Advance Sanction Letter',
                 'desc'    => 'Sanction letter for an approved CPF advance with the repayment schedule.',
@@ -277,7 +278,7 @@ class ReportRegistry
                 'formats' => ['pdf'],
                 'orient'  => 'portrait',
             ],
-            'cert_advance_clearance' => [
+            'cert_advance_clearance'        => [
                 'group'   => 'certificate',
                 'label'   => 'Advance Clearance Certificate',
                 'desc'    => 'Certifies a fully-recovered CPF advance is cleared with no dues.',
@@ -287,7 +288,7 @@ class ReportRegistry
                 'formats' => ['pdf'],
                 'orient'  => 'portrait',
             ],
-            'cert_final_settlement' => [
+            'cert_final_settlement'         => [
                 'group'   => 'certificate',
                 'label'   => 'Final Settlement Certificate',
                 'desc'    => 'Final settlement document for a retired / resigned member.',
@@ -297,7 +298,7 @@ class ReportRegistry
                 'formats' => ['pdf'],
                 'orient'  => 'portrait',
             ],
-            'cert_nominee_settlement' => [
+            'cert_nominee_settlement'       => [
                 'group'   => 'certificate',
                 'label'   => 'Nominee Settlement Certificate',
                 'desc'    => 'Settlement document payable to the nominee of a deceased member.',
@@ -307,7 +308,7 @@ class ReportRegistry
                 'formats' => ['pdf'],
                 'orient'  => 'portrait',
             ],
-            'cert_interest_distribution' => [
+            'cert_interest_distribution'    => [
                 'group'   => 'certificate',
                 'label'   => 'Interest Distribution Certificate',
                 'desc'    => 'Certifies the bank interest credited to a member in a distribution batch.',
@@ -352,7 +353,7 @@ class ReportRegistry
 
         if (str_starts_with($gate, 'role:')) {
             return method_exists($user, 'hasRole')
-                && $user->hasRole(substr($gate, 5));
+            && $user->hasRole(substr($gate, 5));
         }
 
         return $user->can($gate);
@@ -367,7 +368,7 @@ class ReportRegistry
      */
     public static function groupedFor(?Authorizable $user): array
     {
-        $groups   = self::groups();
+        $groups     = self::groups();
         $accessible = collect(self::all())
             ->filter(fn($report) => self::allows($user, $report));
 

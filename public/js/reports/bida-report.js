@@ -106,6 +106,25 @@ var BidaReport = (function () {
         setText(els.previewSubtitle, "The selected report will appear here.");
     };
 
+    // Full reset of the sub-filters + preview. Called whenever the report type
+    // changes so no stale filter values (or a previous report's preview) linger.
+    var resetFilters = function () {
+        if (els.params) {
+            // Tear down any Select2 instances before wiping the panel.
+            if (window.jQuery) {
+                els.params.querySelectorAll("[data-rpt-select2]").forEach(function (sel) {
+                    try { window.jQuery(sel).select2("destroy"); } catch (e) { }
+                });
+            }
+            els.params.innerHTML = "";
+        }
+        hide(els.actions);
+        setText(els.desc, "");
+        hide(els.desc);
+        current = null;
+        resetPreview();
+    };
+
     // ---- load parameter panel for the chosen report --------------------
     var loadParams = function (key) {
         var url = cfg.paramsUrl + "?report=" + encodeURIComponent(key);
@@ -277,7 +296,8 @@ var BidaReport = (function () {
             // Report chooser (Select2 → jQuery change).
             var onSelect = function () {
                 var key = els.select.value;
-                if (!key) { hide(els.actions); current = null; return; }
+                resetFilters();          // always start from a clean slate
+                if (!key) { return; }
                 loadParams(key);
             };
             if (window.jQuery) { window.jQuery(els.select).on("change", onSelect); }
