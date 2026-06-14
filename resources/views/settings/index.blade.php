@@ -165,18 +165,16 @@
         </div>
     </div>
 
-    {{-- ================================================================== --}}
-    {{--  JS Configuration Object                                            --}}
-    {{-- ================================================================== --}}
+@endsection
+
+@push('page-js')
     <script>
         var BidaCpfSettingConfig = {
             updateUrl: "{{ route('settings.update') }}",
             csrfToken: "{{ csrf_token() }}",
         };
     </script>
-@endsection
 
-@push('page-js')
     <script src="{{ asset('js/settings/index.js') }}"></script>
     <script>
         document.getElementById("settings_users_link").classList.add("active");
