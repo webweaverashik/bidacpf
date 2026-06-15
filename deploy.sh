@@ -3,7 +3,8 @@ set -euo pipefail
 cd /var/www/bidacpf
 
 echo "→ Pulling latest code"
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
 
 echo "→ PHP dependencies"
 composer install --no-dev --optimize-autoloader --no-interaction
