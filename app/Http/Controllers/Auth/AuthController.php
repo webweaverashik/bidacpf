@@ -65,6 +65,16 @@ class AuthController extends Controller
             return response()->json(['message' => 'User or password is incorrect.'], 401);
         }
 
+        // OTP disabled — complete the login immediately.
+        if (! config('otp.enabled', true)) {
+            $this->completeLogin($request, $user);
+
+            return response()->json([
+                'message'  => 'Login successful!',
+                'redirect' => route('dashboard'),
+            ]);
+        }
+
         // Issue and email the code.
         try {
             $otp->generateAndSend($user);
@@ -95,6 +105,10 @@ class AuthController extends Controller
     {
         if (Auth::check()) {
             return redirect()->route('dashboard');
+        }
+
+        if (! config('otp.enabled', true)) {
+            return redirect()->route('login');
         }
 
         $user = $this->pendingUser($request);
@@ -154,21 +168,7 @@ class AuthController extends Controller
         /*
         | OTP verified — establish the authenticated session.
         */
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        // Terminate every other session belonging to this user so only the
-        // current one stays active.
-        $this->terminateOtherSessions($user, $request->session()->getId());
-
-        // Record the successful login.
-        LoginActivity::create([
-            'user_id'    => $user->id,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-            'device'     => $this->detectDevice($request->header('User-Agent')),
-        ]);
-
+        $this->completeLogin($request, $user);
         $request->session()->forget('otp_user_id');
 
         return response()->json([
@@ -198,7 +198,7 @@ class AuthController extends Controller
         if ($wait > 0) {
             return response()->json([
                 'message' => "Please wait {$wait} second(s) before requesting a new code.",
-                'wait'    => $wait,
+                'wait' => $wait,
             ], 429);
         }
 
@@ -237,6 +237,24 @@ class AuthController extends Controller
     | Helpers
     |--------------------------------------------------------------------------
     */
+
+    /** Establish the authenticated session, enforce single-session, log the activity. */
+    private function completeLogin(Request $request, User $user): void
+    {
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        // Terminate every other session belonging to this user so only the
+        // current one stays active.
+        $this->terminateOtherSessions($user, $request->session()->getId());
+
+        LoginActivity::create([
+            'user_id'    => $user->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+            'device'     => $this->detectDevice($request->header('User-Agent')),
+        ]);
+    }
 
     /** Resolve the active (non-deleted) user from the pending-login session key. */
     private function pendingUser(Request $request): ?User
