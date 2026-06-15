@@ -32,7 +32,7 @@
             </div>
             <div class="card-toolbar">
                 <a href="{{ route('payscale.create') }}" class="btn btn-primary">
-                    <i class="ki-outline ki-cloud-add fs-2"></i>
+                    <i class="bi bi-upload fs-2"></i>
                     Upload Pay Scale
                 </a>
             </div>
@@ -49,9 +49,9 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-row-bordered align-middle gy-4 ashik-table">
+                <table class="table table-hover table-row-dashed align-middle gy-4 ashik-table">
                     <thead>
-                        <tr class="fw-bold text-muted fs-7 text-uppercase">
+                        <tr class="fw-bold fs-7 text-uppercase">
                             <th class="min-w-200px">Name</th>
                             <th class="text-center w-100px">Year</th>
                             <th class="min-w-110px">Effective From</th>

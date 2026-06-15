@@ -31,13 +31,13 @@
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <span class="d-inline-flex align-items-center">
-                    <i class="ki-outline ki-cloud-add fs-2x me-2 text-primary"></i>
+                    <i class="ki-outline ki-file-up fs-2x me-2 text-primary"></i>
                     <h3 class="fw-bold text-gray-900 fs-3 m-0">New Pay Scale</h3>
                 </span>
             </div>
             <div class="card-toolbar">
                 <a href="{{ route('payscale.template') }}" class="btn btn-light-primary">
-                    <i class="ki-outline ki-cloud-download fs-2"></i> Download Template
+                    <i class="bi bi-download fs-2"></i> Download Template
                 </a>
             </div>
         </div>

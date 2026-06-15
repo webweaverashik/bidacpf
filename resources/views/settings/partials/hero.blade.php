@@ -104,7 +104,7 @@
             <li class="nav-item">
                 <a class="nav-link text-active-primary py-5 me-6" id="settings_payscale_link"
                     href="{{ route('payscale.index') }}">
-                    <i class="ki-outline ki-parcel fs-4 me-2"></i>
+                    <i class="bi bi-cash-coin fs-4 me-2"></i>
                     Payscale
                 </a>
             </li>
@@ -115,7 +115,7 @@
                 <li class="nav-item">
                     <a class="nav-link text-active-primary py-5 me-6" id="settings_bulk_admission_link"
                         href="{{ route('employee-upload.index') }}">
-                        <i class="ki-outline ki-file-up fs-4 me-2"></i>
+                        <i class="ki-outline ki-people fs-4 me-2"></i>
                         Employee Upload
                     </a>
                 </li>

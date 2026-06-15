@@ -36,7 +36,7 @@
             </div>
             <div class="card-toolbar">
                 <a href="{{ route('employee-upload.template') }}" class="btn btn-light-primary">
-                    <i class="ki-outline ki-cloud-download fs-2"></i>
+                    <i class="bi bi-download fs-2"></i>
                     Download Template
                 </a>
             </div>
