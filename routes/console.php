@@ -23,4 +23,4 @@ Schedule::command('backup:clean-files --days=7')
     ->appendOutputTo(storage_path('logs/backup-files-cleanup.log'));
 
 // Run daily database backup at 01:00
-Schedule::command('backup:run --only-db')->daily()->at('01:00');
+Schedule::command('backup:run --only-db')->daily()->at('19:42');
