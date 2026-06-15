@@ -40,7 +40,20 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+
+/*
+|--------------------------------------------------------------------------
+| Login OTP (two-step verification)
+|--------------------------------------------------------------------------
+| Step 2 of login. The pending user is carried in the guest session, so
+| these stay outside the `auth` middleware. Verify/resend are throttled.
+*/
+Route::get('/login/otp', [AuthController::class, 'showOtp'])->name('login.otp');
+Route::post('/login/otp', [AuthController::class, 'verifyOtp'])
+    ->middleware('throttle:10,1')->name('login.otp.verify');
+Route::post('/login/otp/resend', [AuthController::class, 'resendOtp'])
+    ->middleware('throttle:5,1')->name('login.otp.resend');
 
 /*
 |--------------------------------------------------------------------------

@@ -2,121 +2,166 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Auth\User;
 use App\Models\Auth\LoginActivity;
+use App\Models\Auth\User;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class AuthController extends Controller
 {
-    // Show login form
+    /*
+    |--------------------------------------------------------------------------
+    | Login screen
+    |--------------------------------------------------------------------------
+    */
     public function showLogin()
     {
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
+
         return view('auth.login')->with('warning', 'Please login first.');
     }
 
-    // Handle login
-    public function login(Request $request)
+    /*
+    |--------------------------------------------------------------------------
+    | Step 1 — verify credentials, then send an OTP (no session login yet)
+    |--------------------------------------------------------------------------
+    */
+    public function login(Request $request, OtpService $otp)
     {
-        /**
-         * ------------------------------------
-         * 1. Basic validation (AJAX friendly)
-         * ------------------------------------
-         */
         $validator = Validator::make($request->all(), [
             'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(
-                [
-                    'message' => $validator->errors()->first(),
-                ],
-                422,
-            );
+            return response()->json(['message' => $validator->errors()->first()], 422);
         }
 
-        /**
-         * ------------------------------------
-         * 2. Detect login field
-         * ------------------------------------
-         * If valid email → use email
-         * Otherwise → treat as BP number
-         */
-        // $loginValue = trim($request->login);
-
-        // $loginField = filter_var($loginValue, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile_number';
-
-        /**
-         * ------------------------------------
-         * 3. Fetch user (including soft deleted)
-         * ------------------------------------
-         */
+        // Fetch including soft-deleted so we can give precise account-state messages.
         $user = User::withTrashed()->where('email', $request->email)->first();
 
         if (! $user) {
-            return response()->json(
-                [
-                    'message' => 'No user found!',
-                ],
-                401,
-            );
+            return response()->json(['message' => 'No user found!'], 401);
         }
 
-        /**
-         * ------------------------------------
-         * 4. Account state checks
-         * ------------------------------------
-         */
         if ($user->trashed()) {
-            return response()->json(
-                [
-                    'message' => 'This account is invalid or deleted.',
-                ],
-                403,
-            );
+            return response()->json(['message' => 'This account is invalid or deleted.'], 403);
         }
 
         if (! $user->is_active) {
-            return response()->json(
-                [
-                    'message' => 'Account is inactive. Please contact admin.',
-                ],
-                403,
-            );
+            return response()->json(['message' => 'Account is inactive. Please contact admin.'], 403);
         }
 
-        /**
-         * ------------------------------------
-         * 5. Attempt authentication
-         * ------------------------------------
-         */
-        if (
-            ! Auth::attempt([
-                'email'    => $request->email,
-                'password' => $request->password,
-            ])
-        ) {
-            return response()->json(
-                [
-                    'message' => 'User or password is incorrect.',
-                ],
-                401,
-            );
+        // Verify the password WITHOUT establishing an authenticated session.
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'User or password is incorrect.'], 401);
         }
 
-        /**
-         * ------------------------------------
-         * 6. Login success → store activity
-         * ------------------------------------
-         */
-        $user = Auth::user();
+        // Issue and email the code.
+        try {
+            $otp->generateAndSend($user);
+        } catch (TransportExceptionInterface $e) {
+            Log::error('Login OTP mail failed: ' . $e->getMessage());
+            $otp->clear($user);
 
+            return response()->json([
+                'message' => 'We could not send your verification code right now. Please try again shortly.',
+            ], 422);
+        }
+
+        // Remember which user is mid-login. This rides on the guest session.
+        $request->session()->put('otp_user_id', $user->id);
+
+        return response()->json([
+            'message'  => 'A verification code has been sent to your email.',
+            'redirect' => route('login.otp'),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | OTP entry screen
+    |--------------------------------------------------------------------------
+    */
+    public function showOtp(Request $request)
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
+        $user = $this->pendingUser($request);
+
+        if (! $user) {
+            return redirect()->route('login')->with('warning', 'Please sign in first.');
+        }
+
+        return view('auth.otp', [
+            'maskedEmail' => $this->maskEmail($user->email),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Step 2 — verify the OTP, log in, and terminate previous sessions
+    |--------------------------------------------------------------------------
+    */
+    public function verifyOtp(Request $request, OtpService $otp)
+    {
+        $user = $this->pendingUser($request);
+
+        if (! $user) {
+            return response()->json([
+                'message'  => 'Your session expired. Please sign in again.',
+                'redirect' => route('login'),
+            ], 422);
+        }
+
+        $length    = (int) config('otp.length', 6);
+        $validator = Validator::make($request->all(), [
+            'code' => ['required', 'regex:/^\d{' . $length . '}$/'],
+        ], [
+            'code.required' => 'Please enter the verification code.',
+            'code.regex'    => "Please enter the {$length}-digit code.",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
+        }
+
+        $result = $otp->verify($user, $request->code);
+
+        if (! $result['ok']) {
+            $payload = ['message' => $result['message']];
+
+            // Dead pending login — bounce the user back to the start.
+            if (! empty($result['reset'])) {
+                $request->session()->forget('otp_user_id');
+                $payload['redirect'] = route('login');
+                return response()->json($payload, 422);
+            }
+
+            return response()->json($payload, 422);
+        }
+
+        /*
+        | OTP verified — establish the authenticated session.
+        */
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        // Terminate every other session belonging to this user so only the
+        // current one stays active.
+        $this->terminateOtherSessions($user, $request->session()->getId());
+
+        // Record the successful login.
         LoginActivity::create([
             'user_id'    => $user->id,
             'ip_address' => $request->ip(),
@@ -124,34 +169,121 @@ class AuthController extends Controller
             'device'     => $this->detectDevice($request->header('User-Agent')),
         ]);
 
-        /**
-         * ------------------------------------
-         * 7. Success response
-         * ------------------------------------
-         */
+        $request->session()->forget('otp_user_id');
+
         return response()->json([
             'message'  => 'Login successful!',
-            // 'redirect' => $user->role->name === 'Operator' ? route('dashboard') : route('reports.index'),
             'redirect' => route('dashboard'),
         ]);
     }
 
-    // Helper function to detect device type
-    private function detectDevice($userAgent)
+    /*
+    |--------------------------------------------------------------------------
+    | Resend the OTP (throttled)
+    |--------------------------------------------------------------------------
+    */
+    public function resendOtp(Request $request, OtpService $otp)
     {
-        if (strpos($userAgent, 'Mobile') !== false) {
-            return 'Mobile';
-        } elseif (strpos($userAgent, 'Tablet') !== false) {
-            return 'Tablet';
-        } else {
-            return 'Desktop';
+        $user = $this->pendingUser($request);
+
+        if (! $user) {
+            return response()->json([
+                'message'  => 'Your session expired. Please sign in again.',
+                'redirect' => route('login'),
+            ], 422);
         }
+
+        $wait = $otp->secondsUntilResend($user);
+
+        if ($wait > 0) {
+            return response()->json([
+                'message' => "Please wait {$wait} second(s) before requesting a new code.",
+                'wait'    => $wait,
+            ], 429);
+        }
+
+        try {
+            $otp->generateAndSend($user);
+        } catch (TransportExceptionInterface $e) {
+            Log::error('Login OTP resend failed: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'We could not send your verification code right now. Please try again shortly.',
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'A new verification code has been sent to your email.',
+            'wait'    => (int) config('otp.resend_after', 60),
+        ]);
     }
 
-    // Logout
-    public function logout()
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
+    public function logout(Request $request)
     {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('login')->with('success', 'Logged out successfully.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    /** Resolve the active (non-deleted) user from the pending-login session key. */
+    private function pendingUser(Request $request): ?User
+    {
+        $userId = $request->session()->get('otp_user_id');
+
+        if (! $userId) {
+            return null;
+        }
+
+        return User::where('id', $userId)->where('is_active', true)->first();
+    }
+
+    /** Delete all sessions for this user except the current one (database driver). */
+    private function terminateOtherSessions(User $user, string $currentSessionId): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        DB::table(config('session.table', 'sessions'))
+            ->where('user_id', $user->id)
+            ->where('id', '!=', $currentSessionId)
+            ->delete();
+    }
+
+    private function maskEmail(string $email): string
+    {
+        if (! str_contains($email, '@')) {
+            return $email;
+        }
+
+        [$name, $domain] = explode('@', $email, 2);
+        $visible         = mb_substr($name, 0, 2);
+        $masked          = str_repeat('*', max(1, mb_strlen($name) - 2));
+
+        return $visible . $masked . '@' . $domain;
+    }
+
+    private function detectDevice($userAgent)
+    {
+        if (strpos((string) $userAgent, 'Mobile') !== false) {
+            return 'Mobile';
+        } elseif (strpos((string) $userAgent, 'Tablet') !== false) {
+            return 'Tablet';
+        }
+
+        return 'Desktop';
     }
 }
