@@ -69,6 +69,7 @@ class ReportService
             'cpf_fund_position'             => $this->cpfFundPosition($p),
             'member_balance_summary'        => $this->memberBalanceSummary($p),
             'ledger_transactions'           => $this->ledgerTransactions($p),
+            'cpf_ledger'                    => $this->cpfLedger($p),
             'activity_audit_log'            => $this->activityAuditLog($p),
             'login_activity'                => $this->loginActivity($p),
             default                         => throw new \InvalidArgumentException("Unknown report [{$key}]."),
@@ -810,6 +811,293 @@ class ReportService
 
     /*
     |==========================================================================
+    | CPF Ledger — official monthly ledger grid (one row per member)
+    |==========================================================================
+    */
+    private function cpfLedger(array $p): array
+    {
+        $fy    = $p['fiscal_year'] ?? FiscalYearService::current();
+        $month = (int) ($p['month'] ?? 0);
+
+        if ($month < 1 || $month > 12) {
+            throw new \RuntimeException('Please select a month to run the CPF Ledger.');
+        }
+
+        [$monthStart, $monthEnd, $monthLabel] = $this->fiscalMonthBounds($fy, $month);
+
+        $employees = $this->ledgerEmployees($p['employee'] ?? null);
+
+        $i    = 0;
+        $rows = [];
+        $tot  = array_fill_keys(
+            ['open', 'emp', 'govt', 'idec', 'ijun', 'gross', 'disb', 'netloan', 'rec', 'total', 'disp', 'close'],
+            0
+        );
+
+        $blank = fn(int $v) => $v !== 0 ? number_format($v) : '';
+
+        foreach ($employees as $e) {
+            $opening = $this->ledgerService->balanceAsOf($e->id, $monthStart->copy()->subDay());
+            $closing = $this->ledgerService->balanceAsOf($e->id, $monthEnd);
+
+            $mv = CpfLedger::query()
+                ->where('employee_id', $e->id)
+                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->getQuery()
+                ->selectRaw('transaction_type, SUM(credit) as credit, SUM(debit) as debit')
+                ->groupBy('transaction_type')
+                ->pluck('credit', 'transaction_type'); // credit keyed by type (debit fetched separately below)
+
+            $debits = CpfLedger::query()
+                ->where('employee_id', $e->id)
+                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->getQuery()
+                ->selectRaw('transaction_type, SUM(debit) as debit')
+                ->groupBy('transaction_type')
+                ->pluck('debit', 'transaction_type');
+
+            $emp  = (int) ($mv[LedgerTransactionType::EMPLOYEE_CONTRIBUTION->value] ?? 0);
+            $govt = (int) ($mv[LedgerTransactionType::GOVERNMENT_CONTRIBUTION->value] ?? 0);
+            $bank = (int) ($mv[LedgerTransactionType::BANK_INTEREST->value] ?? 0);
+            $rec  = (int) ($mv[LedgerTransactionType::ADVANCE_RECOVERY->value] ?? 0);
+            $disb = (int) ($debits[LedgerTransactionType::ADVANCE_DISBURSEMENT->value] ?? 0);
+
+            // Two interest distributions per fiscal year: ~Dec (Jul–Dec half) and ~Jun (Jan–Jun half).
+            $idec = $month >= 7 ? $bank : 0;
+            $ijun = $month < 7 ? $bank : 0;
+
+            $gross   = $opening + $emp + $govt + $bank;
+            $netLoan = $gross - $disb;
+            $total   = $netLoan + $rec;
+            // Closing is the real ledger balance; disposal/adjustment is whatever
+            // else moved the balance (final settlement, manual adjustment).
+            $disposal = $total - $closing;
+
+            $rows[] = [
+                ++$i,
+                $e->name,
+                $e->designation,
+                $blank((int) $e->ps_basic),
+                $fy,
+                $monthLabel,
+                $blank($opening),
+                $blank($emp),
+                $blank($govt),
+                $blank($idec),
+                $blank($ijun),
+                $blank($gross),
+                $blank($disb),
+                $blank($netLoan),
+                $blank($rec),
+                $blank($total),
+                $blank($disposal),
+                $blank($closing),
+            ];
+
+            $tot['open']    += $opening;
+            $tot['emp']     += $emp;
+            $tot['govt']    += $govt;
+            $tot['idec']    += $idec;
+            $tot['ijun']    += $ijun;
+            $tot['gross']   += $gross;
+            $tot['disb']    += $disb;
+            $tot['netloan'] += $netLoan;
+            $tot['rec']     += $rec;
+            $tot['total']   += $total;
+            $tot['disp']    += $disposal;
+            $tot['close']   += $closing;
+        }
+
+        // Footer "Total" row across the numeric columns (cols 7..18).
+        $totalsRow = [
+            '', 'Total', '', '', '', '',
+            number_format($tot['open']), number_format($tot['emp']), number_format($tot['govt']),
+            number_format($tot['idec']), number_format($tot['ijun']), number_format($tot['gross']),
+            number_format($tot['disb']), number_format($tot['netloan']), number_format($tot['rec']),
+            number_format($tot['total']), number_format($tot['disp']), number_format($tot['close']),
+        ];
+
+        return [
+            'title'      => 'CPF Ledger',
+            'subtitle'   => 'Fiscal Year ' . $fy . ' · ' . $monthLabel,
+            'meta'       => [
+                ['label' => 'Fiscal Year', 'value' => $fy],
+                ['label' => 'Month', 'value' => $monthLabel],
+                ['label' => 'Members', 'value' => number_format(count($rows))],
+            ],
+            'headings'   => [
+                '#', 'Officer/Employee Name', 'Designation', 'Basic Salary', 'Fiscal Year', 'Month',
+                'Opening Balance', 'Employee Contribution (Basic 10%)', 'Govt. Contribution (Basic 8.33%)',
+                'Bank Interest (Dec end)', 'Bank Interest (June end)', 'Gross Balance',
+                'Loan Disbursement', 'Balance net of Loan', 'Loan Recovery', 'Total Balance',
+                'Disposal/Adjustment', 'Closing Balance',
+            ],
+            'aligns'     => [
+                'center', 'left', 'left', 'num', 'center', 'center',
+                'num', 'num', 'num', 'num', 'num', 'num', 'num', 'num', 'num', 'num', 'num', 'num',
+            ],
+            'rows'       => $rows,
+            // The grid's own "Total" row lives in the body so it prints on the
+            // last page of the official ledger rather than as a floating footer.
+            'appendRows' => [$totalsRow],
+            'summary'    => [],
+        ];
+    }
+
+    /** Employees included in the ledger / slip, ordered by seniority (grade) then name. */
+    private function ledgerEmployees($employeeId)
+    {
+        return Employee::query()
+            ->leftJoin('pay_scale_steps', 'employees.pay_scale_step_id', '=', 'pay_scale_steps.id')
+            ->leftJoin('pay_scales', 'pay_scale_steps.pay_scale_id', '=', 'pay_scales.id')
+            ->select([
+                'employees.id', 'employees.cpf_account_no', 'employees.name', 'employees.designation',
+                'pay_scale_steps.grade as ps_grade', 'pay_scale_steps.basic_salary as ps_basic',
+            ])
+            ->when($employeeId, fn($q) => $q->where('employees.id', $employeeId))
+            ->orderByRaw('pay_scale_steps.grade IS NULL, pay_scale_steps.grade ASC')
+            ->orderBy('employees.name')
+            ->get();
+    }
+
+    /*
+    |==========================================================================
+    | Documents — CPF Account Slip (one official slip per member)
+    |==========================================================================
+    */
+
+    /**
+     * Build a KIND_DOCUMENT payload:
+     *   ['view'=>blade, 'sheetView'=>blade, 'filename'=>str, 'title'=>str, 'data'=>[...]]
+     * 'data' carries the rendered list of per-member slips.
+     */
+    public function document(string $key, array $p): array
+    {
+        return match ($key) {
+            'cpf_account_slip' => $this->accountSlip($p),
+            default            => throw new \RuntimeException("Unknown document report [{$key}]."),
+        };
+    }
+
+    private function accountSlip(array $p): array
+    {
+        $fy    = $p['fiscal_year'] ?? FiscalYearService::current();
+        $month = (int) ($p['month'] ?? 0);
+
+        $startDate = FiscalYearService::startDate($fy);
+
+        if ($month >= 1 && $month <= 12) {
+            [, $asOfEnd, $asOfLabel] = $this->fiscalMonthBounds($fy, $month);
+        } else {
+            $asOfEnd   = FiscalYearService::endDate($fy);
+            $asOfLabel = 'Full Year';
+        }
+
+        $employees = $this->ledgerEmployees($p['employee'] ?? null)
+            ->load('openingBalance');
+
+        $slips = $employees->map(fn($e) => $this->accountSlipFor($e, $fy, $startDate, $asOfEnd))->all();
+
+        return [
+            'view'      => 'exports.documents.account-slip-pdf',
+            'sheetView' => 'exports.documents.account-slip-sheet',
+            'filename'  => 'cpf-account-slip-' . $fy,
+            'title'     => 'CPF Account Slip',
+            'data'      => [
+                'fiscalYear'  => $fy,
+                'asOfLabel'   => $asOfLabel,
+                'slips'       => $slips,
+                'generatedAt' => now(),
+            ],
+        ];
+    }
+
+    /** Compute one member's account-slip figures for the fiscal year (up to $asOfEnd). */
+    private function accountSlipFor(Employee $e, string $fy, $startDate, $asOfEnd): array
+    {
+        $ob = $e->openingBalance; // CpfOpeningBalance|null
+
+        // Opening (as at the start of the fiscal year) = migration opening +
+        // any categorised movement posted before the fiscal year began.
+        $openOwn = (int) ($ob->self_contribution ?? 0)
+         + $this->categorisedCredit($e->id, LedgerTransactionType::EMPLOYEE_CONTRIBUTION, null, $startDate->copy()->subDay());
+        $openGovt = (int) ($ob->government_contribution ?? 0)
+         + $this->categorisedCredit($e->id, LedgerTransactionType::GOVERNMENT_CONTRIBUTION, null, $startDate->copy()->subDay());
+        $openInt = (int) ($ob->interest_amount ?? 0)
+         + $this->categorisedCredit($e->id, LedgerTransactionType::BANK_INTEREST, null, $startDate->copy()->subDay());
+        $openTotal = $openOwn + $openGovt + $openInt;
+
+        // This fiscal year's deposits (up to the as-of cut-off).
+        $yearOwn      = $this->categorisedCredit($e->id, LedgerTransactionType::EMPLOYEE_CONTRIBUTION, $startDate, $asOfEnd);
+        $yearGovt     = $this->categorisedCredit($e->id, LedgerTransactionType::GOVERNMENT_CONTRIBUTION, $startDate, $asOfEnd);
+        $yearInt      = $this->categorisedCredit($e->id, LedgerTransactionType::BANK_INTEREST, $startDate, $asOfEnd);
+        $totalDeposit = $openTotal + $yearOwn + $yearGovt + $yearInt;
+
+        // Advance position (lifetime, up to the as-of cut-off). Principal only:
+        // disbursement ledger debit is the principal; recovery principal comes
+        // from the recovery rows (the ledger credit also folds in interest).
+        $advTaken = (int) CpfLedger::query()
+            ->where('employee_id', $e->id)
+            ->where('transaction_type', LedgerTransactionType::ADVANCE_DISBURSEMENT->value)
+            ->where('transaction_date', '<=', $asOfEnd)
+            ->getQuery()->sum('debit');
+
+        $advRecovered = (int) CpfAdvanceRecovery::query()
+            ->where('status', RecoveryStatus::APPROVED)
+            ->where('recovery_date', '<=', $asOfEnd)
+            ->whereHas('advance', fn($q) => $q->where('employee_id', $e->id))
+            ->sum('principal_applied');
+
+        $advRemaining = max(0, $advTaken - $advRecovered);
+        $netDeposit   = $totalDeposit - $advRemaining;
+
+        return [
+            'account_no'    => $e->cpf_account_no,
+            'name'          => $e->name,
+            'designation'   => $e->designation,
+            'open_own'      => $openOwn,
+            'open_govt'     => $openGovt,
+            'open_int'      => $openInt,
+            'open_total'    => $openTotal,
+            'year_own'      => $yearOwn,
+            'year_govt'     => $yearGovt,
+            'year_int'      => $yearInt,
+            'total_deposit' => $totalDeposit,
+            'adv_taken'     => $advTaken,
+            'adv_recovery'  => $advRecovered,
+            'adv_remaining' => $advRemaining,
+            'net_deposit'   => $netDeposit,
+            'in_words'      => $this->amountInWords($netDeposit),
+        ];
+    }
+
+    /** Sum of credits of one ledger type in an (optional) inclusive date window. */
+    private function categorisedCredit(int $employeeId, LedgerTransactionType $type, $from, $to): int
+    {
+        return (int) CpfLedger::query()
+            ->where('employee_id', $employeeId)
+            ->where('transaction_type', $type->value)
+            ->when($from, fn($q) => $q->where('transaction_date', '>=', $from))
+            ->when($to, fn($q) => $q->where('transaction_date', '<=', $to))
+            ->getQuery()
+            ->sum('credit');
+    }
+
+    /** [start, end, "Month YYYY"] for a calendar month within a fiscal year. */
+    private function fiscalMonthBounds(string $fy, int $month): array
+    {
+        $startYear = (int) substr($fy, 0, 4);
+        $endYear   = (int) substr($fy, 5);
+        $year      = $month >= 7 ? $startYear : $endYear;
+
+        $start = Carbon::create($year, $month, 1)->startOfDay();
+        $end   = $start->copy()->endOfMonth();
+
+        return [$start, $end, $start->format('F Y')];
+    }
+
+    /*
+    |==========================================================================
     | Certificates (model-bound payloads for dedicated Blades)
     |==========================================================================
     */
@@ -1043,6 +1331,11 @@ class ReportService
 
             'employee_statuses' => EmployeeStatus::options(),
 
+            'fiscal_months' => [
+                7 => 'July', 8    => 'August', 9   => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+                1 => 'January', 2 => 'February', 3 => 'March', 4      => 'April', 5    => 'May', 6       => 'June',
+            ],
+
             'audit_events' => Activity::query()->whereNotNull('event')->distinct()
                 ->orderBy('event')->pluck('event')
                 ->mapWithKeys(fn($e) => [$e => Str::headline($e)])->all(),
@@ -1122,5 +1415,67 @@ class ReportService
         $t = $to ? Carbon::parse($to)->format('d-M-Y') : '—';
 
         return "{$f} to {$t}";
+    }
+
+    /**
+     * Amount in words, English, using the South-Asian crore/lakh convention
+     * (e.g. "Five Lakh Seventy-Three Thousand Two Hundred Ninety-Four Taka Only").
+     */
+    private function amountInWords(int $amount): string
+    {
+        if ($amount === 0) {
+            return 'Zero Taka Only';
+        }
+
+        $negative = $amount < 0;
+        $amount   = abs($amount);
+
+        $ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+            'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        $tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        $twoDigits = function (int $n) use ($ones, $tens): string {
+            return $n < 20 ? $ones[$n] : trim($tens[intdiv($n, 10)] . ' ' . $ones[$n % 10]);
+        };
+
+        $threeDigits = function (int $n) use ($ones, $twoDigits): string {
+            $str = '';
+            if ($n >= 100) {
+                $str .= $ones[intdiv($n, 100)] . ' Hundred';
+                $n   %= 100;
+                if ($n) {
+                    $str .= ' ';
+                }
+            }
+            if ($n) {
+                $str .= $twoDigits($n);
+            }
+
+            return $str;
+        };
+
+        $crore     = intdiv($amount, 10000000);
+        $amount   %= 10000000;
+        $lakh      = intdiv($amount, 100000);
+        $amount   %= 100000;
+        $thousand  = intdiv($amount, 1000);
+        $amount   %= 1000;
+        $hundred   = $amount;
+
+        $parts = [];
+        if ($crore) {
+            $parts[] = $threeDigits($crore) . ' Crore';
+        }
+        if ($lakh) {
+            $parts[] = $threeDigits($lakh) . ' Lakh';
+        }
+        if ($thousand) {
+            $parts[] = $threeDigits($thousand) . ' Thousand';
+        }
+        if ($hundred) {
+            $parts[] = $threeDigits($hundred);
+        }
+
+        return ($negative ? 'Minus ' : '') . trim(implode(' ', $parts)) . ' Taka Only';
     }
 }

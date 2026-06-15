@@ -130,6 +130,26 @@ class ReportExport implements FromCollection, WithHeadings, ShouldAutoSize, With
                     }
                 }
 
+                // Append body-footer rows (e.g. the official CPF Ledger "Total"
+                // row): full-width, bold, shaded, with numeric columns right-aligned.
+                foreach (($this->report['appendRows'] ?? []) as $appendRow) {
+                    $r = ++$lastRow;
+                    foreach (array_values($appendRow) as $idx => $cell) {
+                        $sheet->setCellValue($this->colLetter($idx + 1) . $r, $cell);
+                    }
+                    $rangeEnd = $this->colLetter($this->colCount);
+                    $sheet->getStyle("A{$r}:{$rangeEnd}{$r}")->applyFromArray([
+                        'font' => ['bold' => true, 'color' => ['argb' => 'FF1F2937']],
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFEEF2FF']],
+                    ]);
+                    foreach ($aligns as $idx => $align) {
+                        if ($align === 'num') {
+                            $col = $this->colLetter($idx + 1);
+                            $sheet->getStyle("{$col}{$r}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                        }
+                    }
+                }
+
                 // Append summary footer rows, if any — label merged across all
                 // but the last column (right-aligned), value in the last column,
                 // so multiple totals line up cleanly under the data.

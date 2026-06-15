@@ -33,6 +33,8 @@
 
     $from = $total ? $offset + 1 : 0;
     $to = min($offset + $perPage, $total);
+
+    $appendRows = $appendRows ?? [];
 @endphp
 
 <div class="rpt-preview" data-preview-title="{{ $report['title'] ?? 'Report' }}"
@@ -75,6 +77,14 @@
                             @foreach ($row as $i => $cell)
                                 <td
                                     class="{{ $alignCls($i) }} {{ $isSerial($i) ? 'w-40px text-center text-muted' : '' }}">
+                                    {{ $cell }}</td>
+                            @endforeach
+                        </tr>
+                    @endforeach
+                    @foreach ($appendRows as $row)
+                        <tr class="fw-bold bg-light-primary">
+                            @foreach ($row as $i => $cell)
+                                <td class="{{ $alignCls($i) }} {{ $isSerial($i) ? 'w-40px text-center' : '' }}">
                                     {{ $cell }}</td>
                             @endforeach
                         </tr>

@@ -24,6 +24,7 @@ class ReportRegistry
 {
     public const KIND_SUMMARY     = 'summary';     // tabular report → table preview + xlsx/csv/pdf
     public const KIND_CERTIFICATE = 'certificate'; // letter / per-record document → pdf (+ xlsx data sheet)
+    public const KIND_DOCUMENT    = 'document';    // per-member official slip → pdf (page each) + xlsx (sheet each)
 
     /*
     |--------------------------------------------------------------------------
@@ -38,6 +39,7 @@ class ReportRegistry
             'advance'      => 'Advance Reports',
             'interest'     => 'Interest Reports',
             'management'   => 'Management Reports',
+            'statements'   => 'CPF Statements',
             'audit'        => 'Audit & Login Reports',
             'certificate'  => 'Certificates',
         ];
@@ -64,6 +66,7 @@ class ReportRegistry
             'date_to'                 => ['label' => 'To Date', 'type' => 'date_to'],
             'as_of'                   => ['label' => 'As of Date', 'type' => 'date'],
             'month_year'              => ['label' => 'Month', 'type' => 'month_year'],
+            'month'                   => ['label' => 'Month', 'type' => 'select', 'options' => 'fiscal_months'],
             'status_employee'         => ['label' => 'Status', 'type' => 'select', 'options' => [
                 'active' => 'Active', 'inactive' => 'Inactive',
             ]],
@@ -222,6 +225,30 @@ class ReportRegistry
                 'gate'    => 'cpf_ledger.view',
                 'params'  => ['date_from', 'date_to', 'ledger_type', 'employee'],
                 'formats' => ['pdf', 'xlsx', 'csv'],
+                'orient'  => 'landscape',
+            ],
+
+            // ───────────────────────── CPF Statements ───────────────────────
+            'cpf_ledger'                    => [
+                'group'    => 'statements',
+                'label'    => 'CPF Ledger',
+                'desc'     => 'Official monthly CPF ledger: opening balance, contributions, interest, loan movement and closing balance per member for a selected month.',
+                'kind'     => self::KIND_SUMMARY,
+                'gate'     => 'cpf_ledger.view',
+                'params'   => ['fiscal_year', 'month', 'employee'],
+                'required' => ['month'],
+                'formats'  => ['pdf', 'xlsx', 'csv'],
+                'orient'   => 'landscape',
+                'pdf_view' => 'exports.reports.cpf-ledger-pdf',
+            ],
+            'cpf_account_slip'              => [
+                'group'   => 'statements',
+                'label'   => 'CPF Account Slip',
+                'desc'    => 'Official per-member account slip: opening balance (own / govt / interest), this year\'s deposits, advance position and net balance for a fiscal year.',
+                'kind'    => self::KIND_DOCUMENT,
+                'gate'    => 'cpf_ledger.view',
+                'params'  => ['fiscal_year', 'month', 'employee'],
+                'formats' => ['pdf', 'xlsx'],
                 'orient'  => 'landscape',
             ],
 
@@ -406,17 +433,18 @@ class ReportRegistry
             return collect();
         }
 
-        $meta = self::paramMeta();
+        $meta           = self::paramMeta();
+        $reportRequired = $report['required'] ?? [];
 
         return collect($report['params'] ?? [])
-            ->map(function (string $paramKey) use ($meta) {
+            ->map(function (string $paramKey) use ($meta, $reportRequired) {
                 $m = $meta[$paramKey] ?? ['label' => str($paramKey)->headline(), 'type' => 'text'];
 
                 return [
                     'key'      => $paramKey,
                     'label'    => $m['label'],
                     'type'     => $m['type'],
-                    'required' => $m['required'] ?? false,
+                    'required' => ($m['required'] ?? false) || in_array($paramKey, $reportRequired, true),
                     'options'  => $m['options'] ?? null, // resolved later by the controller
                 ];
             });

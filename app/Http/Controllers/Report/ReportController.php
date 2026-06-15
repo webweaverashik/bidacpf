@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Report;
 
+use App\Exports\Reports\AccountSlipExport;
 use App\Exports\Reports\ReportExport;
 use App\Http\Controllers\Controller;
 use App\Services\ReportService;
@@ -105,7 +106,17 @@ class ReportController extends Controller
                     'doc'    => $doc,
                     'report' => $def,
                 ])->render();
+            } elseif ($def['kind'] === ReportRegistry::KIND_DOCUMENT) {
+                $this->assertRequired($def, $params);
+                $payload = $this->reportService->document($def['key'], $params);
+                $doc     = view($payload['view'], $payload['data'])->render();
+
+                $html = view('reports.previews.certificate', [
+                    'doc'    => $doc,
+                    'report' => $def,
+                ])->render();
             } else {
+                $this->assertRequired($def, $params);
                 $report = $this->reportService->build($def['key'], $params);
 
                 // Paginate the preview (the full data set always ships in the
@@ -118,13 +129,14 @@ class ReportController extends Controller
                 $offset   = ($page - 1) * $perPage;
 
                 $html = view('reports.previews.table', [
-                    'report'   => $report,
-                    'pageRows' => array_slice($report['rows'] ?? [], $offset, $perPage),
-                    'page'     => $page,
-                    'perPage'  => $perPage,
-                    'total'    => $total,
-                    'lastPage' => $lastPage,
-                    'offset'   => $offset,
+                    'report'     => $report,
+                    'pageRows'   => array_slice($report['rows'] ?? [], $offset, $perPage),
+                    'appendRows' => ($page === $lastPage) ? ($report['appendRows'] ?? []) : [],
+                    'page'       => $page,
+                    'perPage'    => $perPage,
+                    'total'      => $total,
+                    'lastPage'   => $lastPage,
+                    'offset'     => $offset,
                 ])->render();
             }
         } catch (\Throwable $e) {
@@ -151,9 +163,11 @@ class ReportController extends Controller
 
         $this->assertRequired($def, $params);
 
-        return $def['kind'] === ReportRegistry::KIND_CERTIFICATE
-            ? $this->generateCertificate($def, $params, $format)
-            : $this->generateSummary($def, $params, $format);
+        return match ($def['kind']) {
+            ReportRegistry::KIND_CERTIFICATE => $this->generateCertificate($def, $params, $format),
+            ReportRegistry::KIND_DOCUMENT    => $this->generateDocument($def, $params, $format),
+            default                          => $this->generateSummary($def, $params, $format),
+        };
     }
 
     /*
@@ -166,16 +180,43 @@ class ReportController extends Controller
         $report   = $this->reportService->build($def['key'], $params);
         $filename = $this->safeFilename($def['key'] . '-' . now()->format('Ymd-His'));
         $orient   = $def['orient'] ?? 'landscape';
+        $pdfView  = $def['pdf_view'] ?? 'exports.reports.report-table';
 
         return match ($format) {
             'csv'   => Excel::download(new ReportExport($report), "$filename.csv", ExcelFormat::CSV),
             'xlsx'  => Excel::download(new ReportExport($report), "$filename.xlsx"),
-            'pdf'   => Pdf::loadView('exports.reports.report-table', [
+            'pdf'   => Pdf::loadView($pdfView, [
                 'report'      => $report,
                 'generatedAt' => now(),
             ])->setPaper('a4', $orient)->download("$filename.pdf"),
             default => abort(422, 'Unsupported format.'),
         };
+    }
+
+    /**
+     * Per-member official documents (CPF Account Slip): a multi-page PDF (one
+     * slip per page) or a multi-sheet workbook (one slip per worksheet).
+     */
+    private function generateDocument(array $def, array $params, string $format)
+    {
+        $payload  = $this->reportService->document($def['key'], $params);
+        $orient   = $def['orient'] ?? 'portrait';
+        $filename = $this->safeFilename($payload['filename']);
+
+        if ($format === 'pdf') {
+            return Pdf::loadView($payload['view'], $payload['data'])
+                ->setPaper('a4', $orient)
+                ->download($filename . '.pdf');
+        }
+
+        if ($format === 'xlsx') {
+            return Excel::download(
+                new AccountSlipExport($payload['data']['slips'], $payload['sheetView'], $payload['data']),
+                $filename . '.xlsx'
+            );
+        }
+
+        abort(422, 'Unsupported format.');
     }
 
     private function generateCertificate(array $def, array $params, string $format)
