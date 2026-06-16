@@ -22,8 +22,8 @@ class UserSeeder extends Seeder
         // Super Admin
         $superAdmin = User::create([
             'name'          => 'Ashik',
-            'email'         => 'webweaverashik@gmail.com',
-            'mobile_number' => '01812778899',
+            'email'         => 'admin@cpf.bida.com',
+            'mobile_number' => '01899999999',
             'password'      => Hash::make('password123'),
         ]);
         $superAdmin->assignRole('Admin');
@@ -31,8 +31,8 @@ class UserSeeder extends Seeder
         // CPF Officer
         $cpfOfficer = User::create([
             'name'          => 'Rahman',
-            'email'         => 'ashik.ane.doict@gmail.com',
-            'mobile_number' => '01920869809',
+            'email'         => 'officer@cpf.bida.com',
+            'mobile_number' => '01999999999',
             'password'      => Hash::make('password123'),
         ]);
         $cpfOfficer->assignRole('CPF Officer');
@@ -40,8 +40,8 @@ class UserSeeder extends Seeder
         // Auditor
         $auditor = User::create([
             'name'          => 'Ramjan',
-            'email'         => 'ashikgsc170@gmail.com',
-            'mobile_number' => '01723663310',
+            'email'         => 'auditor@cpf.bida.com',
+            'mobile_number' => '01799963999',
             'password'      => Hash::make('password123'),
         ]);
         $auditor->assignRole('Auditor');
