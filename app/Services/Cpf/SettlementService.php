@@ -12,6 +12,7 @@ use App\Models\Cpf\CpfAdvance;
 use App\Models\Cpf\CpfAdvanceRecovery;
 use App\Models\Cpf\CpfFinalSettlement;
 use App\Models\Employee\Employee;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,8 +36,10 @@ use Illuminate\Support\Facades\DB;
  */
 class SettlementService
 {
-    public function __construct(protected LedgerService $ledgerService)
-    {}
+    public function __construct(
+        protected LedgerService $ledgerService,
+        protected NotificationService $notifications,
+    ) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -91,7 +94,7 @@ class SettlementService
             ->exists();
 
         $pendingRecovery = CpfAdvanceRecovery::query()
-            ->whereHas('advance', fn ($q) => $q->where('employee_id', $employee->id))
+            ->whereHas('advance', fn($q) => $q->where('employee_id', $employee->id))
             ->where('status', RecoveryStatus::SUBMITTED)
             ->exists();
 
@@ -130,7 +133,7 @@ class SettlementService
                 throw new \RuntimeException('This employee already has a settlement in progress or approved.');
             }
 
-            $type = $this->resolveType($data['settlement_type']);
+            $type    = $this->resolveType($data['settlement_type']);
             $figures = $this->preview($employee, $data['settlement_date']);
 
             return CpfFinalSettlement::create([
@@ -205,6 +208,16 @@ class SettlementService
             'reject_reason' => null,
         ]);
 
+        $member = $settlement->employee?->name;
+        $this->notifications->notifyAdmins(
+            title: 'New final settlement request',
+            message: "A final settlement request ({$settlement->settlement_no})" . ($member ? " for {$member}" : '') . ' has been submitted and is awaiting approval.',
+            category: 'settlement',
+            url: route('cpf-settlements.show', $settlement->id, false),
+            icon: 'ki-exit-right',
+            color: 'info',
+        );
+
         return $settlement->fresh();
     }
 
@@ -221,7 +234,7 @@ class SettlementService
             throw new \RuntimeException('Only submitted settlements can be approved.');
         }
 
-        return DB::transaction(function () use ($settlement, $approvedBy) {
+        $fresh = DB::transaction(function () use ($settlement, $approvedBy) {
             $employee = $settlement->employee()->lockForUpdate()->first();
 
             if ($employee->status !== EmployeeStatus::ACTIVE) {
@@ -241,9 +254,9 @@ class SettlementService
                     'source_id'        => $settlement->id,
                     'reference_no'     => $settlement->settlement_no,
                     'remarks'          => "Final settlement payout ({$settlement->settlement_no}) — {$settlement->settlement_type->label()}",
-                    'debit'            => $figures['closing_balance'],
-                    'credit'           => 0,
-                    'created_by'       => $approvedBy,
+                    'debit'      => $figures['closing_balance'],
+                    'credit'     => 0,
+                    'created_by' => $approvedBy,
                 ]);
             }
 
@@ -272,6 +285,18 @@ class SettlementService
 
             return $settlement->fresh();
         });
+
+        $this->notifications->notifyUser(
+            [$settlement->submitted_by, $settlement->created_by],
+            title: 'Final settlement approved',
+            message: "The final settlement ({$settlement->settlement_no}) has been approved and finalised.",
+            category: 'settlement',
+            url: route('cpf-settlements.show', $settlement->id, false),
+            icon: 'ki-exit-right',
+            color: 'success',
+        );
+
+        return $fresh;
     }
 
     /**
@@ -289,6 +314,17 @@ class SettlementService
             'rejected_by'   => $rejectedBy,
             'rejected_at'   => now(),
         ]);
+
+        $this->notifications->notifyUser(
+            [$settlement->submitted_by, $settlement->created_by],
+            title: 'Final settlement rejected',
+            message: "The final settlement ({$settlement->settlement_no}) was rejected"
+            . ($reason ? ": {$reason}" : '.'),
+            category: 'settlement',
+            url: route('cpf-settlements.show', $settlement->id, false),
+            icon: 'ki-exit-right',
+            color: 'danger',
+        );
 
         return $settlement->fresh();
     }

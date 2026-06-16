@@ -8,6 +8,7 @@ use App\Models\Cpf\CpfContribution;
 use App\Models\Cpf\CpfContributionBatch;
 use App\Models\Employee\Employee;
 use App\Models\Setting;
+use App\Services\NotificationService;
 use App\Support\FiscalYearService;
 use App\Support\MoneyService;
 use Carbon\Carbon;
@@ -15,8 +16,10 @@ use Illuminate\Support\Facades\DB;
 
 class ContributionService
 {
-    public function __construct(protected LedgerService $ledgerService)
-    {}
+    public function __construct(
+        protected LedgerService $ledgerService,
+        protected NotificationService $notifications,
+    ) {}
 
     /**
      * Generate a DRAFT contribution batch for a month/year and pre-populate
@@ -25,7 +28,7 @@ class ContributionService
      */
     public function generateBatch(int $month, int $year, int $createdBy): CpfContributionBatch
     {
-        return DB::transaction(function () use ($month, $year, $createdBy) {
+        $batch = DB::transaction(function () use ($month, $year, $createdBy) {
             $contributionMonth = Carbon::create($year, $month, 1);
 
             $batch = CpfContributionBatch::create([
@@ -39,6 +42,17 @@ class ContributionService
 
             return $batch->fresh('contributions');
         });
+
+        $this->notifications->notifyAdmins(
+            title: 'New contribution batch created',
+            message: "A CPF contribution batch for {$batch->contribution_month->format('F Y')} (Batch #{$batch->id}) has been created and is ready for review.",
+            category: 'contribution',
+            url: route('cpf-contributions.show', $batch->id, false),
+            icon: 'ki-document',
+            color: 'primary',
+        );
+
+        return $batch;
     }
 
     /**
@@ -138,6 +152,15 @@ class ContributionService
             'submitted_by' => $submittedBy,
             'submitted_at' => now(),
         ]);
+
+        $this->notifications->notifyAdmins(
+            title: 'Contribution batch submitted for approval',
+            message: "The {$batch->contribution_month->format('F Y')} CPF contribution batch (Batch #{$batch->id}) has been submitted and is awaiting approval.",
+            category: 'contribution',
+            url: route('cpf-contributions.show', $batch->id, false),
+            icon: 'ki-document',
+            color: 'info',
+        );
     }
 
     /**
@@ -165,6 +188,16 @@ class ContributionService
                 'approved_at' => now(),
             ]);
         });
+
+        $this->notifications->notifyUser(
+            [$batch->submitted_by, $batch->created_by],
+            title: 'Contribution batch approved',
+            message: "The {$batch->contribution_month->format('F Y')} CPF contribution batch (Batch #{$batch->id}) has been approved and posted to the ledger.",
+            category: 'contribution',
+            url: route('cpf-contributions.show', $batch->id, false),
+            icon: 'ki-document',
+            color: 'success',
+        );
     }
 
     /**
@@ -176,12 +209,26 @@ class ContributionService
             throw new \RuntimeException('Only batches pending approval can be sent back.');
         }
 
+        // Capture recipients before submitted_by is cleared by the update below.
+        $recipients = [$batch->submitted_by, $batch->created_by];
+
         $batch->update([
             'status'       => BatchStatus::DRAFT,
             'submitted_by' => null,
             'submitted_at' => null,
             'remarks'      => $remarks,
         ]);
+
+        $this->notifications->notifyUser(
+            $recipients,
+            title: 'Contribution batch sent back',
+            message: "The {$batch->contribution_month->format('F Y')} CPF contribution batch (Batch #{$batch->id}) was sent back for correction"
+            . ($remarks ? ": {$remarks}" : '.'),
+            category: 'contribution',
+            url: route('cpf-contributions.show', $batch->id, false),
+            icon: 'ki-document',
+            color: 'danger',
+        );
     }
 
     /**
@@ -280,5 +327,15 @@ class ContributionService
                 'reversed_at' => now(),
             ]);
         });
+
+        $this->notifications->notifyUser(
+            [$batch->submitted_by, $batch->created_by],
+            title: 'Contribution batch reversed',
+            message: "The {$batch->contribution_month->format('F Y')} CPF contribution batch (Batch #{$batch->id}) has been reversed; its ledger entries were unwound.",
+            category: 'contribution',
+            url: route('cpf-contributions.show', $batch->id, false),
+            icon: 'ki-document',
+            color: 'warning',
+        );
     }
 }

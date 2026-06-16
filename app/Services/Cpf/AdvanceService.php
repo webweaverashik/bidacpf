@@ -9,13 +9,16 @@ use App\Models\Cpf\CpfAdvance;
 use App\Models\Cpf\CpfAdvanceRecovery;
 use App\Models\Employee\Employee;
 use App\Models\Setting;
+use App\Services\NotificationService;
 use App\Support\MoneyService;
 use Illuminate\Support\Facades\DB;
 
 class AdvanceService
 {
-    public function __construct(protected LedgerService $ledgerService)
-    {}
+    public function __construct(
+        protected LedgerService $ledgerService,
+        protected NotificationService $notifications,
+    ) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -93,11 +96,21 @@ class AdvanceService
         }
 
         $advance->update([
-            'status'       => AdvanceStatus::SUBMITTED,
-            'submitted_by' => $submittedBy,
-            'submitted_at' => now(),
+            'status'        => AdvanceStatus::SUBMITTED,
+            'submitted_by'  => $submittedBy,
+            'submitted_at'  => now(),
             'reject_reason' => null,
         ]);
+
+        $member = $advance->employee?->name;
+        $this->notifications->notifyAdmins(
+            title: 'New CPF advance request',
+            message: "A CPF advance request ({$advance->advance_no})" . ($member ? " for {$member}" : '') . ' has been submitted and is awaiting approval.',
+            category: 'advance',
+            url: route('cpf-advances.show', $advance->id, false),
+            icon: 'ki-wallet',
+            color: 'info',
+        );
 
         return $advance->fresh();
     }
@@ -115,7 +128,7 @@ class AdvanceService
             throw new \RuntimeException('Only submitted advances can be approved.');
         }
 
-        return DB::transaction(function () use ($advance, $overrides, $approvedBy) {
+        $fresh = DB::transaction(function () use ($advance, $overrides, $approvedBy) {
             $approvedAmount   = (int) ($overrides['approved_amount'] ?? $advance->requested_amount);
             $interestRate     = (float) ($overrides['interest_rate'] ?? $advance->interest_rate);
             $installmentCount = (int) ($overrides['installment_count'] ?? $advance->installment_count);
@@ -151,13 +164,25 @@ class AdvanceService
                 'source_id'        => $advance->id,
                 'reference_no'     => $advance->advance_no,
                 'remarks'          => "CPF Advance disbursement ({$advance->advance_no})",
-                'debit'            => $approvedAmount,
-                'credit'           => 0,
-                'created_by'       => $approvedBy,
+                'debit'      => $approvedAmount,
+                'credit'     => 0,
+                'created_by' => $approvedBy,
             ]);
 
             return $advance->fresh();
         });
+
+        $this->notifications->notifyUser(
+            [$advance->submitted_by, $advance->created_by],
+            title: 'CPF advance approved',
+            message: "Your CPF advance request ({$advance->advance_no}) has been approved.",
+            category: 'advance',
+            url: route('cpf-advances.show', $advance->id, false),
+            icon: 'ki-wallet',
+            color: 'success',
+        );
+
+        return $fresh;
     }
 
     /**
@@ -175,6 +200,17 @@ class AdvanceService
             'rejected_by'   => $rejectedBy,
             'rejected_at'   => now(),
         ]);
+
+        $this->notifications->notifyUser(
+            [$advance->submitted_by, $advance->created_by],
+            title: 'CPF advance rejected',
+            message: "Your CPF advance request ({$advance->advance_no}) was rejected"
+            . ($reason ? ": {$reason}" : '.'),
+            category: 'advance',
+            url: route('cpf-advances.show', $advance->id, false),
+            icon: 'ki-wallet',
+            color: 'danger',
+        );
 
         return $advance->fresh();
     }
@@ -276,6 +312,15 @@ class AdvanceService
             'reject_reason' => null,
         ]);
 
+        $this->notifications->notifyAdmins(
+            title: 'New CPF recovery submitted',
+            message: "A CPF advance recovery ({$recovery->recovery_no}) has been submitted and is awaiting approval.",
+            category: 'recovery',
+            url: route('cpf-advances.recovery.show', [$recovery->cpf_advance_id, $recovery->id], false),
+            icon: 'ki-dollar',
+            color: 'info',
+        );
+
         return $recovery->fresh();
     }
 
@@ -293,7 +338,7 @@ class AdvanceService
             throw new \RuntimeException('Only submitted recoveries can be approved.');
         }
 
-        return DB::transaction(function () use ($recovery, $approvedBy) {
+        $fresh = DB::transaction(function () use ($recovery, $approvedBy) {
             $advance = $recovery->advance()->lockForUpdate()->first();
 
             if ($advance->status !== AdvanceStatus::APPROVED) {
@@ -326,11 +371,11 @@ class AdvanceService
                 'reference_no'     => $recovery->recovery_no,
                 'remarks'          => $interestPart > 0
                     ? "CPF Advance recovery ({$advance->advance_no}) — principal "
-                        . number_format($principalPart) . ", interest " . number_format($interestPart)
+                . number_format($principalPart) . ", interest " . number_format($interestPart)
                     : "CPF Advance recovery ({$advance->advance_no})",
-                'debit'            => 0,
-                'credit'           => $amount,
-                'created_by'       => $approvedBy,
+                'debit'      => 0,
+                'credit'     => $amount,
+                'created_by' => $approvedBy,
             ]);
 
             // Update balances.
@@ -351,6 +396,18 @@ class AdvanceService
 
             return $recovery->fresh();
         });
+
+        $this->notifications->notifyUser(
+            [$recovery->submitted_by, $recovery->created_by],
+            title: 'CPF recovery approved',
+            message: "Your CPF advance recovery ({$recovery->recovery_no}) has been approved and posted to the ledger.",
+            category: 'recovery',
+            url: route('cpf-advances.recovery.show', [$recovery->cpf_advance_id, $recovery->id], false),
+            icon: 'ki-dollar',
+            color: 'success',
+        );
+
+        return $fresh;
     }
 
     public function rejectRecovery(CpfAdvanceRecovery $recovery, ?string $reason, int $rejectedBy): CpfAdvanceRecovery
@@ -365,6 +422,17 @@ class AdvanceService
             'rejected_by'   => $rejectedBy,
             'rejected_at'   => now(),
         ]);
+
+        $this->notifications->notifyUser(
+            [$recovery->submitted_by, $recovery->created_by],
+            title: 'CPF recovery rejected',
+            message: "Your CPF advance recovery ({$recovery->recovery_no}) was rejected"
+            . ($reason ? ": {$reason}" : '.'),
+            category: 'recovery',
+            url: route('cpf-advances.recovery.show', [$recovery->cpf_advance_id, $recovery->id], false),
+            icon: 'ki-dollar',
+            color: 'danger',
+        );
 
         return $recovery->fresh();
     }

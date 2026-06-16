@@ -57,5 +57,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     require __DIR__ . '/modules/users.php';
     require __DIR__ . '/modules/profile.php';
     require __DIR__ . '/modules/audit-logs.php';
+    require __DIR__ . '/modules/notifications.php';
     require __DIR__ . '/modules/attachments.php';
 });

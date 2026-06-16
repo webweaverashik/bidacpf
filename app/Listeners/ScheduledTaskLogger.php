@@ -2,6 +2,7 @@
 namespace App\Listeners;
 
 use App\Models\ScheduledTaskLog;
+use App\Services\NotificationService;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Events\Dispatcher;
@@ -98,6 +99,28 @@ class ScheduledTaskLogger
                     'label'      => ScheduledTaskLog::labelFor($event->command),
                     'started_at' => now(),
                 ], $data));
+            }
+
+            $failed = $data['status'] === ScheduledTaskLog::STATUS_FAILED;
+
+            // The contribution auto-draft already notifies on success via
+            // ContributionService; only alert here when that command FAILS, to
+            // avoid two notifications for the same successful run.
+            $skipSuccess = $event->command === 'cpf:generate-contribution-batch' && ! $failed;
+
+            if (! $skipSuccess) {
+                $label = ScheduledTaskLog::labelFor($event->command) ?? $event->command;
+
+                app(NotificationService::class)->notifyAdmins(
+                    title: $failed ? "Scheduled task failed: {$label}" : "Scheduled task completed: {$label}",
+                    message: $failed
+                        ? "The scheduled task \"{$label}\" failed (exit code {$exit})."
+                        : "The scheduled task \"{$label}\" completed successfully.",
+                    category: 'scheduled_task',
+                    url: route('scheduled-tasks.index', [], false),
+                    icon: $failed ? 'ki-cross-circle' : 'ki-time',
+                    color: $failed ? 'danger' : 'success',
+                );
             }
         } catch (\Throwable $e) {
             $this->warn('finished', $e);

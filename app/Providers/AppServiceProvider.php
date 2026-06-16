@@ -1,7 +1,10 @@
 <?php
-
 namespace App\Providers;
 
+use App\Listeners\ScheduledTaskLogger;
+use App\View\Composers\NotificationComposer;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Event::subscribe(\App\Listeners\ScheduledTaskLogger::class);
-        //
+        Event::subscribe(ScheduledTaskLogger::class);
+        View::composer('layouts.partials.header', NotificationComposer::class);
     }
 }
