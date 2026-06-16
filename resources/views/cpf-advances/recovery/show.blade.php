@@ -104,7 +104,7 @@
                 <div class="card-header"><div class="card-title"><h3>Deposit Slip</h3></div></div>
                 <div class="card-body">
                     @if ($recovery->firstAttachment())
-                        <a href="{{ asset($recovery->firstAttachment()->file_path) }}" target="_blank"
+                        <a href="{{ $recovery->firstAttachment()->url }}" target="_blank"
                             class="d-flex align-items-center border border-gray-300 border-dashed rounded p-4">
                             <i class="ki-duotone ki-file-down fs-2x text-primary me-4"><span class="path1"></span><span class="path2"></span></i>
                             <div class="d-flex flex-column">

@@ -6,8 +6,29 @@ use App\Traits\HasCreatedBy;
 class Attachment extends BaseModel
 {
     use HasCreatedBy;
-    
-    protected $fillable = ['attachable_type', 'attachable_id', 'file_name', 'file_path', 'mime_type', 'file_size', 'created_by'];
+
+    protected $fillable = ['uuid', 'attachable_type', 'attachable_id', 'file_name', 'file_path', 'mime_type', 'file_size', 'created_by'];
+
+    /**
+     * Auto-assign a uuid on create so the public URL never exposes the
+     * sequential primary key.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $attachment) {
+            if (empty($attachment->uuid)) {
+                $attachment->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
+
+    /**
+     * Route-model-bind {attachment} by uuid instead of id.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     /**
      * Parent model.
@@ -18,11 +39,16 @@ class Attachment extends BaseModel
     }
 
     /**
-     * Public URL.
+     * Gated serve URL. The uuid is the real key; the trailing file name is
+     * cosmetic — it makes the browser tab title and the default save-as name
+     * match the original file.
      */
     public function getUrlAttribute(): string
     {
-        return asset($this->file_path);
+        return route('attachments.show', [
+            'attachment' => $this->uuid,
+            'name'       => $this->file_name,
+        ]);
     }
 
     /**

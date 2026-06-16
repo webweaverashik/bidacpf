@@ -3,7 +3,10 @@
 @section('title', 'Edit Recovery')
 
 @section('header-title')
-    @include('cpf-advances.partials.page-header', ['heading' => 'Edit Recovery', 'crumbs' => ['CPF Advance/Loan', 'Recovery Posting', 'Edit']])
+    @include('cpf-advances.partials.page-header', [
+        'heading' => 'Edit Recovery',
+        'crumbs' => ['CPF Advance/Loan', 'Recovery Posting', 'Edit'],
+    ])
 @endsection
 
 @section('content')
@@ -11,7 +14,16 @@
         <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
             <div>
                 <h2 class="mb-1">Edit Recovery — {{ $recovery->recovery_no }}</h2>
-                <div class="text-gray-700 fw-semibold">{{ $advance->advance_no }} · {{ $advance->employee->name }}</div>
+                {{-- <div class="text-gray-700 fw-semibold">{{ $advance->advance_no }} · {{ $advance->employee->name }}</div> --}}
+                <div class="text-gray-700 fw-semibold">
+                    <a href="{{ route('cpf-advances.show', $advance) }}" class="text-gray-700 text-hover-primary">
+                        {{ $advance->advance_no }}
+                    </a>
+                    ·
+                    <a href="{{ route('employees.show', $advance->employee) }}" class="text-gray-700 text-hover-primary">
+                        {{ $advance->employee->name }}
+                    </a>
+                </div>
             </div>
             <div class="text-end">
                 <div class="text-muted fs-7 text-uppercase">Outstanding Balance</div>
@@ -21,9 +33,14 @@
     </div>
 
     <div class="card">
-        <div class="card-header"><div class="card-title"><h3>Recovery Details</h3></div></div>
+        <div class="card-header">
+            <div class="card-title">
+                <h3>Recovery Details</h3>
+            </div>
+        </div>
 
-        <form id="rec_form" action="{{ route('cpf-advances.recovery.update', [$advance, $recovery]) }}" method="POST" enctype="multipart/form-data">
+        <form id="rec_form" action="{{ route('cpf-advances.recovery.update', [$advance, $recovery]) }}" method="POST"
+            enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="card-body">
@@ -64,7 +81,8 @@
                         @if ($recovery->firstAttachment())
                             <div class="adv-file-hint mt-1">
                                 Current:
-                                <a href="{{ asset($recovery->firstAttachment()->file_path) }}" target="_blank">{{ $recovery->firstAttachment()->file_name }}</a>
+                                <a href="{{ $recovery->firstAttachment()->url }}"
+                                    target="_blank">{{ $recovery->firstAttachment()->file_name }}</a>
                                 — leave empty to keep it.
                             </div>
                         @endif
@@ -83,7 +101,8 @@
                 <a href="{{ route('cpf-advances.recovery.show', [$advance, $recovery]) }}" class="btn btn-light">Cancel</a>
                 <button id="rec_submit_btn" type="submit" class="btn btn-primary">
                     <span class="indicator-label">Update Draft</span>
-                    <span class="indicator-progress">Saving... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    <span class="indicator-progress">Saving... <span
+                            class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                 </button>
             </div>
         </form>
@@ -96,7 +115,10 @@
 
 @push('page-js')
     <script>
-        var BidaRecoveryFormConfig = { outstanding: {{ (int) $advance->outstanding_amount }}, isEdit: true };
+        var BidaRecoveryFormConfig = {
+            outstanding: {{ (int) $advance->outstanding_amount }},
+            isEdit: true
+        };
     </script>
     <script src="{{ asset('js/cpf-advances/bida-recovery-form.js') }}"></script>
 @endpush

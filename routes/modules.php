@@ -40,7 +40,8 @@ use Illuminate\Support\Facades\Route;
 |     ├── settings.php
 |     ├── users.php
 |     ├── profile.php
-|     └── audit-logs.php
+|     ├── audit-logs.php
+|     └── attachments.php
 */
 
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
@@ -56,4 +57,5 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     require __DIR__ . '/modules/users.php';
     require __DIR__ . '/modules/profile.php';
     require __DIR__ . '/modules/audit-logs.php';
+    require __DIR__ . '/modules/attachments.php';
 });

@@ -82,7 +82,7 @@
                         @if ($advance->firstAttachment())
                             <div class="adv-file-hint mt-1">
                                 Current:
-                                <a href="{{ asset($advance->firstAttachment()->file_path) }}" target="_blank">
+                                <a href="{{ $advance->firstAttachment()->url }}" target="_blank">
                                     {{ $advance->firstAttachment()->file_name }}
                                 </a> — leave empty to keep it.
                             </div>

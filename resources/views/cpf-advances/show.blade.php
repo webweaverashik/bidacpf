@@ -253,7 +253,7 @@
                 <!--begin::Documents-->
                 <div class="tab-pane fade" id="adv_tab_docs" role="tabpanel">
                     @forelse ($advance->attachments as $file)
-                        <a href="{{ asset($file->file_path) }}" target="_blank"
+                        <a href="{{ $file->url }}" target="_blank"
                             class="d-flex align-items-center border border-gray-300 border-dashed rounded p-4 mb-3">
                             <i class="ki-duotone ki-file-down fs-2x text-primary me-4"><span class="path1"></span><span class="path2"></span></i>
                             <div class="d-flex flex-column">

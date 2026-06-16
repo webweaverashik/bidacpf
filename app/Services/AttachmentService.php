@@ -11,7 +11,7 @@ class AttachmentService
     /**
      * Store an uploaded file under public/{directory} and attach it
      * polymorphically to the model. Mirrors the employee-photo upload style
-     * (move to public_path) so it does not depend on the storage:link symlink
+     * (move to storage_path) so it does not depend on the storage:link symlink
      * or a configured 'public' disk.
      *
      * @param  Model         $model     Any model using morphMany attachments()
@@ -27,7 +27,7 @@ class AttachmentService
         }
 
         $directory = trim($directory, '/');
-        $uploadDir = public_path($directory);
+        $uploadDir = storage_path('app/private/' . $directory);
 
         if (! file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
@@ -70,7 +70,7 @@ class AttachmentService
     public function purge(Model $model): void
     {
         foreach ($model->attachments()->get() as $existing) {
-            $full = public_path($existing->file_path);
+            $full = storage_path('app/private/' . ltrim($existing->file_path, '/'));
             if ($existing->file_path && is_file($full)) {
                 @unlink($full);
             }
