@@ -60,12 +60,8 @@
                             <!--begin::Tabs-->
                             <ul class="nav nav-line-tabs nav-line-tabs-2x nav-stretch fw-semibold px-9">
                                 <li class="nav-item">
-                                    <a class="nav-link text-white opacity-75 opacity-state-100 pb-4"
-                                        data-bs-toggle="tab" href="#kt_topbar_notifications_1">Alerts</a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link text-white opacity-75 opacity-state-100 pb-4 active"
-                                        data-bs-toggle="tab" href="#kt_topbar_notifications_2">Updates</a>
+                                        data-bs-toggle="tab" href="#kt_topbar_notifications_1">Alerts</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-white opacity-75 opacity-state-100 pb-4"
@@ -78,7 +74,7 @@
                         <!--begin::Tab content-->
                         <div class="tab-content">
                             <!--begin::Tab panel-->
-                            <div class="tab-pane fade" id="kt_topbar_notifications_1" role="tabpanel">
+                            <div class="tab-pane fade show active" id="kt_topbar_notifications_1" role="tabpanel">
                                 <!--begin::Items-->
                                 <div class="scroll-y mh-325px my-5 px-8">
                                     <!--begin::Item-->
@@ -278,42 +274,6 @@
                                         <i class="ki-outline ki-arrow-right fs-5"></i> </a>
                                 </div>
                                 <!--end::View more-->
-                            </div>
-                            <!--end::Tab panel-->
-                            <!--begin::Tab panel-->
-                            <div class="tab-pane fade show active" id="kt_topbar_notifications_2" role="tabpanel">
-                                <!--begin::Wrapper-->
-                                <div class="d-flex flex-column px-9">
-                                    <!--begin::Section-->
-                                    <div class="pt-10 pb-0">
-                                        <!--begin::Title-->
-                                        <h3 class="text-gray-900 text-center fw-bold">
-                                            Get Pro Access
-                                        </h3>
-                                        <!--end::Title-->
-                                        <!--begin::Text-->
-                                        <div class="text-center text-gray-600 fw-semibold pt-1">
-                                            Outlines keep you honest. They stoping you from amazing poorly
-                                            about drive
-                                        </div>
-                                        <!--end::Text-->
-                                        <!--begin::Action-->
-                                        <div class="text-center mt-5 mb-9">
-                                            <a href="#" class="btn btn-sm btn-primary px-6"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#kt_modal_upgrade_plan">Upgrade</a>
-                                        </div>
-                                        <!--end::Action-->
-                                    </div>
-                                    <!--end::Section-->
-                                    <!--begin::Illustration-->
-                                    <div class="text-center px-4">
-                                        <img class="mw-100 mh-200px" alt="image"
-                                            src="{{ asset('assets/media/illustrations/sketchy-1/1.png') }}" />
-                                    </div>
-                                    <!--end::Illustration-->
-                                </div>
-                                <!--end::Wrapper-->
                             </div>
                             <!--end::Tab panel-->
                             <!--begin::Tab panel-->
