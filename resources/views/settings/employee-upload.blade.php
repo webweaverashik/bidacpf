@@ -49,7 +49,7 @@
                     Download the template and keep the header row unchanged. Pick the pay scale these employees
                     belong to — each row's <strong>grade</strong> and <strong>step</strong> are matched against it.
                     Dates use <code>YYYY-MM-DD</code>. Nothing is saved until you review the preview and confirm.
-                    Maximum {{ \App\Services\EmployeeUploadService::MAX_ROWS }} rows per upload.
+                    Maximum {{ \App\Services\Employee\EmployeeUploadService::MAX_ROWS }} rows per upload.
                 </div>
             </div>
 

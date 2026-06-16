@@ -3,7 +3,7 @@ namespace Database\Seeders;
 
 use App\Models\Auth\User;
 use App\Models\Interest\BankInterestBatch;
-use App\Services\InterestDistributionService;
+use App\Services\Interest\InterestDistributionService;
 use App\Support\FiscalYearService;
 use Illuminate\Database\Seeder;
 

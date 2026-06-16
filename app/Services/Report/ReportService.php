@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Report;
 
 use App\Enums\AdvanceStatus;
 use App\Enums\EmployeeStatus;

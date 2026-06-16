@@ -6,7 +6,7 @@ use App\Models\Auth\User;
 use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;
 use App\Models\Employee\PayScaleStep;
-use App\Services\EmployeeSalaryService;
+use App\Services\Employee\EmployeeSalaryService;
 use Illuminate\Console\Command;
 
 /**

@@ -2,7 +2,7 @@
 namespace Database\Seeders;
 
 use App\Models\Auth\User;
-use App\Services\ContributionService;
+use App\Services\Cpf\ContributionService;
 use Illuminate\Database\Seeder;
 
 /**

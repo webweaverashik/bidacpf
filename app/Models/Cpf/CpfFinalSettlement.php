@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Like CpfAdvance it is a *transactional* record: on approval the service posts
  * a FINAL_SETTLEMENT ledger entry, transitions the employee's status, and stamps
  * the retirement date. This model carries only state + helpers; the posting logic
- * lives in App\Services\SettlementService.
+ * lives in App\Services\Cpf\SettlementService.
  */
 class CpfFinalSettlement extends BaseModel
 {

@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Employee;
 
 use App\Models\Employee\Employee;
 use App\Models\Employee\EmployeeSalaryHistory;

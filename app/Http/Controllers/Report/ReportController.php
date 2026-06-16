@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Report;
 use App\Exports\Reports\AccountSlipExport;
 use App\Exports\Reports\ReportExport;
 use App\Http\Controllers\Controller;
-use App\Services\ReportService;
+use App\Services\Report\ReportService;
 use App\Support\FiscalYearService;
 use App\Support\ReportRegistry;
 use Barryvdh\DomPDF\Facade\Pdf;

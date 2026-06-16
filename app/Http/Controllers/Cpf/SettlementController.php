@@ -12,7 +12,7 @@ use App\Http\Requests\Settlement\UpdateSettlementRequest;
 use App\Models\Cpf\CpfFinalSettlement;
 use App\Models\Employee\Employee;
 use App\Services\AttachmentService;
-use App\Services\SettlementService;
+use App\Services\Cpf\SettlementService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

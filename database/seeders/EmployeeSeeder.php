@@ -6,7 +6,7 @@ use App\Enums\SourceType;
 use App\Models\Auth\User;
 use App\Models\Cpf\CpfOpeningBalance;
 use App\Models\Employee\Employee;
-use App\Services\LedgerService;
+use App\Services\Cpf\LedgerService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

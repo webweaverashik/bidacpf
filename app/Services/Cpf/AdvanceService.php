@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Cpf;
 
 use App\Enums\AdvanceStatus;
 use App\Enums\LedgerTransactionType;

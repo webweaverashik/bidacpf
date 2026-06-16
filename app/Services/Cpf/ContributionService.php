@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Cpf;
 
 use App\Enums\BatchStatus;
 use App\Enums\LedgerTransactionType;

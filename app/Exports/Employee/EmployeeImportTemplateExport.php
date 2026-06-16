@@ -1,5 +1,5 @@
 <?php
-namespace App\Exports;
+namespace App\Exports\Employee;
 
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;

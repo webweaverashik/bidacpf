@@ -6,7 +6,7 @@ use App\Http\Requests\Contribution\StoreContributionBatchRequest;
 use App\Http\Requests\Contribution\UpdateContributionRequest;
 use App\Models\Cpf\CpfContribution;
 use App\Models\Cpf\CpfContributionBatch;
-use App\Services\ContributionService;
+use App\Services\Cpf\ContributionService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;

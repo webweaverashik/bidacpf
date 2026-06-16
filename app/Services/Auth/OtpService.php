@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Auth;
 
 use App\Mail\LoginOtpMail;
 use App\Models\Auth\LoginOtp;

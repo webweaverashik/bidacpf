@@ -10,7 +10,7 @@ use App\Http\Requests\Advance\UpdateAdvanceRequest;
 use App\Models\Cpf\CpfAdvance;
 use App\Models\Employee\Employee;
 use App\Models\Setting;
-use App\Services\AdvanceService;
+use App\Services\Cpf\AdvanceService;
 use App\Services\AttachmentService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;

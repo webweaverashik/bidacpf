@@ -1,5 +1,5 @@
 <?php
-namespace App\Exports;
+namespace App\Exports\Interest;
 
 use App\Models\Interest\BankInterestBatch;
 use Illuminate\Support\Collection;

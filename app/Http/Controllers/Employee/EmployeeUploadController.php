@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
-use App\Exports\EmployeeImportTemplateExport;
+use App\Exports\Employee\EmployeeImportTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Models\Employee\PayScale;
-use App\Services\EmployeeUploadService;
+use App\Services\Employee\EmployeeUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;

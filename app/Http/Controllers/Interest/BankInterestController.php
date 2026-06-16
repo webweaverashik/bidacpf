@@ -2,12 +2,12 @@
 namespace App\Http\Controllers\Interest;
 
 use App\Enums\BatchStatus;
-use App\Exports\InterestBatchesExport;
-use App\Exports\InterestDistributionsExport;
+use App\Exports\Interest\InterestBatchesExport;
+use App\Exports\Interest\InterestDistributionsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Interest\StoreInterestBatchRequest;
 use App\Models\Interest\BankInterestBatch;
-use App\Services\InterestDistributionService;
+use App\Services\Interest\InterestDistributionService;
 use App\Support\FiscalYearService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;

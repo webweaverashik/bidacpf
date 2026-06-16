@@ -3,7 +3,7 @@ namespace App\Console\Commands;
 
 use App\Models\Auth\User;
 use App\Models\Cpf\CpfContributionBatch;
-use App\Services\ContributionService;
+use App\Services\Cpf\ContributionService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 

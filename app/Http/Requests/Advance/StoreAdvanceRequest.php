@@ -3,7 +3,7 @@ namespace App\Http\Requests\Advance;
 
 use App\Models\Employee\Employee;
 use App\Models\Setting;
-use App\Services\AdvanceService;
+use App\Services\Cpf\AdvanceService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 

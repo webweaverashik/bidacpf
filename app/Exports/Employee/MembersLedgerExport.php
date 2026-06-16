@@ -1,5 +1,5 @@
 <?php
-namespace App\Exports;
+namespace App\Exports\Employee;
 
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;

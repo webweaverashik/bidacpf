@@ -8,7 +8,7 @@ use App\Http\Requests\Advance\StoreRecoveryRequest;
 use App\Http\Requests\Advance\UpdateRecoveryRequest;
 use App\Models\Cpf\CpfAdvance;
 use App\Models\Cpf\CpfAdvanceRecovery;
-use App\Services\AdvanceService;
+use App\Services\Cpf\AdvanceService;
 use App\Services\AttachmentService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;

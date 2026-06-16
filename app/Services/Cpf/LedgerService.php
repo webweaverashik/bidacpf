@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Cpf;
 
 use App\Models\Cpf\CpfLedger;
 use App\Support\FiscalYearService;

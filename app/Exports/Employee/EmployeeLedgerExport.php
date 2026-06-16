@@ -1,5 +1,5 @@
 <?php
-namespace App\Exports;
+namespace App\Exports\Employee;
 
 use App\Models\Employee\Employee;
 use Illuminate\Support\Collection;

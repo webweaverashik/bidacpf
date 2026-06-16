@@ -5,7 +5,7 @@ use App\Enums\EmployeeStatus;
 use App\Enums\SettlementType;
 use App\Models\Cpf\CpfLedger;
 use App\Models\Employee\Employee;
-use App\Services\SettlementService;
+use App\Services\Cpf\SettlementService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
