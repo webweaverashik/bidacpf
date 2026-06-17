@@ -127,6 +127,12 @@ var BidaCpfMailSetting = (function () {
             form.querySelectorAll("input[name], select[name]").forEach(function (el) {
                   var name = el.getAttribute("name");
                   if (!name || name === "_token") return;
+
+                  if (el.type === "radio") {
+                        if (el.checked) data[name] = el.value;
+                        return;
+                  }
+
                   data[name] = el.value;
             });
             return data;

@@ -261,37 +261,52 @@
                 <form id="kt_mail_settings_form" class="w-100" novalidate="novalidate">
                     @csrf
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Mailer</label>
-                                <select name="mailer" class="form-select">
-                                    <option value="smtp" @selected($mailer === 'smtp')>SMTP</option>
-                                    <option value="log" @selected($mailer === 'log')>Log (no real email)</option>
-                                </select>
-                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
-                                <div class="form-text">Use “Log” in development to write emails to the log instead of sending.
-                                </div>
-                            </div>
-                        </div>
+                    {{-- Mailer is fixed to SMTP (kept in the payload so the bridge still configures the transport) --}}
+                    <input type="hidden" name="mailer" value="smtp">
 
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">Encryption</label>
-                                <select name="mail_encryption" class="form-select">
-                                    <option value="tls" @selected($mailEnc === 'tls')>TLS (STARTTLS, usually port 587)
-                                    </option>
-                                    <option value="ssl" @selected($mailEnc === 'ssl')>SSL (implicit TLS, usually port 465)
-                                    </option>
-                                    <option value="none" @selected($mailEnc === 'none')>None</option>
-                                </select>
+                                <div class="row g-3">
+                                    <div class="col-lg-4">
+                                        <input type="radio" class="btn-check" name="mail_encryption" value="tls"
+                                            id="enc_tls" @checked($mailEnc === 'tls') />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="enc_tls">
+                                            <i class="las la-lock fs-2x me-3"></i>
+                                            <span class="text-gray-900 fw-bold fs-6">TLS</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <input type="radio" class="btn-check" name="mail_encryption" value="ssl"
+                                            id="enc_ssl" @checked($mailEnc === 'ssl') />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="enc_ssl">
+                                            <i class="las la-shield-alt fs-2x me-3"></i>
+                                            <span class="text-gray-900 fw-bold fs-6">SSL</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <input type="radio" class="btn-check" name="mail_encryption" value="none"
+                                            id="enc_none" @checked($mailEnc === 'none') />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="enc_none">
+                                            <i class="las la-lock-open fs-2x me-3"></i>
+                                            <span class="text-gray-900 fw-bold fs-6">None</span>
+                                        </label>
+                                    </div>
+                                </div>
                                 <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                                <div class="form-text">TLS uses STARTTLS (usually port 587); SSL uses implicit TLS (usually
+                                    port 465).</div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-8">
+      
+                        <div class="col-md-4">
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">SMTP Host</label>
                                 <input type="text" name="mail_host" class="form-control"
@@ -300,7 +315,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">SMTP Port</label>
                                 <input type="number" name="mail_port" class="form-control"
