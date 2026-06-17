@@ -1,8 +1,8 @@
-@extends('layouts.app')
-
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
+
+@extends('layouts.app')
 
 @section('title', 'Notifications')
 
@@ -18,35 +18,87 @@
     <div class="card">
         <!--begin::Card header-->
         <div class="card-header border-0 pt-6">
-            <!--begin::Card title (filters)-->
+            <!--begin::Card title-->
             <div class="card-title">
-                <div class="d-flex flex-wrap gap-3">
-                    <!--begin::Status filter-->
-                    <select class="form-select form-select-solid w-150px" data-control="select2" data-hide-search="true"
-                        data-notifications-table-filter="status">
-                        <option value="">All status</option>
-                        <option value="unread">Unread</option>
-                        <option value="read">Read</option>
-                    </select>
-                    <!--end::Status filter-->
-                    <!--begin::Category filter-->
-                    <select class="form-select form-select-solid w-175px" data-control="select2" data-hide-search="true"
-                        data-notifications-table-filter="category">
-                        <option value="">All types</option>
-                        @foreach ($categories as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    <!--end::Category filter-->
+                <!--begin::Search-->
+                <div class="d-flex align-items-center position-relative my-1">
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <input type="text" data-notifications-table-filter="search"
+                        class="form-control form-control-solid w-md-350px ps-12" placeholder="Search notifications">
                 </div>
+                <!--end::Search-->
             </div>
             <!--end::Card title-->
+
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
+                <!--begin::Filter-->
+                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                    data-kt-menu-placement="bottom-end">
+                    <i class="ki-duotone ki-filter fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>Filter
+                </button>
+                <!--begin::Menu 1-->
+                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                    <!--begin::Header-->
+                    <div class="px-7 py-5">
+                        <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+                    </div>
+                    <!--end::Header-->
+                    <!--begin::Separator-->
+                    <div class="separator border-gray-200"></div>
+                    <!--end::Separator-->
+                    <!--begin::Content-->
+                    <div class="px-7 py-5" data-notifications-table-filter="form">
+                        <!--begin::Status-->
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-semibold">Status:</label>
+                            <select class="form-select form-select-solid fw-bold" data-notifications-table-filter="status"
+                                data-kt-select2="true" data-placeholder="Select status" data-allow-clear="true"
+                                data-hide-search="true" data-dropdown-parent="#kt_app_body">
+                                <option></option>
+                                <option value="unread">Unread</option>
+                                <option value="read">Read</option>
+                            </select>
+                        </div>
+                        <!--end::Status-->
+                        <!--begin::Type-->
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-semibold">Type:</label>
+                            <select class="form-select form-select-solid fw-bold" data-notifications-table-filter="category"
+                                data-kt-select2="true" data-placeholder="Select type" data-allow-clear="true"
+                                data-hide-search="true" data-dropdown-parent="#kt_app_body">
+                                <option></option>
+                                @foreach ($categories as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!--end::Type-->
+                        <!--begin::Actions-->
+                        <div class="d-flex justify-content-end">
+                            <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                data-kt-menu-dismiss="true" data-notifications-table-filter="reset">Reset</button>
+                            <button type="button" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
+                                data-notifications-table-filter="filter">Apply</button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
+                    <!--end::Content-->
+                </div>
+                <!--end::Menu 1-->
+
+                <!--begin::Mark all as read-->
                 <button type="button" class="btn btn-light-primary" id="notifications_mark_all">
                     <i class="ki-outline ki-check-circle fs-3"></i>
                     Mark all as read
                 </button>
+                <!--end::Mark all as read-->
             </div>
             <!--end::Card toolbar-->
         </div>
@@ -85,190 +137,8 @@
             csrf: "{{ csrf_token() }}",
         };
 
-        var BidaNotifications = (function() {
-            var table;
-            var dt;
 
-            function initTable() {
-                table = document.getElementById('notifications_table');
-                if (!table) {
-                    return;
-                }
-
-                dt = $(table).DataTable({
-                    processing: true,
-                    serverSide: true,
-                    searchDelay: 400,
-                    order: [
-                        [4, 'desc']
-                    ],
-                    lengthMenu: [
-                        [10, 25, 50, 100],
-                        [10, 25, 50, 100]
-                    ],
-                    dom: "<'table-responsive'tr>" +
-                        "<'row mt-3'" +
-                        "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'l>" +
-                        "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'p>>",
-                    ajax: {
-                        url: BidaNotificationsConfig.dataUrl,
-                        data: function(d) {
-                            d.status = filterValue('status');
-                            d.category = filterValue('category');
-                        },
-                    },
-                    columns: [{
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            className: 'text-gray-600',
-                            render: function(data, type, row, meta) {
-                                return meta.row + 1 + meta.settings._iDisplayStart;
-                            },
-                        },
-                        {
-                            data: 'type',
-                            name: 'type',
-                            orderable: true,
-                            searchable: false
-                        },
-                        {
-                            data: 'notification',
-                            name: 'notification',
-                            orderable: false
-                        },
-                        {
-                            data: 'status',
-                            name: 'status',
-                            orderable: true,
-                            searchable: false
-                        },
-                        {
-                            data: 'time',
-                            name: 'time',
-                            orderable: true,
-                            searchable: false
-                        },
-                        {
-                            data: 'actions',
-                            name: 'actions',
-                            orderable: false,
-                            searchable: false,
-                            className: 'text-end'
-                        },
-                    ],
-                });
-            }
-
-            function filterValue(key) {
-                var el = document.querySelector('[data-notifications-table-filter="' + key + '"]');
-                return el ? el.value : '';
-            }
-
-            function bindFilters() {
-                ['status', 'category'].forEach(function(key) {
-                    var el = document.querySelector('[data-notifications-table-filter="' + key + '"]');
-                    if (!el) {
-                        return;
-                    }
-                    // Select2 fires its change through jQuery.
-                    $(el).on('change', function() {
-                        if (dt) {
-                            dt.ajax.reload();
-                        }
-                    });
-                });
-            }
-
-            function bindMarkAll() {
-                var btn = document.getElementById('notifications_mark_all');
-                if (!btn) {
-                    return;
-                }
-
-                btn.addEventListener('click', function() {
-                    fetch(BidaNotificationsConfig.readAllUrl, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': BidaNotificationsConfig.csrf,
-                                'Accept': 'application/json',
-                            },
-                        })
-                        .then(function(res) {
-                            return res.json();
-                        })
-                        .then(function(json) {
-                            if (json.success) {
-                                toastr.success(json.message || 'All notifications marked as read.');
-                                if (dt) {
-                                    dt.ajax.reload(null, false);
-                                }
-                            }
-                        })
-                        .catch(function() {
-                            toastr.error('Could not mark notifications as read.');
-                        });
-                });
-            }
-
-            function bindDelete() {
-                // Delegated — rows are re-rendered on every draw.
-                $(table).on('click', '.js-notification-delete', function() {
-                    var id = this.getAttribute('data-id');
-
-                    Swal.fire({
-                        text: 'Delete this notification?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, delete',
-                        cancelButtonText: 'Cancel',
-                        buttonsStyling: false,
-                        customClass: {
-                            confirmButton: 'btn btn-danger',
-                            cancelButton: 'btn btn-light',
-                        },
-                    }).then(function(result) {
-                        if (!result.isConfirmed) {
-                            return;
-                        }
-
-                        fetch(BidaNotificationsConfig.destroyUrl.replace(':id', id), {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-CSRF-TOKEN': BidaNotificationsConfig.csrf,
-                                    'Accept': 'application/json',
-                                },
-                            })
-                            .then(function(res) {
-                                return res.json();
-                            })
-                            .then(function(json) {
-                                if (json.success) {
-                                    toastr.success(json.message || 'Notification deleted.');
-                                    if (dt) {
-                                        dt.ajax.reload(null, false);
-                                    }
-                                }
-                            })
-                            .catch(function() {
-                                toastr.error('Could not delete the notification.');
-                            });
-                    });
-                });
-            }
-
-            return {
-                init: function() {
-                    initTable();
-                    bindFilters();
-                    bindMarkAll();
-                    bindDelete();
-                },
-            };
-        })();
-
-        KTUtil.onDOMContentLoaded(function() {
-            BidaNotifications.init();
-        });
     </script>
+
+    <script src="{{ asset('js/notifications/index.js') }}"></script>
 @endpush
