@@ -111,7 +111,7 @@
             <!--end::Nav item-->
 
             <!--begin::Nav item-->
-            @if (app()->environment('local'))
+            {{-- @if (app()->environment('local')) --}}
                 <li class="nav-item">
                     <a class="nav-link text-active-primary py-5 me-6" id="settings_bulk_admission_link"
                         href="{{ route('employee-upload.index') }}">
@@ -119,7 +119,7 @@
                         Employee Upload
                     </a>
                 </li>
-            @endif
+            {{-- @endif --}}
             <!--end::Nav item-->
 
             <!--begin::Nav item-->
