@@ -71,7 +71,7 @@
 
         <!--begin::Back-->
         <div class="text-center mt-5">
-            <a href="{{ route('login') }}" class="link-secondary fs-7">Back to sign in</a>
+            <a href="{{ route('login') }}" class="text-gray-700 text-hover-primary fs-7">Back to sign in</a>
         </div>
         <!--end::Back-->
     </form>
