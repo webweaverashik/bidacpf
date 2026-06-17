@@ -8,6 +8,7 @@ use App\Models\Employee\Employee;
 use App\Models\Interest\BankInterestBatch;
 use App\Models\Interest\BankInterestDistribution;
 use App\Services\Cpf\LedgerService;
+use App\Services\NotificationService;
 use App\Support\FiscalYearService;
 use App\Support\MoneyService;
 use Carbon\Carbon;
@@ -32,8 +33,10 @@ use Illuminate\Support\Facades\DB;
  */
 class InterestDistributionService
 {
-    public function __construct(protected LedgerService $ledgerService)
-    {}
+    public function __construct(
+        protected LedgerService $ledgerService,
+        protected NotificationService $notifications,
+    ) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -50,7 +53,7 @@ class InterestDistributionService
      */
     public function createBatch(array $data, int $createdBy): BankInterestBatch
     {
-        return DB::transaction(function () use ($data, $createdBy) {
+        $batch = DB::transaction(function () use ($data, $createdBy) {
             $cutOff = Carbon::parse($data['distribution_date'])->startOfDay();
 
             $batch = BankInterestBatch::create([
@@ -67,6 +70,17 @@ class InterestDistributionService
 
             return $batch->fresh('distributions');
         });
+
+        $this->notifications->notifyAdmins(
+            title: 'New interest distribution created',
+            message: "A bank interest distribution batch dated {$batch->distribution_date->format('d M Y')} (Batch #{$batch->id}) has been created and is ready for review.",
+            category: 'interest',
+            url: route('bank-interest.show', $batch->id, false),
+            icon: 'ki-percentage',
+            color: 'primary',
+        );
+
+        return $batch;
     }
 
     /**
@@ -118,8 +132,8 @@ class InterestDistributionService
                         continue; // exclude zero / negative balances
                     }
 
-                    $balances[$employee->id] = $balance;
-                    $totalFundBalance       += $balance;
+                    $balances[$employee->id]  = $balance;
+                    $totalFundBalance        += $balance;
                 }
             });
 
@@ -131,8 +145,8 @@ class InterestDistributionService
         }
 
         // --- 3 & 4: pro-rate, round, snapshot ----------------------------
-        $rows = [];
-        $now  = now();
+        $rows  = [];
+        $now   = now();
 
         foreach ($balances as $employeeId => $eligibleBalance) {
             $ratio      = $eligibleBalance / $totalFundBalance;
@@ -154,8 +168,8 @@ class InterestDistributionService
                     'rounded_interest'    => $rounded,
                     'rounding_policy'     => 'HALF_UP',
                 ]),
-                'created_at' => $now,
-                'updated_at' => $now,
+                'created_at'             => $now,
+                'updated_at'             => $now,
             ];
         }
 
@@ -188,6 +202,15 @@ class InterestDistributionService
             'submitted_by' => $submittedBy,
             'submitted_at' => now(),
         ]);
+
+        $this->notifications->notifyAdmins(
+            title: 'Interest distribution submitted for approval',
+            message: "The bank interest distribution dated {$batch->distribution_date->format('d M Y')} (Batch #{$batch->id}) has been submitted and is awaiting approval.",
+            category: 'interest',
+            url: route('bank-interest.show', $batch->id, false),
+            icon: 'ki-percentage',
+            color: 'info',
+        );
     }
 
     /**
@@ -222,9 +245,9 @@ class InterestDistributionService
                     'source_id'        => $distribution->id,
                     'reference_no'     => $referenceNo,
                     'remarks'          => "Bank interest distribution as of {$cutOff} (Batch #{$batch->id})",
-                    'debit'            => 0,
-                    'credit'           => $distribution->interest_amount,
-                    'created_by'       => $approvedBy,
+                    'debit'      => 0,
+                    'credit'     => $distribution->interest_amount,
+                    'created_by' => $approvedBy,
                 ]);
             }
 
@@ -234,6 +257,16 @@ class InterestDistributionService
                 'approved_at' => now(),
             ]);
         });
+
+        $this->notifications->notifyUser(
+            [$batch->submitted_by, $batch->created_by],
+            title: 'Interest distribution approved',
+            message: "The bank interest distribution dated {$batch->distribution_date->format('d M Y')} (Batch #{$batch->id}) has been approved and posted to the ledger.",
+            category: 'interest',
+            url: route('bank-interest.show', $batch->id, false),
+            icon: 'ki-percentage',
+            color: 'success',
+        );
     }
 
     /**
@@ -245,12 +278,26 @@ class InterestDistributionService
             throw new \RuntimeException('Only batches pending approval can be sent back.');
         }
 
+        // Capture recipients before submitted_by is cleared by the update below.
+        $recipients = [$batch->submitted_by, $batch->created_by];
+
         $batch->update([
             'status'       => BatchStatus::DRAFT,
             'submitted_by' => null,
             'submitted_at' => null,
             'remarks'      => $remarks,
         ]);
+
+        $this->notifications->notifyUser(
+            $recipients,
+            title: 'Interest distribution sent back',
+            message: "The bank interest distribution dated {$batch->distribution_date->format('d M Y')} (Batch #{$batch->id}) was sent back for correction"
+            . ($remarks ? ": {$remarks}" : '.'),
+            category: 'interest',
+            url: route('bank-interest.show', $batch->id, false),
+            icon: 'ki-percentage',
+            color: 'danger',
+        );
     }
 
     /**
@@ -285,9 +332,9 @@ class InterestDistributionService
                     'source_id'        => $distribution->id,
                     'reference_no'     => $referenceNo,
                     'remarks'          => "Reversal of bank interest distribution as of {$cutOff} (Batch #{$batch->id})",
-                    'debit'            => $distribution->interest_amount,
-                    'credit'           => 0,
-                    'created_by'       => $reversedBy,
+                    'debit'      => $distribution->interest_amount,
+                    'credit'     => 0,
+                    'created_by' => $reversedBy,
                 ]);
             }
 
@@ -297,5 +344,15 @@ class InterestDistributionService
                 'reversed_at' => now(),
             ]);
         });
+
+        $this->notifications->notifyUser(
+            [$batch->submitted_by, $batch->created_by],
+            title: 'Interest distribution reversed',
+            message: "The bank interest distribution dated {$batch->distribution_date->format('d M Y')} (Batch #{$batch->id}) has been reversed; its ledger entries were unwound.",
+            category: 'interest',
+            url: route('bank-interest.show', $batch->id, false),
+            icon: 'ki-percentage',
+            color: 'warning',
+        );
     }
 }

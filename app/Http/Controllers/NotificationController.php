@@ -27,6 +27,7 @@ class NotificationController extends Controller
         'contribution'   => 'Contribution',
         'advance'        => 'Advance',
         'recovery'       => 'Recovery',
+        'interest'       => 'Interest Distribution',
         'settlement'     => 'Settlement',
         'scheduled_task' => 'Scheduled Task',
     ];

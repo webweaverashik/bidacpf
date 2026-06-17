@@ -53,7 +53,7 @@
 
                         <div class="row">
                             <!--begin::Role-->
-                            <div class="col-lg-12 d-none">
+                            <div class="col-lg-12">
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Role</label>
                                     <div class="row g-3">
