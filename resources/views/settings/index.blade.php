@@ -147,6 +147,68 @@
                     </div>
                 </div>
 
+                {{-- Security & Notifications --}}
+                <div class="separator separator-dashed my-8"></div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="fw-bold text-gray-900 mb-1">Security &amp; Notifications</h4>
+                        <div class="text-muted fs-7 mb-6">
+                            Runtime feature switches. Changes take effect immediately for new logins and notifications.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    {{-- Login OTP --}}
+                    <div class="col-md-4">
+                        <div class="fv-row mb-7">
+                            <label class="form-check form-switch form-check-custom form-check-solid align-items-start">
+                                <input class="form-check-input me-3" type="checkbox" name="otp_enabled" value="1"
+                                    @checked(filter_var($get('otp_enabled', '0'), FILTER_VALIDATE_BOOLEAN))>
+                                <span class="d-flex flex-column">
+                                    <span class="fw-semibold fs-6 text-gray-900">Login OTP</span>
+                                    <span class="fw-semibold fs-7 text-gray-500">Email a one-time code at each login
+                                        (two-step verification).</span>
+                                </span>
+                            </label>
+                            <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                        </div>
+                    </div>
+
+                    {{-- In-App Notifications --}}
+                    <div class="col-md-4">
+                        <div class="fv-row mb-7">
+                            <label class="form-check form-switch form-check-custom form-check-solid align-items-start">
+                                <input class="form-check-input me-3" type="checkbox" name="notify_app_enabled"
+                                    value="1" @checked(filter_var($get('notify_app_enabled', '1'), FILTER_VALIDATE_BOOLEAN))>
+                                <span class="d-flex flex-column">
+                                    <span class="fw-semibold fs-6 text-gray-900">In-App Notifications</span>
+                                    <span class="fw-semibold fs-7 text-gray-500">Show system events in the header
+                                        notification centre.</span>
+                                </span>
+                            </label>
+                            <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                        </div>
+                    </div>
+
+                    {{-- Email Notifications --}}
+                    <div class="col-md-4">
+                        <div class="fv-row mb-7">
+                            <label class="form-check form-switch form-check-custom form-check-solid align-items-start">
+                                <input class="form-check-input me-3" type="checkbox" name="notify_mail_enabled"
+                                    value="1" @checked(filter_var($get('notify_mail_enabled', '1'), FILTER_VALIDATE_BOOLEAN))>
+                                <span class="d-flex flex-column">
+                                    <span class="fw-semibold fs-6 text-gray-900">Email Notifications</span>
+                                    <span class="fw-semibold fs-7 text-gray-500">Also deliver system events to recipients
+                                        by email.</span>
+                                </span>
+                            </label>
+                            <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Action Buttons --}}
                 <div class="separator separator-dashed my-8"></div>
 

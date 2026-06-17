@@ -40,6 +40,22 @@ class SettingSeeder extends Seeder
                 'description' => 'Maximum Advance Recovery Installments',
             ],
 
+            [
+                'key'         => 'otp_enabled',
+                'value'       => '0',
+                'description' => 'Require email OTP (two-step verification) at login',
+            ],
+            [
+                'key'         => 'notify_app_enabled',
+                'value'       => '1',
+                'description' => 'Enable in-app (database) notifications',
+            ],
+            [
+                'key'         => 'notify_mail_enabled',
+                'value'       => '1',
+                'description' => 'Enable email notifications',
+            ],
+
             // [
             //     'key'         => 'interest_distribution_months',
             //     'value'       => json_encode([
