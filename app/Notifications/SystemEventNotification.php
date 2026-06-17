@@ -2,6 +2,7 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -20,31 +21,46 @@ use Illuminate\Notifications\Notification;
  * color/category) keeps the listing UI generic — new event types need no new
  * notification class, only a new call site.
  *
- * Delivery is synchronous (no ShouldQueue) so the in-app entry appears the
- * instant the action completes — matching the OTP mail flow. To move delivery
- * onto the queue later, add `implements ShouldQueue` to the class signature;
- * the database row will then also be written by the worker.
+ * Delivery is QUEUED (implements ShouldQueue): NotificationService::dispatch()
+ * only pushes a job, so the triggering web request returns immediately and a
+ * slow/failing SMTP host can never block — or roll back — a contribution,
+ * advance, or settlement action. Both channels (database + mail) are written
+ * by the worker, so a queue worker must be running (QUEUE_CONNECTION=database).
+ * Jobs are durable and retry on transient failure; permanent failures land in
+ * failed_jobs. For local testing without a worker, set QUEUE_CONNECTION=sync.
  */
-class SystemEventNotification extends Notification
+class SystemEventNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
         public string $title,
         public string $message,
-        public string $category,          // e.g. 'contribution', 'advance', 'recovery', 'settlement', 'scheduled_task'
-        public ?string $url = null,       // deep link (relative path) to the related record / listing
+        public string $category,    // e.g. 'contribution', 'advance', 'recovery', 'settlement', 'scheduled_task'
+        public ?string $url = null, // deep link (relative path) to the related record / listing
         public string $icon = 'ki-notification-status',
         public string $color = 'primary', // Metronic contextual: primary|success|warning|danger|info
     ) {
     }
 
     /**
-     * Delivery channels.
+     * Delivery channels — each gated by config('notifications.channels.*'),
+     * so 'database' (in-app) and 'mail' (email) can be toggled independently
+     * from .env. An empty result means this notification delivers nothing.
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        $channels = [];
+
+        if (config('notifications.channels.database', true)) {
+            $channels[] = 'database';
+        }
+
+        if (config('notifications.channels.mail', true)) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
     }
 
     /**

@@ -40,6 +40,10 @@ class NotificationService
         string $color = 'primary',
         ?int $exceptUserId = null,
     ): void {
+        if (! $this->anyChannelEnabled()) {
+            return;
+        }
+
         $admins = User::role('Admin')
             ->where('is_active', true)
             ->when($exceptUserId, fn($q) => $q->whereKeyNot($exceptUserId))
@@ -64,6 +68,10 @@ class NotificationService
         string $icon = 'ki-notification-status',
         string $color = 'primary',
     ): void {
+        if (! $this->anyChannelEnabled()) {
+            return;
+        }
+
         $list = match (true) {
             is_null($user)              => [],
             is_array($user)             => $user,
@@ -89,6 +97,17 @@ class NotificationService
         }
 
         $this->dispatch($recipients, $title, $message, $category, $url, $icon, $color);
+    }
+
+    /**
+     * Whether any notification channel is enabled. When both are off we skip
+     * delivery entirely — no recipient lookup, no queued jobs. Per-channel
+     * filtering still happens in SystemEventNotification::via().
+     */
+    protected function anyChannelEnabled(): bool
+    {
+        return (bool) config('notifications.channels.database', true)
+        || (bool) config('notifications.channels.mail', true);
     }
 
     /**
