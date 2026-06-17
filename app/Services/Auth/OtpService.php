@@ -29,7 +29,10 @@ class OtpService
             ]
         );
 
-        Mail::to($user->email)->send(new LoginOtpMail($code, $user->name, $expiresIn));
+        $mailer = config('mail.default') === 'log' ? 'smtp' : null; // null = use the default
+        Mail::mailer($mailer)->to($user->email)->send(new LoginOtpMail($code, $user->name, $expiresIn));
+
+        // Mail::to($user->email)->send(new LoginOtpMail($code, $user->name, $expiresIn));
     }
 
     /**

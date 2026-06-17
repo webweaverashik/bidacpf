@@ -74,3 +74,11 @@ Route::middleware('role:Admin')->prefix('settings')->group(function () {
     Route::get('backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
     Route::delete('backup/{filename}', [BackupController::class, 'destroy'])->name('backup.destroy');
 });
+
+Route::put('settings/mail', [SettingController::class, 'updateMail'])
+    ->middleware('role:Admin')
+    ->name('settings.mail.update');
+
+Route::post('settings/mail/test', [SettingController::class, 'testMail'])
+    ->middleware('role:Admin')
+    ->name('settings.mail.test');

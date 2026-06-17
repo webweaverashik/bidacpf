@@ -101,6 +101,143 @@ var BidaCpfSetting = (function () {
       };
 })();
 
+var BidaCpfMailSetting = (function () {
+      var form, saveBtn, testBtn, testInput;
+      var config = window.BidaCpfSettingConfig || {};
+
+      function clearErrors() {
+            form.querySelectorAll(".fv-feedback").forEach(function (el) {
+                  el.textContent = "";
+            });
+      }
+
+      function showError(field, message) {
+            var input = form.querySelector('[name="' + field + '"]');
+            if (!input) return;
+
+            var row = input.closest(".fv-row");
+            if (!row) return;
+
+            var feedback = row.querySelector(".fv-feedback");
+            if (feedback) feedback.textContent = message;
+      }
+
+      function collect() {
+            var data = {};
+            form.querySelectorAll("input[name], select[name]").forEach(function (el) {
+                  var name = el.getAttribute("name");
+                  if (!name || name === "_token") return;
+                  data[name] = el.value;
+            });
+            return data;
+      }
+
+      function setLoading(btn, state) {
+            if (state) {
+                  btn.setAttribute("data-kt-indicator", "on");
+                  btn.disabled = true;
+            } else {
+                  btn.removeAttribute("data-kt-indicator");
+                  btn.disabled = false;
+            }
+      }
+
+      function send(url, method, payload, btn) {
+            clearErrors();
+            setLoading(btn, true);
+
+            return fetch(url, {
+                  method: method,
+                  headers: {
+                        "X-CSRF-TOKEN": config.csrfToken,
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                  },
+                  credentials: "same-origin",
+                  body: JSON.stringify(payload),
+            })
+                  .then(function (r) {
+                        return r.json().then(function (b) {
+                              return { ok: r.ok, status: r.status, body: b };
+                        });
+                  })
+                  .finally(function () {
+                        setLoading(btn, false);
+                  });
+      }
+
+      function mapErrors(result) {
+            if (result.status === 422 && result.body.errors) {
+                  Object.keys(result.body.errors).forEach(function (key) {
+                        showError(key, result.body.errors[key][0]);
+                  });
+                  return true;
+            }
+            return false;
+      }
+
+      function save() {
+            send(config.mailUpdateUrl, "PUT", collect(), saveBtn)
+                  .then(function (result) {
+                        if (result.ok) {
+                              toastr.success(result.body.message || "Mail settings updated successfully.");
+                              return;
+                        }
+                        if (mapErrors(result)) {
+                              toastr.error("Please correct the highlighted fields.");
+                              return;
+                        }
+                        toastr.error(result.body.message || "Could not save mail settings.");
+                  })
+                  .catch(function () {
+                        toastr.error("A network error occurred. Please try again.");
+                  });
+      }
+
+      function test() {
+            var to = (testInput.value || "").trim();
+            if (!to) {
+                  toastr.warning("Enter a recipient address for the test email.");
+                  return;
+            }
+
+            var payload = collect();
+            payload.test_to = to;
+
+            send(config.mailTestUrl, "POST", payload, testBtn)
+                  .then(function (result) {
+                        if (result.ok) {
+                              toastr.success(result.body.message || "Test email sent.");
+                              return;
+                        }
+                        if (mapErrors(result)) {
+                              toastr.error("Please correct the highlighted fields.");
+                              return;
+                        }
+                        toastr.error(result.body.message || "Test failed.");
+                  })
+                  .catch(function () {
+                        toastr.error("A network error occurred. Please try again.");
+                  });
+      }
+
+      return {
+            init: function () {
+                  form = document.getElementById("kt_mail_settings_form");
+                  if (!form) return; // card only renders for Admins
+
+                  saveBtn = document.getElementById("btn_save_mail_settings");
+                  testBtn = document.getElementById("btn_test_mail");
+                  testInput = document.getElementById("mail_test_to");
+
+                  if (saveBtn) saveBtn.addEventListener("click", save);
+                  if (testBtn) testBtn.addEventListener("click", test);
+            },
+      };
+})();
+
 KTUtil.onDOMContentLoaded(function () {
       BidaCpfSetting.init();
+      BidaCpfMailSetting.init();
 });

@@ -14,6 +14,9 @@ class Setting extends BaseModel
 
     protected $fillable = ['key', 'value', 'description'];
 
+    /** Keys whose value must never appear in the activity log. */
+    protected array $secretKeys = ['mail_password'];
+
     /**
      * Always record the (immutable) setting key alongside the value.
      *
@@ -26,17 +29,27 @@ class Setting extends BaseModel
      */
     public function tapActivity(ActivityContract $activity, string $eventName): void
     {
-        if ($eventName !== 'updated') {
-            return;
+        $properties = $activity->properties;
+
+        // Redact secret values in both new and old buckets before they're stored.
+        if (in_array($this->key, $this->secretKeys, true)) {
+            foreach (['attributes', 'old'] as $bucket) {
+                $bag = (array) $properties->get($bucket, []);
+                if (array_key_exists('value', $bag)) {
+                    $bag['value'] = '••••••';
+                    $properties   = $properties->put($bucket, $bag);
+                }
+            }
         }
 
-        $properties = $activity->properties;
-        $attributes = (array) $properties->get('attributes', []);
+        // On update, prepend the (immutable) key so the diff stays self-explanatory.
+        if ($eventName === 'updated') {
+            $attributes = (array) $properties->get('attributes', []);
+            $attributes = ['key' => $this->key] + $attributes;
+            $properties = $properties->put('attributes', $attributes);
+        }
 
-        // Union keeps `key` first, then the actual changed attributes.
-        $attributes = ['key' => $this->key] + $attributes;
-
-        $activity->properties = $properties->put('attributes', $attributes);
+        $activity->properties = $properties;
     }
 
     /**

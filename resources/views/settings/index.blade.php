@@ -227,12 +227,175 @@
         </div>
     </div>
 
+    @role('Admin')
+        @php
+            $mailScheme = config('mail.mailers.smtp.scheme');
+            $mailEnc = $get('mail_encryption', $mailScheme === 'smtps' ? 'ssl' : 'tls');
+            $mailer = $get('mailer', config('mail.default'));
+            $mailPasswordSet = filled($get('mail_password')) || filled(config('mail.mailers.smtp.password'));
+            $testTo = optional(auth()->user())->email;
+        @endphp
+
+        <div class="card mt-6">
+            <div class="card-header border-0 pt-6">
+                <div class="card-title">
+                    <h3 class="fw-bold text-gray-900 fs-3 m-0">
+                        <span class="d-inline-flex align-items-center">
+                            <i class="ki-outline ki-sms fs-2x me-2 text-primary"></i>
+                            Mail (SMTP) Settings
+                        </span>
+                    </h3>
+                </div>
+            </div>
+
+            <div class="card-body py-10">
+                <div
+                    class="notice d-flex align-items-center bg-light-warning rounded border-warning border border-dashed p-4 mb-8">
+                    <i class="ki-outline ki-information-5 fs-2tx text-warning me-3"></i>
+                    <div class="fw-semibold fs-7 text-gray-700">
+                        These credentials drive OTP and notification emails. After saving, use
+                        <strong>Send Test Email</strong> to confirm delivery before relying on it.
+                    </div>
+                </div>
+
+                <form id="kt_mail_settings_form" class="w-100" novalidate="novalidate">
+                    @csrf
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="fv-row mb-7">
+                                <label class="required fw-semibold fs-6 mb-2">Mailer</label>
+                                <select name="mailer" class="form-select">
+                                    <option value="smtp" @selected($mailer === 'smtp')>SMTP</option>
+                                    <option value="log" @selected($mailer === 'log')>Log (no real email)</option>
+                                </select>
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                                <div class="form-text">Use “Log” in development to write emails to the log instead of sending.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="fv-row mb-7">
+                                <label class="required fw-semibold fs-6 mb-2">Encryption</label>
+                                <select name="mail_encryption" class="form-select">
+                                    <option value="tls" @selected($mailEnc === 'tls')>TLS (STARTTLS, usually port 587)
+                                    </option>
+                                    <option value="ssl" @selected($mailEnc === 'ssl')>SSL (implicit TLS, usually port 465)
+                                    </option>
+                                    <option value="none" @selected($mailEnc === 'none')>None</option>
+                                </select>
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="fv-row mb-7">
+                                <label class="required fw-semibold fs-6 mb-2">SMTP Host</label>
+                                <input type="text" name="mail_host" class="form-control"
+                                    value="{{ $get('mail_host', config('mail.mailers.smtp.host')) }}" />
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="fv-row mb-7">
+                                <label class="required fw-semibold fs-6 mb-2">SMTP Port</label>
+                                <input type="number" name="mail_port" class="form-control"
+                                    value="{{ $get('mail_port', config('mail.mailers.smtp.port')) }}" />
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="fv-row mb-7">
+                                <label class="fw-semibold fs-6 mb-2">SMTP Username</label>
+                                <input type="text" name="mail_username" class="form-control" autocomplete="off"
+                                    value="{{ $get('mail_username', config('mail.mailers.smtp.username')) }}" />
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="fv-row mb-7">
+                                <label class="fw-semibold fs-6 mb-2">SMTP Password</label>
+                                <input type="password" name="mail_password" class="form-control" autocomplete="new-password"
+                                    placeholder="{{ $mailPasswordSet ? '•••••• (leave blank to keep current)' : 'Enter password' }}" />
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                                <div class="form-text">
+                                    @if ($mailPasswordSet)
+                                        A password is saved. Leave blank to keep it, or type a new one to replace it.
+                                    @else
+                                        No password is currently set.
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="fv-row mb-7">
+                                <label class="required fw-semibold fs-6 mb-2">From Address</label>
+                                <input type="email" name="mail_from_address" class="form-control"
+                                    value="{{ $get('mail_from_address', config('mail.from.address')) }}" />
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="fv-row mb-7">
+                                <label class="required fw-semibold fs-6 mb-2">From Name</label>
+                                <input type="text" name="mail_from_name" class="form-control"
+                                    value="{{ $get('mail_from_name', config('mail.from.name')) }}" />
+                                <div class="fv-feedback text-danger fs-7 mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="separator separator-dashed my-8"></div>
+
+                    <div
+                        class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-end gap-3">
+                        <div class="fv-row mb-0" style="width: 500px;">
+                            <label class="fw-semibold fs-7 text-muted mb-2">Send a test email to</label>
+                            <div class="input-group">
+                                {{-- No name attribute → excluded from the saved payload --}}
+                                <input type="email" id="mail_test_to" class="form-control" value="{{ $testTo }}"
+                                    placeholder="recipient@example.com" />
+                                <button type="button" id="btn_test_mail" class="btn btn-light-primary">
+                                    <span class="indicator-label">Send Test</span>
+                                    <span class="indicator-progress">Sending&hellip;
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="button" id="btn_save_mail_settings" class="btn btn-primary">
+                            <span class="indicator-label">Save Mail Settings</span>
+                            <span class="indicator-progress">Please wait&hellip;
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endrole
+
 @endsection
 
 @push('page-js')
     <script>
         var BidaCpfSettingConfig = {
             updateUrl: "{{ route('settings.update') }}",
+            mailUpdateUrl: "{{ route('settings.mail.update') }}",
+            mailTestUrl: "{{ route('settings.mail.test') }}",
             csrfToken: "{{ csrf_token() }}",
         };
     </script>
