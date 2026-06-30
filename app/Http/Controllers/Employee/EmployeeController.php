@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
+use App\Enums\EmployeeStatus;
 use App\Enums\LedgerTransactionType;
 use App\Enums\SettlementStatus;
 use App\Enums\SourceType;
@@ -65,8 +66,13 @@ class EmployeeController extends Controller
         $canEdit           = (bool) $request->user()?->can('employee.update');
         $canViewSettlement = (bool) $request->user()?->can('cpf_settlement.view');
 
-        $query           = $this->employeesQuery($request);
-        $recordsTotal    = Employee::count();
+        $tab          = $request->input('tab');
+        $query        = $this->employeesQuery($request);
+        $recordsTotal = match ($tab) {
+            'active' => Employee::where('status', EmployeeStatus::ACTIVE->value)->count(),
+            'others' => Employee::where('status', '!=', EmployeeStatus::ACTIVE->value)->count(),
+            default  => Employee::count(),
+        };
         $recordsFiltered = (clone $query)->count();
 
         // Ordering (column index → DB column / alias).
@@ -83,7 +89,15 @@ class EmployeeController extends Controller
         ];
         $colIdx = (int) $request->input('order.0.column', 2);
         $dir    = $request->input('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
-        $query->orderBy($orderMap[$colIdx] ?? 'employees.name', $dir);
+
+        // Status column (index 9) sorts by activation on the Active tab and by
+        // the service-status enum on the Others tab.
+        if ($colIdx === 9) {
+            $orderCol = $tab === 'active' ? 'employees.is_active' : 'employees.status';
+        } else {
+            $orderCol = $orderMap[$colIdx] ?? 'employees.name';
+        }
+        $query->orderBy($orderCol, $dir);
 
         // Pagination.
         $start  = (int) $request->input('start', 0);
@@ -93,33 +107,25 @@ class EmployeeController extends Controller
         }
 
         $i    = $start;
-        $data = $query->get()->map(function ($e) use (&$i, $canEdit, $canViewSettlement) {
+        $data = $query->get()->map(function ($e) use (&$i, $canEdit, $canViewSettlement, $tab) {
             $i++;
             $showUrl = route('employees.show', $e->id);
             $editUrl = route('employees.edit', $e->id);
             $settled = (bool) $e->is_settled;
-
-            if ($settled) {
-                $status = '<span class="badge badge-light-info">Settled</span>';
-                if ($canViewSettlement && $e->settlement_id) {
-                    $status = '<a href="' . route('cpf-settlements.show', $e->settlement_id) . '" target="_blank" '
-                        . 'class="text-hover-primary" title="View settlement">' . $status . '</a>';
-                }
-            } elseif ($e->is_active) {
-                $status = '<span class="badge badge-light-success">Active</span>';
-            } else {
-                $status = '<span class="badge badge-light-danger">Inactive</span>';
-            }
+            $status  = $this->statusBadge($e, $tab, $canViewSettlement);
 
             $actions = '<a href="' . $showUrl . '" target="_blank" title="View Employee" '
                 . 'class="btn btn-icon text-hover-primary w-30px h-30px"><i class="ki-outline ki-eye fs-2"></i></a>';
 
-            if ($canEdit && ! $settled) {
+            $editable = ! $settled && (bool) $e->is_active;
+
+            if ($canEdit && $editable) {
                 $actions .= '<a href="' . $editUrl . '" title="Edit Employee" '
                     . 'class="btn btn-icon text-hover-primary w-30px h-30px"><i class="ki-outline ki-pencil fs-2"></i></a>';
-            } elseif ($canEdit && $settled) {
-                $actions .= '<span class="btn btn-icon w-30px h-30px text-muted disabled" '
-                    . 'title="Finally settled — locked"><i class="ki-outline ki-lock-2 fs-2"></i></span>';
+            } elseif ($canEdit) {
+                $lockTitle  = $settled ? 'Finally settled — locked' : 'Inactive — locked';
+                $actions   .= '<span class="btn btn-icon w-30px h-30px text-muted disabled" '
+                    . 'title="' . $lockTitle . '"><i class="ki-outline ki-lock-2 fs-2"></i></span>';
             }
 
             return [
@@ -235,6 +241,14 @@ class EmployeeController extends Controller
             $query->where('employees.status', $service);
         }
 
+        // Tab scope (two-card UI): Active service vs. everyone else.
+        $tab = $request->input('tab');
+        if ($tab === 'active') {
+            $query->where('employees.status', EmployeeStatus::ACTIVE->value);
+        } elseif ($tab === 'others') {
+            $query->where('employees.status', '!=', EmployeeStatus::ACTIVE->value);
+        }
+
         return $query;
     }
 
@@ -247,6 +261,38 @@ class EmployeeController extends Controller
             'active_status'  => $request->input('active_status'),
             'service_status' => $request->input('service_status'),
         ];
+    }
+
+    /**
+     * Status-cell HTML for the list feed.
+     *
+     * Active tab → activation (is_active): Active / Inactive.
+     * Others tab → the exact service status (Retired / Resigned / Deceased);
+     *              a finally-settled member's badge links to the settlement.
+     */
+    private function statusBadge($e, ?string $tab, bool $canViewSettlement): string
+    {
+        if ($tab === 'active') {
+            return $e->is_active
+                ? '<span class="badge badge-light-success">Active</span>'
+                : '<span class="badge badge-light-danger">Inactive</span>';
+        }
+
+        $label = $e->status?->label() ?? '—';
+        $class = match ($e->status?->value) {
+            'retired'  => 'badge-light-primary',
+            'resigned' => 'badge-light-warning',
+            'deceased' => 'badge-light-dark',
+            default    => 'badge-light-secondary',
+        };
+        $badge = '<span class="badge ' . $class . '">' . e($label) . '</span>';
+
+        if ((bool) $e->is_settled && $canViewSettlement && $e->settlement_id) {
+            $badge = '<a href="' . route('cpf-settlements.show', $e->settlement_id) . '" target="_blank" '
+                . 'class="text-hover-primary" title="View settlement (finally settled)">' . $badge . '</a>';
+        }
+
+        return $badge;
     }
 
     /** Correlated subquery → latest running ledger balance per employee. */
@@ -888,6 +934,11 @@ class EmployeeController extends Controller
                 ->with('error', 'This employee has been finally settled and can no longer be edited.');
         }
 
+        if (! $employee->is_active) {
+            return redirect()->route('employees.show', $employee)
+                ->with('error', 'This employee is inactive and cannot be edited. Reactivate the employee first.');
+        }
+
         $user = $request->user();
         $employee->load('payScaleStep');
 
@@ -959,6 +1010,18 @@ class EmployeeController extends Controller
 
             return redirect()->route('employees.show', $employee)
                 ->with('error', 'This employee has been finally settled and can no longer be edited.');
+        }
+
+        if (! $employee->is_active) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This employee is inactive and cannot be edited. Reactivate the employee first.',
+                ], 403);
+            }
+
+            return redirect()->route('employees.show', $employee)
+                ->with('error', 'This employee is inactive and cannot be edited. Reactivate the employee first.');
         }
 
         $this->authorizePayScaleChange($request, $employee);

@@ -2,24 +2,51 @@
 
 // =========================================================================
 // BidaEmployeeList
-// Server-side (AJAX) DataTable for the employee list. Search, grade /
-// activation / service-status filtering, sorting, pagination and the
-// filter-aware Excel / CSV / PDF exports are all resolved on the server
-// (EmployeeController@data and @export).
+// Two independent server-side (AJAX) DataTables, one per tab:
 //
-// Mirrors the salary-history module: custom Metronic toolbar search,
-// Select2 filter dropdowns applied on Apply/Reset, length menu + record
-// count bottom-left, pagination bottom-right.
+//   • Active Service  (#bida_employee_active_table, tab=active)
+//       status column → activation (is_active): Active / Inactive
+//       filters: grade, active_status
+//
+//   • Others          (#bida_employee_others_table, tab=others)
+//       status column → exact service status: Retired / Resigned / Deceased
+//       filters: grade, service_status
+//
+// Each card is fully self-contained: its own toolbar search, Select2 filter
+// dropdown (Apply / Reset), filter-aware Excel/CSV/PDF export, sorting,
+// length menu + record count bottom-left, pagination bottom-right.
+//
+// Search / filter / export controls are scoped to each card root via
+// data-emp-card / data-emp-filter / data-row-export so the two tables never
+// collide. The tab parameter is sent to EmployeeController@data / @export.
 // =========================================================================
 var BidaEmployeeList = (function () {
-    // Shared variables
-    var table;
-    var datatable;
-    var searchTimer = null;
+    // Built DataTable instances, keyed by tab.
+    var tables = {};
 
-    // Init server-side datatable --- more info: https://datatables.net/manual/server-side
-    var initDatatable = function () {
-        datatable = $(table).DataTable({
+    // Shared DataTable DOM: length menu + record count bottom-left,
+    // pagination bottom-right. (Built-in search box omitted — toolbar one used.)
+    var TABLE_DOM =
+        "<'table-responsive'tr>" +
+        "<'row align-items-center mt-4'" +
+        "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-start'" +
+        "<'me-4'l>i>" +
+        "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-end'p>>";
+
+    // Read a scoped filter control's current value.
+    var filterVal = function (root, name) {
+        var el = root.querySelector('[data-emp-filter="' + name + '"]');
+        return el ? el.value : "";
+    };
+
+    // Build one server-side DataTable for a tab. opts = { root, tableId, tab, filters }.
+    var createTable = function (opts) {
+        var table = document.getElementById(opts.tableId);
+        if (!table) {
+            return null;
+        }
+
+        var datatable = $(table).DataTable({
             processing: true,
             serverSide: true,
             searchDelay: 500,
@@ -28,20 +55,14 @@ var BidaEmployeeList = (function () {
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
             autoWidth: false,
-            // Length menu + record count bottom-left, pagination bottom-right.
-            // (The built-in search box is omitted — we use the toolbar one.)
-            dom:
-                "<'table-responsive'tr>" +
-                "<'row align-items-center mt-4'" +
-                "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-start'" +
-                "<'me-4'l>i>" +
-                "<'col-sm-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-end'p>>",
+            dom: TABLE_DOM,
             ajax: {
                 url: routeEmployeesData,
                 data: function (d) {
-                    d.grade = filterVal("grade");
-                    d.active_status = filterVal("active_status");
-                    d.service_status = filterVal("service_status");
+                    d.tab = opts.tab;
+                    opts.filters.forEach(function (name) {
+                        d[name] = filterVal(opts.root, name);
+                    });
                 }
             },
             columns: [
@@ -54,7 +75,7 @@ var BidaEmployeeList = (function () {
                 { data: "grade", name: "grade" },
                 { data: "basic_salary", name: "basic_salary" },
                 { data: "balance", name: "balance" },
-                { data: "status", name: "status", orderable: false },
+                { data: "status", name: "status" },
                 { data: "actions", name: "actions", orderable: false, searchable: false }
             ],
             columnDefs: [
@@ -63,65 +84,67 @@ var BidaEmployeeList = (function () {
                 { targets: 10, className: "text-end" } // Actions
             ],
             initComplete: function () {
-                $("#bida_employee_table_length select")
+                $("#" + opts.tableId + "_length select")
                     .addClass("form-select form-select-sm form-select-solid");
             }
         });
+
+        handleSearch(opts.root, datatable);
+        handleFilter(opts.root, datatable, opts.filters);
+        handleExport(opts.root, datatable, opts);
+
+        return datatable;
     };
 
-    // Read a filter select's current value
-    var filterVal = function (name) {
-        var el = document.querySelector('[data-employees-table-filter="' + name + '"]');
-        return el ? el.value : "";
-    };
-
-    // Custom toolbar search --- official docs: https://datatables.net/reference/api/search()
-    var handleSearch = function () {
-        var filterSearch = document.querySelector('[data-employees-table-filter="search"]');
-        if (!filterSearch) {
+    // Custom toolbar search (scoped to the card).
+    var handleSearch = function (root, datatable) {
+        var input = root.querySelector('[data-emp-filter="search"]');
+        if (!input) {
             return;
         }
 
-        filterSearch.addEventListener("keyup", function (e) {
+        var timer = null;
+        input.addEventListener("keyup", function (e) {
             var value = e.target.value;
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
                 datatable.search(value).draw();
             }, 400);
         });
     };
 
-    // Filter dropdown (Apply / Reset)
-    var handleFilter = function () {
-        var filterForm = document.querySelector('[data-employees-table-filter="form"]');
-        if (!filterForm) {
+    // Filter dropdown — Apply / Reset (scoped to the card, Select2-aware).
+    var handleFilter = function (root, datatable, filters) {
+        var form = root.querySelector('[data-emp-filter="form"]');
+        if (!form) {
             return;
         }
 
-        var filterButton = filterForm.querySelector('[data-employees-table-filter="filter"]');
-        var resetButton = filterForm.querySelector('[data-employees-table-filter="reset"]');
+        var applyButton = form.querySelector('[data-emp-filter="apply"]');
+        var resetButton = form.querySelector('[data-emp-filter="reset"]');
 
-        // Apply: reload datatable with current filter values (sent via ajax.data)
-        filterButton.addEventListener("click", function () {
-            datatable.ajax.reload();
-        });
-
-        // Reset: clear every filter (Select2-aware) then reload
-        resetButton.addEventListener("click", function () {
-            ["grade", "active_status", "service_status"].forEach(function (name) {
-                var $el = $('[data-employees-table-filter="' + name + '"]');
-                if ($el.length) {
-                    $el.val(null).trigger("change.select2");
-                }
+        if (applyButton) {
+            applyButton.addEventListener("click", function () {
+                datatable.ajax.reload();
             });
-            datatable.ajax.reload();
-        });
+        }
+
+        if (resetButton) {
+            resetButton.addEventListener("click", function () {
+                filters.forEach(function (name) {
+                    var $el = $(root).find('[data-emp-filter="' + name + '"]');
+                    if ($el.length) {
+                        $el.val(null).trigger("change.select2");
+                    }
+                });
+                datatable.ajax.reload();
+            });
+        }
     };
 
-    // Filter-aware exports — build a query string from the current toolbar
-    // search + applied filters and hit EmployeeController@export.
-    var handleExport = function () {
-        var items = document.querySelectorAll('#kt_employee_export_menu [data-row-export]');
+    // Filter-aware exports — current search + applied filters + tab → @export.
+    var handleExport = function (root, datatable, opts) {
+        var items = root.querySelectorAll("[data-row-export]");
 
         items.forEach(function (item) {
             item.addEventListener("click", function (e) {
@@ -130,14 +153,15 @@ var BidaEmployeeList = (function () {
                 var format = this.getAttribute("data-row-export"); // xlsx | csv | pdf
                 var params = new URLSearchParams();
                 params.set("format", format);
+                params.set("tab", opts.tab);
 
                 var term = datatable ? datatable.search() : "";
                 if (term) {
                     params.set("search", term);
                 }
 
-                ["grade", "active_status", "service_status"].forEach(function (name) {
-                    var val = filterVal(name);
+                opts.filters.forEach(function (name) {
+                    var val = filterVal(root, name);
                     if (val) {
                         params.set(name, val);
                     }
@@ -148,19 +172,46 @@ var BidaEmployeeList = (function () {
         });
     };
 
+    // Re-measure column widths when a tab is shown (DataTables initialised in a
+    // hidden pane otherwise mis-sizes its columns).
+    var handleTabAdjust = function () {
+        var links = document.querySelectorAll('#kt_employee_tabs [data-bs-toggle="tab"]');
+        links.forEach(function (link) {
+            link.addEventListener("shown.bs.tab", function () {
+                Object.keys(tables).forEach(function (key) {
+                    if (tables[key]) {
+                        tables[key].columns.adjust();
+                    }
+                });
+            });
+        });
+    };
+
     return {
         // Public functions
         init: function () {
-            table = document.getElementById("bida_employee_table");
+            var activeRoot = document.querySelector('[data-emp-card="active"]');
+            var othersRoot = document.querySelector('[data-emp-card="others"]');
 
-            if (!table) {
-                return;
+            if (activeRoot) {
+                tables.active = createTable({
+                    root: activeRoot,
+                    tableId: "bida_employee_active_table",
+                    tab: "active",
+                    filters: ["grade", "active_status"]
+                });
             }
 
-            initDatatable();
-            handleSearch();
-            handleFilter();
-            handleExport();
+            if (othersRoot) {
+                tables.others = createTable({
+                    root: othersRoot,
+                    tableId: "bida_employee_others_table",
+                    tab: "others",
+                    filters: ["grade", "service_status"]
+                });
+            }
+
+            handleTabAdjust();
         }
     };
 })();
